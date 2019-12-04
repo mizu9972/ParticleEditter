@@ -1,0 +1,299 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="ソース ファイル">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="ヘッダー ファイル">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="リソース ファイル">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="ソース ファイル\imgui">
+      <UniqueIdentifier>{1a068e5b-9ce2-411d-b977-a849de0db58f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\class">
+      <UniqueIdentifier>{46d25be4-b078-4c25-b142-f1af90002ff6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\imgui">
+      <UniqueIdentifier>{304012d2-542f-4c86-a388-2cf55ecdf951}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\class">
+      <UniqueIdentifier>{6d9a5721-0028-44b9-97e0-9fa59af5901d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Particle">
+      <UniqueIdentifier>{a35ef1fd-ae90-486f-84ea-86add1d87fd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\particle">
+      <UniqueIdentifier>{73111419-8a3b-4f29-9c61-fec7602b7cad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\pixel">
+      <UniqueIdentifier>{b64ff5fc-05f3-48d0-a5c5-230f010eee13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\vertex">
+      <UniqueIdentifier>{e62f3832-699b-408c-9d6a-4f13626e8b15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\File">
+      <UniqueIdentifier>{b2c87aa0-6b48-431b-ace2-8df29c87fb5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="リソース ファイル\compute">
+      <UniqueIdentifier>{a0f2f85f-9c91-40ca-95be-b240e2ca151f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="souce\Shader.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\main.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\game.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\dx11util.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\dx11mathutil.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\imgui.cpp">
+      <Filter>ソース ファイル\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\imgui_draw.cpp">
+      <Filter>ソース ファイル\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\imgui_impl_dx11.cpp">
+      <Filter>ソース ファイル\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\imgui_impl_win32.cpp">
+      <Filter>ソース ファイル\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\imgui_widgets.cpp">
+      <Filter>ソース ファイル\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\CDirectXGraphics.cpp">
+      <Filter>ソース ファイル\class</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\CModel.cpp">
+      <Filter>ソース ファイル\class</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\CSphere.cpp">
+      <Filter>ソース ファイル\class</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\CXFileParticleSystem.cpp">
+      <Filter>ソース ファイル\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\CParticle.cpp">
+      <Filter>ソース ファイル\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\CBillBoard.cpp">
+      <Filter>ソース ファイル\class</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\CHomingMissile.cpp">
+      <Filter>ソース ファイル\class</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\DatFile.cpp">
+      <Filter>ソース ファイル\File</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\DatFileLoader.cpp">
+      <Filter>ソース ファイル\File</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\DDSTextureLoader.cpp">
+      <Filter>ソース ファイル\File</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\WICTextureLoader.cpp">
+      <Filter>ソース ファイル\File</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\CParticleEdit.cpp">
+      <Filter>ソース ファイル\class</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\ParticleSystemParent.cpp">
+      <Filter>ソース ファイル\class</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\ComputeShader.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\Observer.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="souce\NonCopyable.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\Memory.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\game.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\Exception.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\DX11util.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\DatFileLoader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\DatFile.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\imgui.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\imgui_impl_dx11.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\imgui_impl_win32.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\imgui_internal.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\imconfig.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\CCamera.h">
+      <Filter>ヘッダー ファイル\class</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\CDirectInput.h">
+      <Filter>ヘッダー ファイル\class</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\CLight.h">
+      <Filter>ヘッダー ファイル\class</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\CModel.h">
+      <Filter>ヘッダー ファイル\class</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\CSphere.h">
+      <Filter>ヘッダー ファイル\class</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\CXFileParticleSystem.h">
+      <Filter>ヘッダー ファイル\particle</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\imstb_rectpack.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\imstb_textedit.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\imstb_truetype.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\DX11Settransform.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\C2DQuadtex.h">
+      <Filter>ヘッダー ファイル\class</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\CDirectxGraphics.h">
+      <Filter>ヘッダー ファイル\class</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\CTimer.h">
+      <Filter>ヘッダー ファイル\class</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\dx11mathutil.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\Shader.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\CParticle.h">
+      <Filter>ヘッダー ファイル\particle</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\CBillBoard.h">
+      <Filter>ヘッダー ファイル\class</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\CHomingMissile.h">
+      <Filter>ヘッダー ファイル\class</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\CParticleEdit.h">
+      <Filter>ヘッダー ファイル\class</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ParticleSystemParent.h">
+      <Filter>ヘッダー ファイル\class</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\Observer.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="shader\2dquadtexps.fx">
+      <Filter>リソース ファイル\pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\3dsphereps.fx">
+      <Filter>リソース ファイル\pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\ps.fx">
+      <Filter>リソース ファイル\pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\psbillboard.fx">
+      <Filter>リソース ファイル\pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\psskydome.fx">
+      <Filter>リソース ファイル\pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\pstriangle.fx">
+      <Filter>リソース ファイル\pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\psvscommon.fx">
+      <Filter>リソース ファイル\pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\psvscommon2.fx">
+      <Filter>リソース ファイル\pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\Squareps.fx">
+      <Filter>リソース ファイル\pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\texps.fx">
+      <Filter>リソース ファイル\pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\2dquadtexvs.fx">
+      <Filter>リソース ファイル\vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\Squarevs.fx">
+      <Filter>リソース ファイル\vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\texvs.fx">
+      <Filter>リソース ファイル\vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\vs.fx">
+      <Filter>リソース ファイル\vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\3dspherevs.fx">
+      <Filter>リソース ファイル\vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\vsbillboardtriangle.fx">
+      <Filter>リソース ファイル\vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\vstriangle.fx">
+      <Filter>リソース ファイル\vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\vsPrticle.fx">
+      <Filter>リソース ファイル\vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\psParticle.fx">
+      <Filter>リソース ファイル\pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\csParticle.hlsl">
+      <Filter>リソース ファイル\compute</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\Quo.fx">
+      <Filter>リソース ファイル\compute</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\ParticleCommon.fx">
+      <Filter>リソース ファイル\compute</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\csInitParticle.hlsl">
+      <Filter>リソース ファイル\compute</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>
