@@ -108,17 +108,17 @@
     <ClCompile Include="souce\WICTextureLoader.cpp">
       <Filter>ソース ファイル\File</Filter>
     </ClCompile>
-    <ClCompile Include="souce\CParticleEdit.cpp">
-      <Filter>ソース ファイル\class</Filter>
-    </ClCompile>
-    <ClCompile Include="souce\ParticleSystemParent.cpp">
-      <Filter>ソース ファイル\class</Filter>
-    </ClCompile>
     <ClCompile Include="souce\ComputeShader.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="souce\Observer.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\ParticleSystemParent.cpp">
+      <Filter>ソース ファイル\Particle</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\CParticleEdit.cpp">
+      <Filter>ソース ファイル\Particle</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -215,14 +215,14 @@
     <ClInclude Include="souce\CHomingMissile.h">
       <Filter>ヘッダー ファイル\class</Filter>
     </ClInclude>
-    <ClInclude Include="souce\CParticleEdit.h">
-      <Filter>ヘッダー ファイル\class</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\ParticleSystemParent.h">
-      <Filter>ヘッダー ファイル\class</Filter>
-    </ClInclude>
     <ClInclude Include="souce\Observer.h">
       <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ParticleSystemParent.h">
+      <Filter>ヘッダー ファイル\particle</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\CParticleEdit.h">
+      <Filter>ヘッダー ファイル\particle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

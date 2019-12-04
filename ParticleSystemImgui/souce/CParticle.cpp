@@ -155,7 +155,7 @@ void ParticleSystem::Update() {
 void ParticleSystem::UpdateComputeShader() {
 	ID3D11Device* device = CDirectXGraphics::GetInstance()->GetDXDevice();
 	ID3D11DeviceContext* devicecontext = CDirectXGraphics::GetInstance()->GetImmediateContext();
-	m_ParticleNum = m_ParticleState.m_ParticleNum;
+
 
 	if (m_ParticleNum <= 0) {
 		return;
@@ -195,11 +195,11 @@ void ParticleSystem::UpdateComputeShader() {
 	//出力用バッファを更新
 	//#HACK 
 	//Createではなく更新する処理にできないか
-	CreateStructuredBuffer(device, sizeof(m_ParticleUAVState), m_ParticleNum, OutState, &m_pResult);
-	CreateUnOrderAccessView(device, m_pResult, &m_pUAV);
+	//CreateStructuredBuffer(device, sizeof(m_ParticleUAVState), m_ParticleNum, OutState, &m_pResult);
+	//CreateUnOrderAccessView(device, m_pResult, &m_pUAV);
 	//コンピュートシェーダーを実行
 	const UINT dispatchX = UINT(ceil(float(m_ParticleNum) / float(256 * PARTICLE_NUM_PER_THREAD)));
-	RunComputeShader(devicecontext, m_ComputeShader, 1, &m_pSRV, m_pUAV, /*ceil(m_ParticleNum / (float)(m_ParticleNum / 256))*/dispatchX, 1, 1);
+	RunComputeShader(devicecontext, m_ComputeShader, 1, &m_pSRV, m_pUAV,dispatchX, 1, 1);
 
 	//データ受け取り
 	devicecontext->CopyResource(getbuf, m_pResult);//バッファコピー
@@ -419,12 +419,20 @@ void ParticleSystem::StartGPUParticle(){
 
 	ID3D11Device* device = CDirectXGraphics::GetInstance()->GetDXDevice();
 	ID3D11DeviceContext* devicecontext = CDirectXGraphics::GetInstance()->GetImmediateContext();
-
+	m_ParticleNum = m_ParticleState.m_ParticleNum;
+	if (m_pUAV != nullptr) {
+		m_pUAV->Release();
+		m_pUAV = nullptr;
+	}
+	if (m_pResult != nullptr) {
+		m_pResult->Release();
+		m_pResult = nullptr;
+	}
 	////入力用バッファを更新
 	//CreateStructuredBuffer(device, sizeof(m_ParticleSRVState), m_ParticleState.m_ParticleNum, nullptr, &m_pBuf);
 	//CreateShaderResourceView(device, m_pBuf, &m_pSRV);
 	//出力用バッファを更新
-	CreateStructuredBuffer(device, sizeof(m_ParticleUAVState), m_ParticleState.m_ParticleNum, nullptr, &m_pResult);
+	CreateStructuredBuffer(device, sizeof(m_ParticleUAVState), m_ParticleNum, nullptr, &m_pResult);
 	CreateUnOrderAccessView(device, m_pResult, &m_pUAV);
 
 	////コンピュートシェーダーを実行
