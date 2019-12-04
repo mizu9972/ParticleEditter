@@ -153,57 +153,19 @@ void ParticleSystem::Update() {
 }
 
 void ParticleSystem::UpdateComputeShader() {
-	ID3D11Device* device = CDirectXGraphics::GetInstance()->GetDXDevice();
-	ID3D11DeviceContext* devicecontext = CDirectXGraphics::GetInstance()->GetImmediateContext();
-
 
 	if (m_ParticleNum <= 0) {
 		return;
 	}
 
-	//コンスタントバッファ更新-------------------------------------------------------------------------------------------------------
-	{
-		m_CbParticle.iPosition    = { m_ParticleState.m_PositionX, m_ParticleState.m_PositionY,m_ParticleState.m_PositionZ,0 };
-		m_CbParticle.iAngle       = { m_ParticleState.m_AngleX,    m_ParticleState.m_AngleY,   m_ParticleState.m_AngleZ,   0 };
-		m_CbParticle.iAngleRange  = m_ParticleState.m_AngleRange;
-		m_CbParticle.iDuaringTime = m_ParticleState.m_DuaringTime;
-		m_CbParticle.iMaxLifeTime = m_ParticleState.m_MaxLifeTime;
-		m_CbParticle.iSpeed       = m_ParticleState.m_Speed;
-		m_CbParticle.iRotateSpeed = m_ParticleState.m_RotateSpeed;
-		m_CbParticle.isActive     = m_ParticleState.isActive;
-		m_CbParticle.isLooping    = m_ParticleState.isLooping;
-		m_CbParticle.iParticleNum = m_ParticleState.m_ParticleNum;
-		m_CbParticle.iTime        = 1.0f / FPS;
-		m_CbParticle.iTargetPosition = m_TargetPos;
-		m_CbParticle.isChaser = m_ParticleState.isChaser;
-	}
-	CDirectXGraphics::GetInstance()->GetImmediateContext()->UpdateSubresource(
-		m_ConstantBuffer,
-		0,
-		NULL,
-		&m_CbParticle,
-		0,
-		0
-	);
-	CDirectXGraphics::GetInstance()->GetImmediateContext()->CSSetConstantBuffers(
-		7,
-		1,
-		&m_ConstantBuffer
-	);
+	ID3D11DeviceContext* devicecontext = CDirectXGraphics::GetInstance()->GetImmediateContext();
 
-	//--------------------------------------------------------------------------------------------------------------------------
-	//出力用バッファを更新
-	//#HACK 
-	//Createではなく更新する処理にできないか
-	//CreateStructuredBuffer(device, sizeof(m_ParticleUAVState), m_ParticleNum, OutState, &m_pResult);
-	//CreateUnOrderAccessView(device, m_pResult, &m_pUAV);
 	//コンピュートシェーダーを実行
 	const UINT dispatchX = UINT(ceil(float(m_ParticleNum) / float(256 * PARTICLE_NUM_PER_THREAD)));
 	RunComputeShader(devicecontext, m_ComputeShader, 1, &m_pSRV, m_pUAV,dispatchX, 1, 1);
 
 	//データ受け取り
 	devicecontext->CopyResource(getbuf, m_pResult);//バッファコピー
-	//getbuf = CopyToBuffer(devicecontext, m_pResult, getbuf);//いちいちバッファを作成していたので↑変更
 	devicecontext->Map(getbuf, 0, D3D11_MAP_READ, 0, &m_MappedSubResource);
 
 	OutState = reinterpret_cast<m_ParticleUAVState*>(m_MappedSubResource.pData);//データ獲得
@@ -339,6 +301,40 @@ void ParticleSystem::UpdateNomal() {
 		}
 	}
 	
+}
+
+void ParticleSystem::UpdateConstantBuffer() {
+	//コンスタントバッファ更新-------------------------------------------------------------------------------------------------------
+	{
+		m_CbParticle.iPosition = { m_ParticleState.m_PositionX, m_ParticleState.m_PositionY,m_ParticleState.m_PositionZ,0 };
+		m_CbParticle.iAngle = { m_ParticleState.m_AngleX,    m_ParticleState.m_AngleY,   m_ParticleState.m_AngleZ,   0 };
+		m_CbParticle.iAngleRange = m_ParticleState.m_AngleRange;
+		m_CbParticle.iDuaringTime = m_ParticleState.m_DuaringTime;
+		m_CbParticle.iMaxLifeTime = m_ParticleState.m_MaxLifeTime;
+		m_CbParticle.iSpeed = m_ParticleState.m_Speed;
+		m_CbParticle.iRotateSpeed = m_ParticleState.m_RotateSpeed;
+		m_CbParticle.isActive = m_ParticleState.isActive;
+		m_CbParticle.isLooping = m_ParticleState.isLooping;
+		m_CbParticle.iParticleNum = m_ParticleState.m_ParticleNum;
+		m_CbParticle.iTime = 1.0f / FPS;
+		m_CbParticle.iTargetPosition = m_TargetPos;
+		m_CbParticle.isChaser = m_ParticleState.isChaser;
+	}
+	CDirectXGraphics::GetInstance()->GetImmediateContext()->UpdateSubresource(
+		m_ConstantBuffer,
+		0,
+		NULL,
+		&m_CbParticle,
+		0,
+		0
+	);
+	CDirectXGraphics::GetInstance()->GetImmediateContext()->CSSetConstantBuffers(
+		7,
+		1,
+		&m_ConstantBuffer
+	);
+
+	//--------------------------------------------------------------------------------------------------------------------------
 }
 
 XMFLOAT4 ParticleSystem::RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d) {

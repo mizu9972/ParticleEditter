@@ -166,6 +166,7 @@ public:
 	void (ParticleSystem::*fpUpdateFunc)() = &ParticleSystem::UpdateNomal;//関数ポインタ
 	void UpdateNomal();
 	void UpdateComputeShader();
+	void UpdateConstantBuffer();
 
 	XMFLOAT4 RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d);
 	//パーティクル発生開始
@@ -196,18 +197,18 @@ public:
 	void SetSize(float Size_);
 	void SetLifeTime(float LifeTime_);
 	void SetSpeed(float Speed_);
-	void SetName(const char*  setName);
+	void SetName(const char*  setName);//名前
 	void SetFileName(const char* FileName_);
-	ParticleSystem& SetActive(bool set);
-	void SetTargetPos(float x, float y, float z);
-	void SetParticleSystemState(t_ParticleSystemState* SetState_);
+	ParticleSystem& SetActive(bool set);//有効無効
+	void SetTargetPos(float x, float y, float z);//ターゲット座標
+	void SetParticleSystemState(t_ParticleSystemState* SetState_);//構造体情報全体
 	void SetNextParticleSystem(ParticleSystem* next);
-	void SetNextParticleSystem(int NextNumber);
-	ParticleSystem& SetComputeShader(ID3D11ComputeShader* setShader);
-	ParticleSystem& setSystemNumber(int setNumber);
+	void SetNextParticleSystem(int NextNumber);//次のパーティクルシステム番号
+	ParticleSystem& SetComputeShader(ID3D11ComputeShader* setShader);//コンピュートシェーダー
+	ParticleSystem& setSystemNumber(int setNumber);//自身のパーティクルシステム番号
 	//getter
-	t_ParticleSystemState GetState();
-	char* getName();
-	int getSystemNumber();
-	int getNextSystemNumber();
+	t_ParticleSystemState GetState();//構造体情報全体
+	char* getName();//名前
+	int getSystemNumber();//自身のパーティクルシステム番号
+	int getNextSystemNumber();//次のパーティクルシステム番号
 };

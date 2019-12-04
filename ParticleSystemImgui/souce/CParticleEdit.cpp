@@ -5,11 +5,14 @@
 
 #include "game.h"
 
+#define CHECK(x) (CheckDataChange += x)
+#define CHECK_RESULT (CheckDataChange > 0)
+
 extern int g_nCountFPS;
 constexpr auto PARTICLE_TEXTURE = "assets/ParticleTexture/particle.png";
 
 extern float g_SectionTime;
-
+static int CheckDataChange = 0;
 //初期化
 void ParticleEditor::Init() {
 	m_TargetBillBoard.Init(
@@ -180,50 +183,52 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 
 	ImGui::InputText("",ViewState.m_Name,sizeof(ViewState.m_Name));
 
+	CheckDataChange = 0;
+
 	//座標
 	if (ImGui::TreeNode("Position")) {
-		ImGui::SliderFloat("X", &ViewState.m_PositionX, -100.0f, 100.0f);
-		ImGui::SliderFloat("Y", &ViewState.m_PositionY, -100.0f, 100.0f);
-		ImGui::SliderFloat("Z", &ViewState.m_PositionZ, -100.0f, 100.0f);
+		CHECK(ImGui::SliderFloat("X", &ViewState.m_PositionX, -100.0f, 100.0f));
+		CHECK(ImGui::SliderFloat("Y", &ViewState.m_PositionY, -100.0f, 100.0f));
+		CHECK(ImGui::SliderFloat("Z", &ViewState.m_PositionZ, -100.0f, 100.0f));
 		ImGui::TreePop();
 	}
 	//放出角度
 	if (ImGui::TreeNode("Angle")) {
-		ImGui::SliderInt("X", &ViewState.m_AngleX, 1, 360);
-		ImGui::SliderInt("Y", &ViewState.m_AngleY, 1, 360);
-		ImGui::SliderInt("Z", &ViewState.m_AngleZ, 1, 360);
+		CHECK(ImGui::SliderInt("X", &ViewState.m_AngleX, 1, 360));
+		CHECK(ImGui::SliderInt("Y", &ViewState.m_AngleY, 1, 360));
+		CHECK(ImGui::SliderInt("Z", &ViewState.m_AngleZ, 1, 360));
 		ImGui::TreePop();
 	}
 	//放出角度範囲
-	ImGui::SliderInt("AngleRange", &ViewState.m_AngleRange, 1, 360);
+	CHECK(ImGui::SliderInt("AngleRange", &ViewState.m_AngleRange, 1, 360));
 
-	ImGui::SliderFloat("Duaring", &ViewState.m_DuaringTime, 0, 10);//周期
-	ImGui::InputInt("ParticleNum", &ViewState.m_ParticleNum, 5, 1000);//パーティクルの個数
-	ImGui::SliderFloat("MaxLifeTime", &ViewState.m_MaxLifeTime, 0.0f, 10.0f);//最大生存時間
-	ImGui::SliderFloat("Size", &ViewState.m_Size, 0.0f, 100.0f);//粒子の大きさ
-	ImGui::SliderFloat("Speed", &ViewState.m_Speed, 0.0f, 100.0f);//移動速度
-	ImGui::SliderInt("RotateSpeed", &ViewState.m_RotateSpeed, 0, 100);//回転速度
+	CHECK(ImGui::SliderFloat("Duaring", &ViewState.m_DuaringTime, 0, 10));//周期
+	CHECK(ImGui::InputInt("ParticleNum", &ViewState.m_ParticleNum, 5, 1000));//パーティクルの個数
+	CHECK(ImGui::SliderFloat("MaxLifeTime", &ViewState.m_MaxLifeTime, 0.0f, 10.0f));//最大生存時間
+	CHECK(ImGui::SliderFloat("Size", &ViewState.m_Size, 0.0f, 100.0f));//粒子の大きさ
+	CHECK(ImGui::SliderFloat("Speed", &ViewState.m_Speed, 0.0f, 100.0f));//移動速度
+	CHECK(ImGui::SliderInt("RotateSpeed", &ViewState.m_RotateSpeed, 0, 100));//回転速度
 
-
-	bool GPUParticleFlag = ViewState.isGPUParticle;
-	ImGui::Checkbox("GPUParticle", &ViewState.isGPUParticle);//GPUパーティクル
 
 	//GPUパーティクルのチェックボックスがfalse->trueに変更されたらStart関数呼び出し
-	if (GPUParticleFlag != ViewState.isGPUParticle) {//変更判定
+	if (ImGui::Checkbox("GPUParticle", &ViewState.isGPUParticle)){//GPUパーティクル) {//変更判定
 		if (ViewState.isGPUParticle == true) { //true判定
 			pParticleSystem_->StartGPUParticle();
 		}
 		pParticleSystem_->ChangeGPUParticleMode(ViewState.isGPUParticle);
+		CheckDataChange += 1;
 	}
 	
-	ImGui::Checkbox("isChaser", &ViewState.isChaser);//オブジェクトを追いかけるか
-	ImGui::Checkbox("isLooping", &ViewState.isLooping);//ループさせるかどうか
-	ImGui::Checkbox("isActive", &ViewState.isActive);//発生させるかどうか
+	CHECK(ImGui::Checkbox("isChaser", &ViewState.isChaser));//オブジェクトを追いかけるか
+	CHECK(ImGui::Checkbox("isLooping", &ViewState.isLooping));//ループさせるかどうか
+	CHECK(ImGui::Checkbox("isActive", &ViewState.isActive));//発生させるかどうか
 
-	ImGui::ColorEdit4("Color", ViewState.m_Color, 0);//色
+	CHECK(ImGui::ColorEdit4("Color", ViewState.m_Color, 0));//色
 
-	pParticleSystem_->SetParticleSystemState(&ViewState);
-	
+	if (CHECK_RESULT) {//数値が変更されていたら反映
+		pParticleSystem_->SetParticleSystemState(&ViewState);
+		pParticleSystem_->UpdateConstantBuffer();
+	}
 	//エミッター
 	int NextSystemNumber = ViewState.m_NextSystemNumber;
 	if (NextSystemNumber == -1) {
