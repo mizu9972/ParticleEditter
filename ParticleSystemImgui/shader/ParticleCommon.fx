@@ -5,33 +5,58 @@
 
 
 
-cbuffer ConstantBufferParticle : register(b7)
+//cbuffer ConstantBufferParticle : register(b7)
+//{
+//    float4 iPosition;
+//    int4 iAngle;
+//    int iAngleRange;
+//    float iDuaringTime;
+//    float iMaxLifeTime;
+//    float iSpeed;
+//    int iRotateSpeed;
+//    int isActive;
+//    int isLooping;
+
+//    int iParticleNum;
+//    float iTime;
+//    float3 iTargetPos;
+
+//    int isChaser;
+//    int iMinChaseAngle;
+//    int iMaxChaseAngle;
+
+//    int UseGravity;
+//    float3 iGravity;
+//    //バイト数調整用
+//    //float Padding = 0;
+//    //float Padding1 = 0;
+//    //float Padding2 = 0;
+//}
+
+struct ParticleSRVState
 {
-    float4 iPosition;
-    int4 iAngle;
-    int iAngleRange;
-    float iDuaringTime;
-    float iMaxLifeTime;
-    float iSpeed;
-    int iRotateSpeed;
-    int isActive;
-    int isLooping;
-
-    int iParticleNum;
-    float iTime;
-    float3 iTargetPos;
-
+    float4 iPosition; //全体の位置
+    int4 iAngle; //角度
+    int iAngleRange; //発射範囲
+    float iDuaringTime; //継続時間
+    float iMaxLifeTime; //最大生存時間
+    float iSpeed; //速度
+    float iAccel;
+    int iRotateSpeed; //回転速度
+    int isActive; //有効かどうか
+    int isLooping; //ループするかどうか
+    int iParticleNum; //パーティクルの個数
+    float iTime; //経過時間
+    float3 iTargetPosition; //追いかけるターゲットの座標
     int isChaser;
     int iMinChaseAngle;
     int iMaxChaseAngle;
 
     int UseGravity;
     float3 iGravity;
-    //バイト数調整用
-    //float Padding = 0;
-    //float Padding1 = 0;
-    //float Padding2 = 0;
-}
+};
+
+StructuredBuffer<ParticleSRVState> g_InState : register(t0);
 
 struct ParticleUAVState
 {
@@ -62,26 +87,26 @@ void ParticleInit(uint DTid_)
     float4 QtX, QtY, QtZ; //指定軸回転のクォータニオン
 
     //ランダムな角度の回転軸を生成
-    QtX = CreateRotateQt(radians(fmod(fRandom(DTid_ + iTime), iAngleRange) + iAngle.x), 1, 0, 0);
-    QtY = CreateRotateQt(radians(fmod(fRandom(DTid_ + iTime + 1), iAngleRange) + iAngle.y), 0, 1, 0);
-    QtZ = CreateRotateQt(radians(fmod(fRandom(DTid_ + iTime + 2), iAngleRange) + iAngle.z), 0, 0, 1);
+    QtX = CreateRotateQt(radians(fmod(fRandom(DTid_ + g_InState[0].iTime), g_InState[0].iAngleRange) + g_InState[0].iAngle.x), 1, 0, 0);
+    QtY = CreateRotateQt(radians(fmod(fRandom(DTid_ + g_InState[0].iTime + 1), g_InState[0].iAngleRange) + g_InState[0].iAngle.y), 0, 1, 0);
+    QtZ = CreateRotateQt(radians(fmod(fRandom(DTid_ + g_InState[0].iTime + 2), g_InState[0].iAngleRange) + g_InState[0].iAngle.z), 0, 0, 1);
     
     
     setQuot = MulQuot(MulQuot(QtX, QtY), QtZ); //合成
 
     g_OutState[DTid_].m_Matrix = QttoMatrix(setQuot); //行列に変換して反映
 
-    g_OutState[DTid_].m_Matrix._14 = iPosition.x;
-    g_OutState[DTid_].m_Matrix._24 = iPosition.y;
-    g_OutState[DTid_].m_Matrix._34 = iPosition.z;
+    g_OutState[DTid_].m_Matrix._14 = g_InState[0].iPosition.x;
+    g_OutState[DTid_].m_Matrix._24 = g_InState[0].iPosition.y;
+    g_OutState[DTid_].m_Matrix._34 = g_InState[0].iPosition.z;
    
 
-    g_OutState[DTid_].LifeTime = iMaxLifeTime;
+    g_OutState[DTid_].LifeTime = g_InState[0].iMaxLifeTime;
 
     
     g_OutState[DTid_].ZAngle = fRandom(DTid_) % 360;
 
-    g_OutState[DTid_].DelayTime = iDuaringTime / iParticleNum * DTid_;
+    g_OutState[DTid_].DelayTime = g_InState[0].iDuaringTime / g_InState[0].iParticleNum * DTid_;
     g_OutState[DTid_].CountTime = 0;
     g_OutState[DTid_].isAlive = true;
     g_OutState[DTid_].isWaiting = true;
@@ -97,7 +122,7 @@ void TargetChase(uint DTid_)
     //行列全体が変更されるので座標を保存する
     float3 Position = float3(g_OutState[DTid_].m_Matrix._14, g_OutState[DTid_].m_Matrix._24, g_OutState[DTid_].m_Matrix._34);
     float3 ZDir = float3(g_OutState[DTid_].m_Matrix._13, g_OutState[DTid_].m_Matrix._23, g_OutState[DTid_].m_Matrix._33);
-    float3 TargetPos =/* -1.0f * */iTargetPos.xyz;
+    float3 TargetPos = /* -1.0f * */g_InState[0].iTargetPosition.xyz;
     float3 TargetVector = -1.0f * (TargetPos.xyz - Position.xyz); //float3(TargetPos.x - Position.x, TargetPos.y - Position.y, TargetPos.z - Position.z); //距離計算
 
     matrix Mat = transpose(g_OutState[DTid_].m_Matrix);//行列を転置
@@ -117,8 +142,8 @@ void TargetChase(uint DTid_)
 
     TargetQuoternion = RotationArc(ZDir, TargetVector, Dot);
     float AngleDiff = acos(Dot);//ラジアン角度
-    float AngleMax = (3.141592741f) * iMaxChaseAngle / 180.0f;
-    float AngleMin = (3.141592741f) * iMinChaseAngle / 180.0f;
+    float AngleMax = (3.141592741f) * g_InState[0].iMaxChaseAngle / 180.0f;
+    float AngleMin = (3.141592741f) * g_InState[0].iMinChaseAngle / 180.0f;
     //姿勢を決定
     if (AngleMin > AngleDiff)
     {
@@ -153,9 +178,10 @@ void TargetChase(uint DTid_)
 //パーティクルの更新
 void ParticleUpdate(uint DTid_)
 {
+    float Speed;
     if (g_OutState[DTid_].isWaiting == true)
     {
-        g_OutState[DTid_].DelayTime -= iTime;
+        g_OutState[DTid_].DelayTime -= g_InState[0].iTime;
         
         if (g_OutState[DTid_].DelayTime <= 0)
         {
@@ -165,26 +191,28 @@ void ParticleUpdate(uint DTid_)
         return;
     }
 
-    if (isChaser == 1)
+    if (g_InState[0].isChaser == 1)
     {
         TargetChase(DTid_);
     }
 
-    if (UseGravity == 1)
+    if (g_InState[0].UseGravity == 1)
     {
-        g_OutState[DTid_].m_Matrix._13 += iGravity.x / 100.0f;
-        g_OutState[DTid_].m_Matrix._23 += iGravity.y / 100.0f;
-        g_OutState[DTid_].m_Matrix._33 += iGravity.z / 100.0f;
+        g_OutState[DTid_].m_Matrix._13 += g_InState[0].iGravity.x / 100.0f;
+        g_OutState[DTid_].m_Matrix._23 += g_InState[0].iGravity.y / 100.0f;
+        g_OutState[DTid_].m_Matrix._33 += g_InState[0].iGravity.z / 100.0f;
 
     }
+    g_OutState[DTid_].CountTime += 1.0f / 60.0f;
 
+    Speed = g_InState[0].iSpeed + g_InState[0].iAccel * g_OutState[DTid_].CountTime * g_OutState[DTid_].CountTime;
     //移動計算
-    g_OutState[DTid_].m_Matrix._14 += g_OutState[DTid_].m_Matrix._13 * iSpeed * iTime;
-    g_OutState[DTid_].m_Matrix._24 += g_OutState[DTid_].m_Matrix._23 * iSpeed * iTime;
-    g_OutState[DTid_].m_Matrix._34 += g_OutState[DTid_].m_Matrix._33 * iSpeed * iTime;
+    g_OutState[DTid_].m_Matrix._14 += g_OutState[DTid_].m_Matrix._13 * Speed * g_InState[0].iTime;
+    g_OutState[DTid_].m_Matrix._24 += g_OutState[DTid_].m_Matrix._23 * Speed * g_InState[0].iTime;
+    g_OutState[DTid_].m_Matrix._34 += g_OutState[DTid_].m_Matrix._33 * Speed * g_InState[0].iTime;
 
     //生存時間
-    g_OutState[DTid_].LifeTime -= iTime;
+    g_OutState[DTid_].LifeTime -= g_InState[0].iTime;
 
     if (g_OutState[DTid_].LifeTime <= 0)
     {

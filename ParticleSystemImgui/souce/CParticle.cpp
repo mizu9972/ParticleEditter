@@ -143,10 +143,11 @@ void ParticleSystem::InitComputeShader() {
 	m_CpResult.Attach(m_pResult);
 	m_CpConstantBuffer.Attach(m_ConstantBuffer);
 	m_CpGetBuf.Attach(getbuf);
+	m_CpBuf.Attach(m_pbuf);
 
-	CreateConstantBuffer(CDirectXGraphics::GetInstance()->GetDXDevice(),
-		sizeof(m_ConstantBufferParticle),
-		&m_CpConstantBuffer);
+	//CreateConstantBuffer(CDirectXGraphics::GetInstance()->GetDXDevice(),
+	//	sizeof(m_ConstantBufferParticle),
+	//	&m_CpConstantBuffer);
 
 }
 
@@ -248,6 +249,7 @@ void ParticleSystem::UpdateNomal() {
 			m_ParticleVec[ParticleNum].Matrix._33 += m_ParticleState.m_Gravity[2] / 100.0f;
 		}
 
+		Speed_ = m_ParticleState.m_Speed + m_ParticleState.m_Accel * m_ParticleVec[ParticleNum].CountTime * m_ParticleVec[ParticleNum].CountTime;
 
 		//速度分移動させる
 		m_ParticleVec[ParticleNum].Matrix._41 += m_ParticleVec[ParticleNum].Matrix._31 * Speed_ * NowTime;
@@ -305,6 +307,7 @@ void ParticleSystem::UpdateNomal() {
 
 			//待機時間が0以下なら活性化
 			if (p_PickParticle->DelayTime <= 0) {
+				p_PickParticle->CountTime = 0;
 				p_PickParticle->isWaiting = false;
 				p_PickParticle->isAlive = true;
 
@@ -316,41 +319,75 @@ void ParticleSystem::UpdateNomal() {
 }
 
 void ParticleSystem::UpdateConstantBuffer() {
-	//コンスタントバッファ更新-------------------------------------------------------------------------------------------------------
-	{
-		m_CbParticle.iPosition = { m_ParticleState.m_Position[0], m_ParticleState.m_Position[1],m_ParticleState.m_Position[2],0 };
-		m_CbParticle.iAngle = { m_ParticleState.m_Angle[0],    m_ParticleState.m_Angle[1],   m_ParticleState.m_Angle[2],   0 };
-		m_CbParticle.iAngleRange = m_ParticleState.m_AngleRange;
-		m_CbParticle.iDuaringTime = m_ParticleState.m_DuaringTime;
-		m_CbParticle.iMaxLifeTime = m_ParticleState.m_MaxLifeTime;
-		m_CbParticle.iSpeed = m_ParticleState.m_Speed;
-		m_CbParticle.iRotateSpeed = m_ParticleState.m_RotateSpeed;
-		m_CbParticle.isActive = m_ParticleState.isActive;
-		m_CbParticle.isLooping = m_ParticleState.isLooping;
-		m_CbParticle.iParticleNum = m_ParticleState.m_ParticleNum;
-		m_CbParticle.iTime = 1.0f / FPS;
-		m_CbParticle.iTargetPosition = m_TargetPos;
-		m_CbParticle.isChaser = m_ParticleState.isChaser;
-		m_CbParticle.iMinChaseAngle = m_ParticleState.m_MinChaseAngle;
-		m_CbParticle.iMaxChaseAngle = m_ParticleState.m_MaxChaseAngle;
-		m_CbParticle.iGravity = { m_ParticleState.m_Gravity[0],m_ParticleState.m_Gravity[1],m_ParticleState.m_Gravity[2] };
-		m_CbParticle.UseGravity = m_ParticleState.UseGravity;
-	}
-	CDirectXGraphics::GetInstance()->GetImmediateContext()->UpdateSubresource(
-		m_CpConstantBuffer.Get(),
-		0,
-		NULL,
-		&m_CbParticle,
-		0,
-		0
-	);
-	CDirectXGraphics::GetInstance()->GetImmediateContext()->CSSetConstantBuffers(
-		7,
-		1,
-		m_CpConstantBuffer.GetAddressOf()
-	);
 
-	//--------------------------------------------------------------------------------------------------------------------------
+	////コンスタントバッファ更新-------------------------------------------------------------------------------------------------------
+	//{
+	//	m_CbParticle.iPosition = { m_ParticleState.m_Position[0], m_ParticleState.m_Position[1],m_ParticleState.m_Position[2],0 };
+	//	m_CbParticle.iAngle = { m_ParticleState.m_Angle[0],    m_ParticleState.m_Angle[1],   m_ParticleState.m_Angle[2],   0 };
+	//	m_CbParticle.iAngleRange = m_ParticleState.m_AngleRange;
+	//	m_CbParticle.iDuaringTime = m_ParticleState.m_DuaringTime;
+	//	m_CbParticle.iMaxLifeTime = m_ParticleState.m_MaxLifeTime;
+	//	m_CbParticle.iSpeed = m_ParticleState.m_Speed;
+	//	m_CbParticle.iRotateSpeed = m_ParticleState.m_RotateSpeed;
+	//	m_CbParticle.isActive = m_ParticleState.isActive;
+	//	m_CbParticle.isLooping = m_ParticleState.isLooping;
+	//	m_CbParticle.iParticleNum = m_ParticleState.m_ParticleNum;
+	//	m_CbParticle.iTime = 1.0f / FPS;
+	//	m_CbParticle.iTargetPosition = m_TargetPos;
+	//	m_CbParticle.isChaser = m_ParticleState.isChaser;
+	//	m_CbParticle.iMinChaseAngle = m_ParticleState.m_MinChaseAngle;
+	//	m_CbParticle.iMaxChaseAngle = m_ParticleState.m_MaxChaseAngle;
+	//	m_CbParticle.iGravity = { m_ParticleState.m_Gravity[0],m_ParticleState.m_Gravity[1],m_ParticleState.m_Gravity[2] };
+	//	m_CbParticle.UseGravity = m_ParticleState.UseGravity;
+	//}
+	//CDirectXGraphics::GetInstance()->GetImmediateContext()->UpdateSubresource(
+	//	m_CpConstantBuffer.Get(),
+	//	0,
+	//	NULL,
+	//	&m_CbParticle,
+	//	0,
+	//	0
+	//);
+	//CDirectXGraphics::GetInstance()->GetImmediateContext()->CSSetConstantBuffers(
+	//	7,
+	//	1,
+	//	m_CpConstantBuffer.GetAddressOf()
+	//);
+
+	////--------------------------------------------------------------------------------------------------------------------------
+}
+
+void ParticleSystem::UpdateSRV(){
+	ID3D11Device* device = CDirectXGraphics::GetInstance()->GetDXDevice();
+
+	InState.iPosition = { m_ParticleState.m_Position[0],m_ParticleState.m_Position[1],m_ParticleState.m_Position[2],0 };
+	InState.iAngle = { m_ParticleState.m_Angle[0],m_ParticleState.m_Angle[1] ,m_ParticleState.m_Angle[2] ,0 };
+	InState.iAngleRange = m_ParticleState.m_AngleRange;
+	InState.iDuaringTime = m_ParticleState.m_DuaringTime;
+	InState.iMaxLifeTime = m_ParticleState.m_MaxLifeTime;
+	InState.iSpeed = m_ParticleState.m_Speed;
+	InState.iAccel = m_ParticleState.m_Accel;
+	InState.iRotateSpeed = m_ParticleState.m_RotateSpeed;
+	InState.isActive = m_ParticleState.isActive;
+	InState.isLooping = m_ParticleState.isLooping;
+	InState.iParticleNum = m_ParticleState.m_ParticleNum;
+	InState.iTime = 1.0f / FPS;
+	InState.iTargetPosition = m_TargetPos;
+	InState.isChaser = m_ParticleState.isChaser;
+	InState.iMinChaseAngle = m_ParticleState.m_MinChaseAngle;
+	InState.iMaxChaseAngle = m_ParticleState.m_MaxChaseAngle;
+	InState.iGravity = { m_ParticleState.m_Gravity[0],m_ParticleState.m_Gravity[1],m_ParticleState.m_Gravity[2] };
+	InState.UseGravity = m_ParticleState.UseGravity;
+
+	if (m_CpSRV != nullptr) {
+		m_CpSRV.Reset();
+	}
+	if (m_CpBuf != nullptr) {
+		m_CpBuf.Reset();
+	}
+	//入力用バッファを更新
+	CreateStructuredBuffer(device, sizeof(m_ParticleSRVState), 1, &InState, m_CpBuf.GetAddressOf());
+	CreateShaderResourceView(device, m_CpBuf.Get(), m_CpSRV.GetAddressOf());
 }
 
 XMFLOAT4 ParticleSystem::RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d) {
@@ -433,16 +470,14 @@ void ParticleSystem::StartGPUParticle(){
 	ID3D11DeviceContext* devicecontext = CDirectXGraphics::GetInstance()->GetImmediateContext();
 	m_ParticleNum = m_ParticleState.m_ParticleNum;
 	if (m_CpUAV != nullptr) {
-		m_CpUAV->Release();
-		m_CpUAV = nullptr;
+		m_CpUAV.Reset();
 	}
 	if (m_CpResult != nullptr) {
-		m_CpResult->Release();
-		m_CpResult = nullptr;
+		m_CpResult.Reset();
 	}
-	////入力用バッファを更新
-	//CreateStructuredBuffer(device, sizeof(m_ParticleSRVState), m_ParticleState.m_ParticleNum, nullptr, &m_pBuf);
-	//CreateShaderResourceView(device, m_pBuf, &m_pSRV);
+
+	//入力用バッファを更新
+	UpdateSRV();
 	//出力用バッファを更新
 	CreateStructuredBuffer(device, sizeof(m_ParticleUAVState), m_ParticleNum, nullptr, m_CpResult.GetAddressOf());
 	CreateUnOrderAccessView(device, m_CpResult.Get(), m_CpUAV.GetAddressOf());
@@ -580,6 +615,7 @@ void ParticleSystem::AddParticle(m_Particles* AddParticle) {
 
 	newParticle.ZAngle = rand() % 360;
 	
+	newParticle.CountTime = 0;
 	//パーティクルを追加
 	m_ParticleVec.push_back(newParticle);
 

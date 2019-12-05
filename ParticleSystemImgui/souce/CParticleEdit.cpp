@@ -41,7 +41,7 @@ void ParticleEditor::UnInit() {
 
 //更新
 void ParticleEditor::Update() {
-	m_TargetBillBoard.SetPosition(m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2]);
+	m_TargetBillBoard.SetPosition(m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2]);//ターゲット
 
 	if (m_ViewParticleSystem != nullptr) {
 		m_ViewParticleSystem->SetTargetPos(m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2]);
@@ -52,7 +52,7 @@ void ParticleEditor::Update() {
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	m_ParticleSystems.Update();
+	m_ParticleSystems.Update();//パーティクルシステム
 
 	if (m_ParticleSystems.getParticleSystemCount() <= 0) {
 		m_ViewParticleSystem = nullptr;
@@ -62,10 +62,11 @@ void ParticleEditor::Update() {
 void ParticleEditor::Draw() {
 	m_ParticleSystems.Draw();
 
-	m_TargetBillBoard.DrawBillBoardAdd(CCamera::GetInstance()->GetCameraMatrix());
+	m_TargetBillBoard.DrawBillBoardAdd(CCamera::GetInstance()->GetCameraMatrix());//ターゲット
 
-	ImGuiDrawMain();
+	ImGuiDrawMain();//総合UI
 
+	//パーティクルシステムごとのUI
 	if (m_ViewParticleSystem != nullptr) {
 		ImGuiDrawofParticleSystem(m_ViewParticleSystem);
 	}
@@ -199,6 +200,7 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	CHECK(ImGui::SliderFloat("MaxLifeTime", &ViewState.m_MaxLifeTime, 0.0f, 10.0f));//最大生存時間
 	CHECK(ImGui::SliderFloat("Size", &ViewState.m_Size, 0.0f, 100.0f));//粒子の大きさ
 	CHECK(ImGui::SliderFloat("Speed", &ViewState.m_Speed, 0.0f, 100.0f));//移動速度
+	CHECK(ImGui::InputFloat("Accel", &ViewState.m_Accel));
 	CHECK(ImGui::SliderInt("RotateSpeed", &ViewState.m_RotateSpeed, 0, 100));//回転速度
 
 	//GPUパーティクルのチェックボックスがfalse->trueに変更されたらStart関数呼び出し
@@ -229,7 +231,7 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 
 	if (CHECK_RESULT) {//数値が変更されていたら反映
 		pParticleSystem_->SetParticleSystemState(&ViewState);
-		pParticleSystem_->UpdateConstantBuffer();
+		pParticleSystem_->UpdateSRV();
 	}
 	//エミッター
 	int NextSystemNumber = ViewState.m_NextSystemNumber;

@@ -31,6 +31,7 @@ typedef struct {
 	float m_Size            = 20;//大きさ
 	float m_MaxLifeTime     = 10;//最長生存時間
 	float m_Speed           = 50;//速度
+	float m_Accel = 0;
 	int m_ParticleNum       = 256;//生成するパーティクル個数 //即時反映されない
 
 	float m_Color[4]        = {1.0f,1.0f,1.0f,1.0f};//パーティクルの色
@@ -69,7 +70,25 @@ private:
 
 	//コンピュートシェーダーに送る値
 	struct m_ParticleSRVState {
-		int isInitialied = 0;
+		XMFLOAT4 iPosition;//全体の位置
+		XMINT4 iAngle;//角度
+		int iAngleRange;//発射範囲
+		float iDuaringTime;//継続時間
+		float iMaxLifeTime;//最大生存時間
+		float iSpeed;//速度
+		float iAccel;
+		int iRotateSpeed;//回転速度
+		int isActive;//有効かどうか
+		int isLooping;//ループするかどうか
+		int iParticleNum;//パーティクルの個数
+		float iTime;//経過時間
+		XMFLOAT3 iTargetPosition;//追いかけるターゲットの座標
+		int isChaser;
+		int iMinChaseAngle;
+		int iMaxChaseAngle;
+
+		int UseGravity;
+		XMFLOAT3 iGravity;
 	};
 	m_ParticleSRVState InState;
 
@@ -90,26 +109,26 @@ private:
 	//パーティクル全体共通のパラメータ
 	//コンスタントバッファに流す
 	struct m_ConstantBufferParticle {
-		XMFLOAT4 iPosition;//全体の位置
-		XMINT4 iAngle;//角度
-		int iAngleRange;//発射範囲
-		float iDuaringTime;//継続時間
-		float iMaxLifeTime;//最大生存時間
-		float iSpeed;//速度
-		int iRotateSpeed;//回転速度
-		int isActive;//有効かどうか
-		int isLooping;//ループするかどうか
-		int iParticleNum;//パーティクルの個数
-		float iTime;//経過時間
-		XMFLOAT3 iTargetPosition;//追いかけるターゲットの座標
-		int isChaser;
-		int iMinChaseAngle;
-		int iMaxChaseAngle;
+		//XMFLOAT4 iPosition;//全体の位置
+		//XMINT4 iAngle;//角度
+		//int iAngleRange;//発射範囲
+		//float iDuaringTime;//継続時間
+		//float iMaxLifeTime;//最大生存時間
+		//float iSpeed;//速度
+		//int iRotateSpeed;//回転速度
+		//int isActive;//有効かどうか
+		//int isLooping;//ループするかどうか
+		//int iParticleNum;//パーティクルの個数
+		//float iTime;//経過時間
+		//XMFLOAT3 iTargetPosition;//追いかけるターゲットの座標
+		//int isChaser;
+		//int iMinChaseAngle;
+		//int iMaxChaseAngle;
 
-		int UseGravity;
-		XMFLOAT3 iGravity;
-		//バイト数調整用
-		float Padding = 0;
+		//int UseGravity;
+		//XMFLOAT3 iGravity;
+		////バイト数調整用
+		//float Padding = 0;
 
 	};
 	m_ConstantBufferParticle m_CbParticle;
@@ -140,6 +159,7 @@ protected:
 	ID3D11Buffer* m_pResult                       = nullptr;//出力バッファ
 	ID3D11Buffer* m_ConstantBuffer                = nullptr;//コンスタントバッファ
 	ID3D11Buffer* getbuf                          = nullptr;//バッファコピー用
+	ID3D11Buffer* m_pbuf                          = nullptr;//シェーダーリソースビュー用バッファ
 	ID3D11ShaderResourceView* m_pSRV              = nullptr;//シェーダーリソースビュー
 	ID3D11UnorderedAccessView* m_pUAV             = nullptr;//アンオーダードアクセスビュー
 	D3D11_MAPPED_SUBRESOURCE m_MappedSubResource;//コンピュートシェーダーから返ってくる数値
@@ -147,6 +167,7 @@ protected:
 	ComPtr<ID3D11Buffer> m_CpResult               = nullptr;//出力バッファ
 	ComPtr<ID3D11Buffer> m_CpConstantBuffer       = nullptr;//コンスタントバッファ
 	ComPtr<ID3D11Buffer> m_CpGetBuf               = nullptr;//バッファコピー用
+	ComPtr<ID3D11Buffer> m_CpBuf                  = nullptr;//シェーダーリソースビュー用バッファ
 	ComPtr<ID3D11ShaderResourceView> m_CpSRV      = nullptr;//シェーダーリソースビュー
 	ComPtr<ID3D11UnorderedAccessView> m_CpUAV     = nullptr;//アンオーダードアクセスビュー
 public:
@@ -173,6 +194,7 @@ public:
 	void UpdateNomal();
 	void UpdateComputeShader();
 	void UpdateConstantBuffer();
+	void UpdateSRV();
 
 	XMFLOAT4 RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d);
 	//パーティクル発生開始
