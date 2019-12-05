@@ -23,9 +23,7 @@ typedef struct {
 	//座標
 	float m_Position[3] = { 0,0,0 };
 	//角度
-	int m_AngleX            = 0;
-	int m_AngleY            = 0;
-	int m_AngleZ            = 0;
+	int m_Angle[3] = { 0,0,0 };
 
 	int m_AngleRange        = 360;//発生させる角度の範囲
 
@@ -43,9 +41,8 @@ typedef struct {
 	bool isGPUParticle      = false;//GPUパーティクルONOFF
 	bool UseGravity = false;
 
-	float m_GravityX = 0;
-	float m_GravityY = 0;
-	float m_GravityZ = 0;
+	float m_Gravity[3] = { 0,0,0 };
+
 	//ホーミング角度制限
 	int m_MinChaseAngle = 0;
 	int m_MaxChaseAngle = 5;

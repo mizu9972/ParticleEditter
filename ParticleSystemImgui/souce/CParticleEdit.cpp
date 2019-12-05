@@ -186,15 +186,11 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	CheckDataChange = 0;
 
 	//座標
-	CHECK(ImGui::SliderFloat3("", ViewState.m_Position, -100.0f, 100.0f));
+	CHECK(ImGui::SliderFloat3("Position", ViewState.m_Position, -100.0f, 100.0f));
 
 	//放出角度
-	if (ImGui::TreeNode("Angle")) {
-		CHECK(ImGui::SliderInt("X", &ViewState.m_AngleX, 1, 360));
-		CHECK(ImGui::SliderInt("Y", &ViewState.m_AngleY, 1, 360));
-		CHECK(ImGui::SliderInt("Z", &ViewState.m_AngleZ, 1, 360));
-		ImGui::TreePop();
-	}
+	CHECK(ImGui::SliderInt3("Angle", ViewState.m_Angle, 1, 360));
+
 	//放出角度範囲
 	CHECK(ImGui::SliderInt("AngleRange", &ViewState.m_AngleRange, 1, 360));
 
@@ -223,9 +219,7 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 
 	CHECK(ImGui::Checkbox("useGravity", &ViewState.UseGravity));
 	if (ViewState.UseGravity) {
-		CHECK(ImGui::InputFloat("X", &ViewState.m_GravityX));
-		CHECK(ImGui::InputFloat("Y", &ViewState.m_GravityY));
-		CHECK(ImGui::InputFloat("Z", &ViewState.m_GravityZ));
+		CHECK(ImGui::InputFloat3("Gravity", ViewState.m_Gravity));
 	}
 
 	CHECK(ImGui::Checkbox("isLooping", &ViewState.isLooping));//ループさせるかどうか

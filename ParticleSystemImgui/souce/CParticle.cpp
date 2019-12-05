@@ -243,9 +243,9 @@ void ParticleSystem::UpdateNomal() {
 
 		//重力計算
 		if (m_ParticleState.UseGravity) {
-			m_ParticleVec[ParticleNum].Matrix._31 += m_ParticleState.m_GravityX / 100.0f;
-			m_ParticleVec[ParticleNum].Matrix._32 += m_ParticleState.m_GravityY / 100.0f;
-			m_ParticleVec[ParticleNum].Matrix._33 += m_ParticleState.m_GravityZ / 100.0f;
+			m_ParticleVec[ParticleNum].Matrix._31 += m_ParticleState.m_Gravity[0] / 100.0f;
+			m_ParticleVec[ParticleNum].Matrix._32 += m_ParticleState.m_Gravity[1] / 100.0f;
+			m_ParticleVec[ParticleNum].Matrix._33 += m_ParticleState.m_Gravity[2] / 100.0f;
 		}
 
 
@@ -319,7 +319,7 @@ void ParticleSystem::UpdateConstantBuffer() {
 	//コンスタントバッファ更新-------------------------------------------------------------------------------------------------------
 	{
 		m_CbParticle.iPosition = { m_ParticleState.m_Position[0], m_ParticleState.m_Position[1],m_ParticleState.m_Position[2],0 };
-		m_CbParticle.iAngle = { m_ParticleState.m_AngleX,    m_ParticleState.m_AngleY,   m_ParticleState.m_AngleZ,   0 };
+		m_CbParticle.iAngle = { m_ParticleState.m_Angle[0],    m_ParticleState.m_Angle[1],   m_ParticleState.m_Angle[2],   0 };
 		m_CbParticle.iAngleRange = m_ParticleState.m_AngleRange;
 		m_CbParticle.iDuaringTime = m_ParticleState.m_DuaringTime;
 		m_CbParticle.iMaxLifeTime = m_ParticleState.m_MaxLifeTime;
@@ -333,7 +333,7 @@ void ParticleSystem::UpdateConstantBuffer() {
 		m_CbParticle.isChaser = m_ParticleState.isChaser;
 		m_CbParticle.iMinChaseAngle = m_ParticleState.m_MinChaseAngle;
 		m_CbParticle.iMaxChaseAngle = m_ParticleState.m_MaxChaseAngle;
-		m_CbParticle.iGravity = { m_ParticleState.m_GravityX,m_ParticleState.m_GravityY,m_ParticleState.m_GravityZ };
+		m_CbParticle.iGravity = { m_ParticleState.m_Gravity[0],m_ParticleState.m_Gravity[1],m_ParticleState.m_Gravity[2] };
 		m_CbParticle.UseGravity = m_ParticleState.UseGravity;
 	}
 	CDirectXGraphics::GetInstance()->GetImmediateContext()->UpdateSubresource(
@@ -546,9 +546,9 @@ void ParticleSystem::AddParticle(m_Particles* AddParticle) {
 
 	//ランダムな角度をそれぞれ設定
 	//指定軸回転のクォータニオンを生成
-	DX11QtRotationAxis(qtx, axisX, (float)(rand() % m_ParticleState.m_AngleRange) + m_ParticleState.m_AngleX);
-	DX11QtRotationAxis(qty, axisY, (float)(rand() % m_ParticleState.m_AngleRange) + m_ParticleState.m_AngleY);
-	DX11QtRotationAxis(qtz, axisZ, (float)(rand() % m_ParticleState.m_AngleRange) + m_ParticleState.m_AngleZ);
+	DX11QtRotationAxis(qtx, axisX, (float)(rand() % m_ParticleState.m_AngleRange) + m_ParticleState.m_Angle[0]);
+	DX11QtRotationAxis(qty, axisY, (float)(rand() % m_ParticleState.m_AngleRange) + m_ParticleState.m_Angle[1]);
+	DX11QtRotationAxis(qtz, axisZ, (float)(rand() % m_ParticleState.m_AngleRange) + m_ParticleState.m_Angle[2]);
 
 	//クォータニオンを正規化
 
