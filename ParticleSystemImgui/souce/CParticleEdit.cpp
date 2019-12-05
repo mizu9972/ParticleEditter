@@ -186,12 +186,8 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	CheckDataChange = 0;
 
 	//座標
-	if (ImGui::TreeNode("Position")) {
-		CHECK(ImGui::SliderFloat("X", &ViewState.m_PositionX, -100.0f, 100.0f));
-		CHECK(ImGui::SliderFloat("Y", &ViewState.m_PositionY, -100.0f, 100.0f));
-		CHECK(ImGui::SliderFloat("Z", &ViewState.m_PositionZ, -100.0f, 100.0f));
-		ImGui::TreePop();
-	}
+	CHECK(ImGui::SliderFloat3("", ViewState.m_Position, -100.0f, 100.0f));
+
 	//放出角度
 	if (ImGui::TreeNode("Angle")) {
 		CHECK(ImGui::SliderInt("X", &ViewState.m_AngleX, 1, 360));
@@ -209,7 +205,6 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	CHECK(ImGui::SliderFloat("Speed", &ViewState.m_Speed, 0.0f, 100.0f));//移動速度
 	CHECK(ImGui::SliderInt("RotateSpeed", &ViewState.m_RotateSpeed, 0, 100));//回転速度
 
-
 	//GPUパーティクルのチェックボックスがfalse->trueに変更されたらStart関数呼び出し
 	if (ImGui::Checkbox("GPUParticle", &ViewState.isGPUParticle)){//GPUパーティクル) {//変更判定
 		if (ViewState.isGPUParticle == true) { //true判定
@@ -220,6 +215,19 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	}
 	
 	CHECK(ImGui::Checkbox("isChaser", &ViewState.isChaser));//オブジェクトを追いかけるか
+
+	if (ViewState.isChaser) {
+		CHECK(ImGui::SliderInt("minAngle", &ViewState.m_MinChaseAngle, 0, 360));
+		CHECK(ImGui::SliderInt("maxAngle", &ViewState.m_MaxChaseAngle, 0, 360));
+	}
+
+	CHECK(ImGui::Checkbox("useGravity", &ViewState.UseGravity));
+	if (ViewState.UseGravity) {
+		CHECK(ImGui::InputFloat("X", &ViewState.m_GravityX));
+		CHECK(ImGui::InputFloat("Y", &ViewState.m_GravityY));
+		CHECK(ImGui::InputFloat("Z", &ViewState.m_GravityZ));
+	}
+
 	CHECK(ImGui::Checkbox("isLooping", &ViewState.isLooping));//ループさせるかどうか
 	CHECK(ImGui::Checkbox("isActive", &ViewState.isActive));//発生させるかどうか
 

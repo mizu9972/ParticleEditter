@@ -4,7 +4,7 @@
 
 
 #define THREAD_NUM 256
-#define PARTICLE_NUM_PER_THREAD 32 //CParticle‚Æ“¯‚¶’è”‚ğéŒ¾
+#define PARTICLE_NUM_PER_THREAD 64 //CParticle‚Æ“¯‚¶’è”‚ğéŒ¾
 
 [numthreads(THREAD_NUM, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID )

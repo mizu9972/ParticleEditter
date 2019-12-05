@@ -13,7 +13,9 @@
 
 #define		SCREEN_X		1200
 #define		SCREEN_Y		600
-#define PARTICLE_NUM_PER_THREAD 32 //csParticle.hlsl内と同じ定数を宣言
+#define		PARTICLE_NUM_PER_THREAD (64) //csParticle.hlsl内と同じ定数を宣言
+#define		THREAD_NUM (256)
+
 #ifndef     ALIGN16
 #define     ALIGN16 _declspec(align(16))
 #endif
@@ -136,14 +138,15 @@ void ParticleSystem::InitComputeShader() {
 	ID3D11Device* device = CDirectXGraphics::GetInstance()->GetDXDevice();
 	ID3D11DeviceContext* devicecontext = CDirectXGraphics::GetInstance()->GetImmediateContext();	
 
-
-	//コンピュートシェーダーを作成
-	//CreateComputeShader(device, "Shader/csParticle.hlsl", "main", "cs_5_0", &m_ComputeShader);
-	//CreateComputeShader(device, "Shader/csInitParticle.hlsl", "main", "cs_5_0", &m_InitComputeShader);
+	m_CpSRV.Attach(m_pSRV);
+	m_CpUAV.Attach(m_pUAV);
+	m_CpResult.Attach(m_pResult);
+	m_CpConstantBuffer.Attach(m_ConstantBuffer);
+	m_CpGetBuf.Attach(getbuf);
 
 	CreateConstantBuffer(CDirectXGraphics::GetInstance()->GetDXDevice(),
 		sizeof(m_ConstantBufferParticle),
-		&m_ConstantBuffer);
+		&m_CpConstantBuffer);
 
 }
 
@@ -161,16 +164,16 @@ void ParticleSystem::UpdateComputeShader() {
 	ID3D11DeviceContext* devicecontext = CDirectXGraphics::GetInstance()->GetImmediateContext();
 
 	//コンピュートシェーダーを実行
-	const UINT dispatchX = UINT(ceil(float(m_ParticleNum) / float(256 * PARTICLE_NUM_PER_THREAD)));
-	RunComputeShader(devicecontext, m_ComputeShader, 1, &m_pSRV, m_pUAV,dispatchX, 1, 1);
+	const UINT dispatchX = UINT(ceil(float(m_ParticleNum) / float(THREAD_NUM * PARTICLE_NUM_PER_THREAD)));
+	RunComputeShader(devicecontext, m_ComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(),dispatchX, 1, 1);
 
 	//データ受け取り
-	devicecontext->CopyResource(getbuf, m_pResult);//バッファコピー
-	devicecontext->Map(getbuf, 0, D3D11_MAP_READ, 0, &m_MappedSubResource);
+	devicecontext->CopyResource(m_CpGetBuf.Get() , m_CpResult.Get());//バッファコピー
+	devicecontext->Map(m_CpGetBuf.Get(), 0, D3D11_MAP_READ, 0, &m_MappedSubResource);
 
 	OutState = reinterpret_cast<m_ParticleUAVState*>(m_MappedSubResource.pData);//データ獲得
 
-	devicecontext->Unmap(getbuf, 0);
+	devicecontext->Unmap(m_CpGetBuf.Get(), 0);
 }
 
 void ParticleSystem::UpdateNomal() {
@@ -179,7 +182,6 @@ void ParticleSystem::UpdateNomal() {
 
 	//float lng;
 	XMFLOAT4 TargetQt;//ターゲット方向の姿勢
-	XMFLOAT4 Quaternion;
 	XMFLOAT3 TargetVector;
 
 	float Speed_ = m_ParticleState.m_Speed;
@@ -210,9 +212,12 @@ void ParticleSystem::UpdateNomal() {
 			float Dot;//２本のベクトルの内積値
 			TargetQt = RotationArc(ZDir, TargetVector, Dot);//２本のベクトルから為す角度とクォータニオンを求める
 			float AngleDiff = acosf(Dot);//ラジアン角度
-			float AngleMax = XM_PI * 5.0f / 180.0f;
+			float AngleMax = XM_PI * m_ParticleState.m_MaxChaseAngle / 180.0f;
+			float AngleMin = XM_PI * m_ParticleState.m_MinChaseAngle / 180.0f;
 			//パーティクルの姿勢を決定する
-			if (AngleMax >= AngleDiff) {
+			if (AngleMin > AngleDiff) {
+
+			}else if (AngleMax >= AngleDiff) {
 				//角度の差が更新できる角度より大きいか小さいか
 				DX11QtMul(m_Quaternion, m_Quaternion, TargetQt);
 			}
@@ -236,11 +241,18 @@ void ParticleSystem::UpdateNomal() {
 
 		m_ParticleVec[ParticleNum].CountTime += NowTime;
 
+		//重力計算
+		if (m_ParticleState.UseGravity) {
+			m_ParticleVec[ParticleNum].Matrix._31 += m_ParticleState.m_GravityX / 100.0f;
+			m_ParticleVec[ParticleNum].Matrix._32 += m_ParticleState.m_GravityY / 100.0f;
+			m_ParticleVec[ParticleNum].Matrix._33 += m_ParticleState.m_GravityZ / 100.0f;
+		}
+
+
 		//速度分移動させる
 		m_ParticleVec[ParticleNum].Matrix._41 += m_ParticleVec[ParticleNum].Matrix._31 * Speed_ * NowTime;
 		m_ParticleVec[ParticleNum].Matrix._42 += m_ParticleVec[ParticleNum].Matrix._32 * Speed_ * NowTime;
 		m_ParticleVec[ParticleNum].Matrix._43 += m_ParticleVec[ParticleNum].Matrix._33 * Speed_ * NowTime;
-
 
 
 		//生存時間減少
@@ -306,7 +318,7 @@ void ParticleSystem::UpdateNomal() {
 void ParticleSystem::UpdateConstantBuffer() {
 	//コンスタントバッファ更新-------------------------------------------------------------------------------------------------------
 	{
-		m_CbParticle.iPosition = { m_ParticleState.m_PositionX, m_ParticleState.m_PositionY,m_ParticleState.m_PositionZ,0 };
+		m_CbParticle.iPosition = { m_ParticleState.m_Position[0], m_ParticleState.m_Position[1],m_ParticleState.m_Position[2],0 };
 		m_CbParticle.iAngle = { m_ParticleState.m_AngleX,    m_ParticleState.m_AngleY,   m_ParticleState.m_AngleZ,   0 };
 		m_CbParticle.iAngleRange = m_ParticleState.m_AngleRange;
 		m_CbParticle.iDuaringTime = m_ParticleState.m_DuaringTime;
@@ -319,9 +331,13 @@ void ParticleSystem::UpdateConstantBuffer() {
 		m_CbParticle.iTime = 1.0f / FPS;
 		m_CbParticle.iTargetPosition = m_TargetPos;
 		m_CbParticle.isChaser = m_ParticleState.isChaser;
+		m_CbParticle.iMinChaseAngle = m_ParticleState.m_MinChaseAngle;
+		m_CbParticle.iMaxChaseAngle = m_ParticleState.m_MaxChaseAngle;
+		m_CbParticle.iGravity = { m_ParticleState.m_GravityX,m_ParticleState.m_GravityY,m_ParticleState.m_GravityZ };
+		m_CbParticle.UseGravity = m_ParticleState.UseGravity;
 	}
 	CDirectXGraphics::GetInstance()->GetImmediateContext()->UpdateSubresource(
-		m_ConstantBuffer,
+		m_CpConstantBuffer.Get(),
 		0,
 		NULL,
 		&m_CbParticle,
@@ -331,7 +347,7 @@ void ParticleSystem::UpdateConstantBuffer() {
 	CDirectXGraphics::GetInstance()->GetImmediateContext()->CSSetConstantBuffers(
 		7,
 		1,
-		&m_ConstantBuffer
+		m_CpConstantBuffer.GetAddressOf()
 	);
 
 	//--------------------------------------------------------------------------------------------------------------------------
@@ -416,48 +432,32 @@ void ParticleSystem::StartGPUParticle(){
 	ID3D11Device* device = CDirectXGraphics::GetInstance()->GetDXDevice();
 	ID3D11DeviceContext* devicecontext = CDirectXGraphics::GetInstance()->GetImmediateContext();
 	m_ParticleNum = m_ParticleState.m_ParticleNum;
-	if (m_pUAV != nullptr) {
-		m_pUAV->Release();
-		m_pUAV = nullptr;
+	if (m_CpUAV != nullptr) {
+		m_CpUAV->Release();
+		m_CpUAV = nullptr;
 	}
-	if (m_pResult != nullptr) {
-		m_pResult->Release();
-		m_pResult = nullptr;
+	if (m_CpResult != nullptr) {
+		m_CpResult->Release();
+		m_CpResult = nullptr;
 	}
 	////入力用バッファを更新
 	//CreateStructuredBuffer(device, sizeof(m_ParticleSRVState), m_ParticleState.m_ParticleNum, nullptr, &m_pBuf);
 	//CreateShaderResourceView(device, m_pBuf, &m_pSRV);
 	//出力用バッファを更新
-	CreateStructuredBuffer(device, sizeof(m_ParticleUAVState), m_ParticleNum, nullptr, &m_pResult);
-	CreateUnOrderAccessView(device, m_pResult, &m_pUAV);
+	CreateStructuredBuffer(device, sizeof(m_ParticleUAVState), m_ParticleNum, nullptr, m_CpResult.GetAddressOf());
+	CreateUnOrderAccessView(device, m_CpResult.Get(), m_CpUAV.GetAddressOf());
 
-	////コンピュートシェーダーを実行
-	//RunComputeShader(devicecontext, m_InitComputeShader, 1, &m_pSRV, m_pUAV, m_ParticleState.m_ParticleNum, 1, 1);
-	
-	getbuf = CreateAndCopyToBuffer(device, devicecontext, m_pResult);
+	m_CpGetBuf = CreateAndCopyToBuffer(device, devicecontext, m_CpResult.Get());
 	D3D11_MAPPED_SUBRESOURCE MappedSubResource;
-	devicecontext->Map(getbuf, 0, D3D11_MAP_READ, 0, &MappedSubResource);
+	devicecontext->Map(m_CpGetBuf.Get(), 0, D3D11_MAP_READ, 0, &MappedSubResource);
 
-	//OutState = reinterpret_cast<m_ParticleUAVState*>(MappedSubResource.pData);
+	devicecontext->Unmap(m_CpGetBuf.Get(), 0);
 	////-------------------------------------------------
 
 	if (m_ParticleVec.empty() != true) {
 		m_ParticleVec.clear();
 		m_ParticleVec.shrink_to_fit();
 	}
-	//if (m_ParticleUAVvec.empty() != true) {
-	//	m_ParticleUAVvec.clear();
-	//	m_ParticleUAVvec.shrink_to_fit();
-	//}
-
-	//for (int Count = 0; Count < m_ParticleState.m_ParticleNum; Count++) {
-	//	m_ParticleUAVState *newParticle = new m_ParticleUAVState;
-
-	//	
-	//	newParticle->isInitialized = false;
-
-	//	m_ParticleUAVvec.emplace_back(newParticle);
-	//}
 }
 
 
@@ -506,37 +506,6 @@ void ParticleSystem::UnInit() {
 	if (Particles != nullptr) {
 		delete[] Particles;
 		Particles = nullptr;
-	}
-
-	if (m_InitComputeShader != nullptr) {
-		m_InitComputeShader->Release();
-		m_InitComputeShader = nullptr;
-	}
-
-
-	if (m_pBuf != nullptr) {
-		m_pBuf->Release();
-		m_pBuf = nullptr;
-	}
-
-	if (m_pResult != nullptr) {
-		m_pResult->Release();
-		m_pResult = nullptr;
-	}
-
-	if (m_ConstantBuffer != nullptr) {
-		m_ConstantBuffer->Release();
-		m_ConstantBuffer = nullptr;
-	}
-
-	if (m_pSRV != nullptr) {
-		m_pSRV->Release();
-		m_pSRV = nullptr;
-	}
-
-	if (m_pResult != nullptr) {
-		m_pResult->Release();
-		m_pResult = nullptr;
 	}
 
 	if (m_ParticleVec.empty() != true) {
@@ -597,9 +566,9 @@ void ParticleSystem::AddParticle(m_Particles* AddParticle) {
 	DX11MtxFromQt(newParticle.Matrix, tempqt3);
 
 
-	newParticle.Matrix._41 = m_ParticleState.m_PositionX;
-	newParticle.Matrix._42 = m_ParticleState.m_PositionY;
-	newParticle.Matrix._43 = m_ParticleState.m_PositionZ;
+	newParticle.Matrix._41 = m_ParticleState.m_Position[0];
+	newParticle.Matrix._42 = m_ParticleState.m_Position[1];
+	newParticle.Matrix._43 = m_ParticleState.m_Position[2];
 
 
 

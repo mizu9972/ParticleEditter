@@ -21,10 +21,7 @@ typedef struct {
 	char m_TextureName[512] = "assets/ParticleTexture/particle.png";//テクスチャの名前
 
 	//座標
-	float m_PositionX       = 0;
-	float m_PositionY       = 0;
-	float m_PositionZ       = 0;
-
+	float m_Position[3] = { 0,0,0 };
 	//角度
 	int m_AngleX            = 0;
 	int m_AngleY            = 0;
@@ -34,8 +31,8 @@ typedef struct {
 
 	float m_DuaringTime     = 10;//発生時間
 	float m_Size            = 20;//大きさ
-	float m_MaxLifeTime     = 1;//最長生存時間
-	float m_Speed           = 30;//速度
+	float m_MaxLifeTime     = 10;//最長生存時間
+	float m_Speed           = 50;//速度
 	int m_ParticleNum       = 256;//生成するパーティクル個数 //即時反映されない
 
 	float m_Color[4]        = {1.0f,1.0f,1.0f,1.0f};//パーティクルの色
@@ -44,8 +41,15 @@ typedef struct {
 	bool isActive           = true;//Startメソッドと同時に起動するかどうか(他のパーティクルシステムの後から発生させる場合はfalse)
 	bool isLooping          = true;//ループするかどうか
 	bool isGPUParticle      = false;//GPUパーティクルONOFF
+	bool UseGravity = false;
 
-	//ParticleSystem* m_NextParticleSystem = nullptr;
+	float m_GravityX = 0;
+	float m_GravityY = 0;
+	float m_GravityZ = 0;
+	//ホーミング角度制限
+	int m_MinChaseAngle = 0;
+	int m_MaxChaseAngle = 5;
+
 	int m_SystemNumber;//自身の番号(mapで管理するkeyになる)
 	int m_NextSystemNumber = -1;
 }t_ParticleSystemState;
@@ -84,7 +88,6 @@ private:
 		int ZAngle        = 0;      //回転角度
 		int RandNum       = 0;      //ランダムに設定される数値
 	};
-	//std::vector<m_ParticleUAVState*> m_ParticleUAVvec;
 	m_ParticleUAVState* OutState;
 
 	//パーティクル全体共通のパラメータ
@@ -103,11 +106,14 @@ private:
 		float iTime;//経過時間
 		XMFLOAT3 iTargetPosition;//追いかけるターゲットの座標
 		int isChaser;
+		int iMinChaseAngle;
+		int iMaxChaseAngle;
 
+		int UseGravity;
+		XMFLOAT3 iGravity;
 		//バイト数調整用
 		float Padding = 0;
-		float Padding1 = 0;
-		float Padding2 = 0;
+
 	};
 	m_ConstantBufferParticle m_CbParticle;
 
@@ -134,15 +140,18 @@ protected:
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 	//コンピュートシェーダー関連
 	ID3D11ComputeShader* m_ComputeShader          = nullptr;//コンピュートシェーダー
-	//ComPtr<ID3D11ComputeShader> m_ComputeShader = nullptr;//コンピュートシェーダー
-	ID3D11ComputeShader* m_InitComputeShader      = nullptr;//初期化コンピュートシェーダー
-	ID3D11Buffer* m_pBuf                          = nullptr;//入力バッファ
 	ID3D11Buffer* m_pResult                       = nullptr;//出力バッファ
 	ID3D11Buffer* m_ConstantBuffer                = nullptr;//コンスタントバッファ
-	ID3D11Buffer* getbuf = nullptr;//バッファコピー用
-	D3D11_MAPPED_SUBRESOURCE m_MappedSubResource;//コンピュートシェーダーから返ってくる数値
+	ID3D11Buffer* getbuf                          = nullptr;//バッファコピー用
 	ID3D11ShaderResourceView* m_pSRV              = nullptr;//シェーダーリソースビュー
 	ID3D11UnorderedAccessView* m_pUAV             = nullptr;//アンオーダードアクセスビュー
+	D3D11_MAPPED_SUBRESOURCE m_MappedSubResource;//コンピュートシェーダーから返ってくる数値
+	//comポインタ宣言
+	ComPtr<ID3D11Buffer> m_CpResult               = nullptr;//出力バッファ
+	ComPtr<ID3D11Buffer> m_CpConstantBuffer       = nullptr;//コンスタントバッファ
+	ComPtr<ID3D11Buffer> m_CpGetBuf               = nullptr;//バッファコピー用
+	ComPtr<ID3D11ShaderResourceView> m_CpSRV      = nullptr;//シェーダーリソースビュー
+	ComPtr<ID3D11UnorderedAccessView> m_CpUAV     = nullptr;//アンオーダードアクセスビュー
 public:
 	ParticleSystem() {};
 	ParticleSystem(t_ParticleSystemState ParticleState_) {
@@ -194,11 +203,7 @@ public:
 
 	//アクセスメソッド
 	//setter
-	void SetSize(float Size_);
-	void SetLifeTime(float LifeTime_);
-	void SetSpeed(float Speed_);
 	void SetName(const char*  setName);//名前
-	void SetFileName(const char* FileName_);
 	ParticleSystem& SetActive(bool set);//有効無効
 	void SetTargetPos(float x, float y, float z);//ターゲット座標
 	void SetParticleSystemState(t_ParticleSystemState* SetState_);//構造体情報全体

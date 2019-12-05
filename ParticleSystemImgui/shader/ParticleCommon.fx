@@ -22,7 +22,11 @@ cbuffer ConstantBufferParticle : register(b7)
     float3 iTargetPos;
 
     int isChaser;
+    int iMinChaseAngle;
+    int iMaxChaseAngle;
 
+    int UseGravity;
+    float3 iGravity;
     //バイト数調整用
     //float Padding = 0;
     //float Padding1 = 0;
@@ -113,10 +117,14 @@ void TargetChase(uint DTid_)
 
     TargetQuoternion = RotationArc(ZDir, TargetVector, Dot);
     float AngleDiff = acos(Dot);//ラジアン角度
-    float AngleMax = (3.141592741f) * 5.0f / 180.0f;
-
+    float AngleMax = (3.141592741f) * iMaxChaseAngle / 180.0f;
+    float AngleMin = (3.141592741f) * iMinChaseAngle / 180.0f;
     //姿勢を決定
-    if (AngleMax >= AngleDiff)
+    if (AngleMin > AngleDiff)
+    {
+
+    }
+    else if (AngleMax >= AngleDiff)
     {
         Quoternion = MultiplyQuot(Quoternion, TargetQuoternion);
 
@@ -161,6 +169,15 @@ void ParticleUpdate(uint DTid_)
     {
         TargetChase(DTid_);
     }
+
+    if (UseGravity == 1)
+    {
+        g_OutState[DTid_].m_Matrix._13 += iGravity.x / 100.0f;
+        g_OutState[DTid_].m_Matrix._23 += iGravity.y / 100.0f;
+        g_OutState[DTid_].m_Matrix._33 += iGravity.z / 100.0f;
+
+    }
+
     //移動計算
     g_OutState[DTid_].m_Matrix._14 += g_OutState[DTid_].m_Matrix._13 * iSpeed * iTime;
     g_OutState[DTid_].m_Matrix._24 += g_OutState[DTid_].m_Matrix._23 * iSpeed * iTime;
