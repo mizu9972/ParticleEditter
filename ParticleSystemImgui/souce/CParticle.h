@@ -103,6 +103,7 @@ private:
 		int isInitialized = 0;		//初期化済みか
 		int ZAngle        = 0;      //回転角度
 		int RandNum       = 0;      //ランダムに設定される数値
+		//int isSystemAlive = 0;      //システム終了判定
 	};
 	m_ParticleUAVState* OutState;
 
@@ -155,7 +156,8 @@ protected:
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
 	//コンピュートシェーダー関連
-	ID3D11ComputeShader* m_ComputeShader          = nullptr;//コンピュートシェーダー
+	ID3D11ComputeShader* m_ComputeShader          = nullptr;//コンピュートシェーダー(ParticleSystemParentで初期化されたものを受け取る)
+	ID3D11ComputeShader* m_InitComputeShader      = nullptr;//初期化用コンピュートシェーダー(ParticleSystemParentで初期化されたものを受け取る)
 	ID3D11Buffer* m_pResult                       = nullptr;//出力バッファ
 	ID3D11Buffer* m_ConstantBuffer                = nullptr;//コンスタントバッファ
 	ID3D11Buffer* getbuf                          = nullptr;//バッファコピー用
@@ -179,6 +181,10 @@ public:
 		UnInit();
 	};
 	
+	enum class eComputeShaderType{
+		INIT,
+		UPDATE,
+	};
 	//基本処理メソッド
 
 	//初期化
@@ -199,6 +205,8 @@ public:
 	XMFLOAT4 RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d);
 	//パーティクル発生開始
 	void Start();//パーティクル発生開始
+	void (ParticleSystem::*fpStartFunc)() = &ParticleSystem::StartNomalParticle;
+	void StartNomalParticle();
 	void StartGPUParticle();
 	
 	//描画
@@ -228,7 +236,7 @@ public:
 	void SetParticleSystemState(t_ParticleSystemState* SetState_);//構造体情報全体
 	void SetNextParticleSystem(ParticleSystem* next);
 	void SetNextParticleSystem(int NextNumber);//次のパーティクルシステム番号
-	ParticleSystem& SetComputeShader(ID3D11ComputeShader* setShader);//コンピュートシェーダー
+	ParticleSystem& SetComputeShader(ID3D11ComputeShader* setShader, eComputeShaderType type);//コンピュートシェーダー
 	ParticleSystem& setSystemNumber(int setNumber);//自身のパーティクルシステム番号
 	//getter
 	t_ParticleSystemState GetState();//構造体情報全体

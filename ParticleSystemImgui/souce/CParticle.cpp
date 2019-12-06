@@ -161,12 +161,21 @@ void ParticleSystem::UpdateComputeShader() {
 	if (m_ParticleNum <= 0) {
 		return;
 	}
+	NowTime = 1.0f / FPS;
+	m_SystemLifeTime -= NowTime;
+	//パーティクル終了判定
+	if (m_SystemLifeTime <= 0) {
+		if (m_ParticleState.m_NextSystemNumber != -1) {
+			//次のパーティクル開始
+			Notify(this);
+		}
+	}
 
 	ID3D11DeviceContext* devicecontext = CDirectXGraphics::GetInstance()->GetImmediateContext();
 
 	//コンピュートシェーダーを実行
 	const UINT dispatchX = UINT(ceil(float(m_ParticleNum) / float(THREAD_NUM * PARTICLE_NUM_PER_THREAD)));
-	RunComputeShader(devicecontext, m_ComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(),dispatchX, 1, 1);
+	RunComputeShader(devicecontext, m_ComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(), dispatchX, 1, 1);
 
 	//データ受け取り
 	devicecontext->CopyResource(m_CpGetBuf.Get() , m_CpResult.Get());//バッファコピー
@@ -421,7 +430,10 @@ XMFLOAT4 ParticleSystem::RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d) {
 
 //パーティクル処理開始
 void ParticleSystem::Start() {
-	
+	(this->*fpStartFunc)();
+}
+
+void ParticleSystem::StartNomalParticle() {
 	//パーティクル生成
 	if (m_ParticleState.isActive == false) {
 		return;
@@ -434,14 +446,14 @@ void ParticleSystem::Start() {
 	ParticlesDeathCount = 0;
 
 	m_SystemLifeTime = m_ParticleState.m_DuaringTime;
-	
+
 	//変更されたステータス反映
 	{
 		m_MaxParticleNum = m_ParticleState.m_ParticleNum;
 	}
 	//パーティクル設定-------------------------------------------------------------------------
 	srand((int)NowTime);
-	
+
 	m_Particles* p_PickParticle;//操作するパーティクルのポインタ保存用
 
 	//パーティクルの初期設定する
@@ -459,8 +471,6 @@ void ParticleSystem::Start() {
 		p_PickParticle->isWaiting = true;
 	}
 	//--------------------------------------------------------------------------------------
-
-
 }
 
 void ParticleSystem::StartGPUParticle(){
@@ -482,13 +492,15 @@ void ParticleSystem::StartGPUParticle(){
 	CreateStructuredBuffer(device, sizeof(m_ParticleUAVState), m_ParticleNum, nullptr, m_CpResult.GetAddressOf());
 	CreateUnOrderAccessView(device, m_CpResult.Get(), m_CpUAV.GetAddressOf());
 
+	RunComputeShader(devicecontext, m_InitComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(), m_ParticleNum, 1, 1);
+
 	m_CpGetBuf = CreateAndCopyToBuffer(device, devicecontext, m_CpResult.Get());
 	D3D11_MAPPED_SUBRESOURCE MappedSubResource;
 	devicecontext->Map(m_CpGetBuf.Get(), 0, D3D11_MAP_READ, 0, &MappedSubResource);
-
 	devicecontext->Unmap(m_CpGetBuf.Get(), 0);
 	////-------------------------------------------------
 
+	m_SystemLifeTime = m_ParticleState.m_DuaringTime;
 	if (m_ParticleVec.empty() != true) {
 		m_ParticleVec.clear();
 		m_ParticleVec.shrink_to_fit();
@@ -707,8 +719,20 @@ void ParticleSystem::SetNextParticleSystem(int NextNumber) {
 	m_ParticleState.m_NextSystemNumber = NextNumber;
 }
 
-ParticleSystem& ParticleSystem::SetComputeShader(ID3D11ComputeShader* setShader) {
-	m_ComputeShader = setShader;
+ParticleSystem& ParticleSystem::SetComputeShader(ID3D11ComputeShader* setShader, eComputeShaderType type) {
+	switch (type)
+	{
+	case eComputeShaderType::INIT:
+		m_InitComputeShader = setShader;
+		break;
+
+	case eComputeShaderType::UPDATE:
+		m_ComputeShader = setShader;
+		break;
+
+	default:
+		break;
+	}
 	return *this;
 }
 
@@ -742,10 +766,12 @@ int ParticleSystem::getNextSystemNumber() {
 void ParticleSystem::ChangeGPUParticleMode(bool isGPUMode) {
 	//パーティクルの動作モードによって実行するメソッドを切り替える
 	if (isGPUMode) {
+		fpStartFunc = &ParticleSystem::StartGPUParticle;
 		fpUpdateFunc = &ParticleSystem::UpdateComputeShader;
 		fpDrawFunc = &ParticleSystem::GPUDraw;
 	}
 	else {
+		fpStartFunc = &ParticleSystem::StartNomalParticle;
 		fpUpdateFunc = &ParticleSystem::UpdateNomal;
 		fpDrawFunc = &ParticleSystem::DrawNomal;
 	}

@@ -180,7 +180,6 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	ImGui::SetNextWindowSize(ImVec2(200, SCREEN_Y), ImGuiSetCond_Once);
 
 	ImGui::Begin(pParticleSystem_->getName());
-	std::string str;
 
 	ImGui::InputText("",ViewState.m_Name,sizeof(ViewState.m_Name));
 
@@ -205,10 +204,11 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 
 	//GPUパーティクルのチェックボックスがfalse->trueに変更されたらStart関数呼び出し
 	if (ImGui::Checkbox("GPUParticle", &ViewState.isGPUParticle)){//GPUパーティクル) {//変更判定
-		if (ViewState.isGPUParticle == true) { //true判定
-			pParticleSystem_->StartGPUParticle();
-		}
+		//if (ViewState.isGPUParticle == true) { //true判定
+		//	pParticleSystem_->StartGPUParticle();
+		//}
 		pParticleSystem_->ChangeGPUParticleMode(ViewState.isGPUParticle);
+		pParticleSystem_->Start();
 		CheckDataChange += 1;
 	}
 	
@@ -249,6 +249,9 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 			if (ImGui::Button(iParticleSystem.second->getName())) {
 				pParticleSystem_->SetNextParticleSystem(iParticleSystem.second->getSystemNumber());
 			}
+		}
+		if (ImGui::Button("Null")) {
+			pParticleSystem_->SetNextParticleSystem(-1);
 		}
 		ImGui::TreePop();
 	}

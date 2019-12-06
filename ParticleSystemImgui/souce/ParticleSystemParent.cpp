@@ -5,6 +5,7 @@ void ParticleSystemParent::Init() {
 	ID3D11Device* device = CDirectXGraphics::GetInstance()->GetDXDevice();
 	//コンピュートシェーダーを作成
 	CreateComputeShader(device, "Shader/csParticle.hlsl", "main", "cs_5_0", &m_ComputeShader);
+	CreateComputeShader(device, "Shader/csInitParticle.hlsl", "main", "cs_5_0", &m_InitComputeShader);
 }
 void ParticleSystemParent::UnInit() {
 
@@ -44,7 +45,9 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem() {
 	//追加
 	ParticleSystem* newParticleSystem = new ParticleSystem;
 
-	newParticleSystem->SetComputeShader(m_ComputeShader)
+	newParticleSystem->
+		SetComputeShader(m_InitComputeShader, ParticleSystem::eComputeShaderType::INIT)
+		.SetComputeShader(m_ComputeShader, ParticleSystem::eComputeShaderType::UPDATE)
 		.Init();
 	newParticleSystem->setSystemNumber(m_ParticleCounter);
 		
@@ -59,7 +62,9 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 	//追加
 	ParticleSystem* newParticleSystem = new ParticleSystem;
 
-	newParticleSystem->SetComputeShader(m_ComputeShader)
+	newParticleSystem->
+		SetComputeShader(m_InitComputeShader,ParticleSystem::eComputeShaderType::INIT)
+		.SetComputeShader(m_ComputeShader,ParticleSystem::eComputeShaderType::UPDATE)
 		.Init(setState);
 	newParticleSystem->setSystemNumber(m_ParticleCounter);
 		
@@ -94,6 +99,7 @@ void ParticleSystemParent::DeleteParticleSystem() {
 	m_ParticleSystemDictionary.clear();
 }
 
+//パーティクルシステム終了通知
 void ParticleSystemParent::OnNotify(Subject* subject_) {
 	ParticleSystem* PSystem = reinterpret_cast<ParticleSystem*>(subject_);
  	int NextSystemNumber = PSystem->getNextSystemNumber();

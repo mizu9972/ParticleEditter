@@ -60,7 +60,6 @@ StructuredBuffer<ParticleSRVState> g_InState : register(t0);
 
 struct ParticleUAVState
 {
-
     Matrix m_Matrix; //行列
     float DelayTime; //発射待機時間
     float LifeTime; //生存時間
@@ -122,8 +121,8 @@ void TargetChase(uint DTid_)
     //行列全体が変更されるので座標を保存する
     float3 Position = float3(g_OutState[DTid_].m_Matrix._14, g_OutState[DTid_].m_Matrix._24, g_OutState[DTid_].m_Matrix._34);
     float3 ZDir = float3(g_OutState[DTid_].m_Matrix._13, g_OutState[DTid_].m_Matrix._23, g_OutState[DTid_].m_Matrix._33);
-    float3 TargetPos = /* -1.0f * */g_InState[0].iTargetPosition.xyz;
-    float3 TargetVector = -1.0f * (TargetPos.xyz - Position.xyz); //float3(TargetPos.x - Position.x, TargetPos.y - Position.y, TargetPos.z - Position.z); //距離計算
+    float3 TargetPos = g_InState[0].iTargetPosition.xyz;
+    float3 TargetVector = -1.0f * (TargetPos.xyz - Position.xyz); //距離計算
 
     matrix Mat = transpose(g_OutState[DTid_].m_Matrix);//行列を転置
 

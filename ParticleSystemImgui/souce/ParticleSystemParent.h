@@ -14,6 +14,7 @@ private:
 	t_ParticleSystemState DefaultParticleState;
 
 	ID3D11ComputeShader* m_ComputeShader = nullptr;
+	ID3D11ComputeShader* m_InitComputeShader = nullptr;
 
 	int m_ParticleCounter = 0;
 public:
@@ -28,7 +29,7 @@ public:
 
 	ParticleSystem* AddParticleSystem();
 	ParticleSystem* AddParticleSystem(t_ParticleSystemState* setState);
-	void RemoveParticleSystem(ParticleSystem* pParticleSystem_);///
+	void RemoveParticleSystem(ParticleSystem* pParticleSystem_);///•s—v
 	void RemoveParticleSystem(int removeKey);
 	void DeleteParticleSystem();
 
