@@ -178,6 +178,9 @@ void TargetChase(uint DTid_)
 void ParticleUpdate(uint DTid_)
 {
     float Speed;
+
+    //待機中なら処理しない
+    //待機中のパーティクルの待機時間が終わったら有効化
     if (g_OutState[DTid_].isWaiting == true)
     {
         g_OutState[DTid_].DelayTime -= g_InState[0].iTime;
@@ -190,11 +193,13 @@ void ParticleUpdate(uint DTid_)
         return;
     }
 
+    //ホーミング処理
     if (g_InState[0].isChaser == 1)
     {
         TargetChase(DTid_);
     }
 
+    //重力処理
     if (g_InState[0].UseGravity == 1)
     {
         g_OutState[DTid_].m_Matrix._13 += g_InState[0].iGravity.x / 100.0f;
@@ -202,15 +207,17 @@ void ParticleUpdate(uint DTid_)
         g_OutState[DTid_].m_Matrix._33 += g_InState[0].iGravity.z / 100.0f;
 
     }
-    g_OutState[DTid_].CountTime += 1.0f / 60.0f;
 
-    Speed = g_InState[0].iSpeed + g_InState[0].iAccel * g_OutState[DTid_].CountTime * g_OutState[DTid_].CountTime;
+    g_OutState[DTid_].CountTime += 1.0f / 60.0f;//時間経過
+
+    Speed = g_InState[0].iSpeed + g_InState[0].iAccel * g_OutState[DTid_].CountTime * g_OutState[DTid_].CountTime;//加速度処理
+
     //移動計算
     g_OutState[DTid_].m_Matrix._14 += g_OutState[DTid_].m_Matrix._13 * Speed * g_InState[0].iTime;
     g_OutState[DTid_].m_Matrix._24 += g_OutState[DTid_].m_Matrix._23 * Speed * g_InState[0].iTime;
     g_OutState[DTid_].m_Matrix._34 += g_OutState[DTid_].m_Matrix._33 * Speed * g_InState[0].iTime;
 
-    //生存時間
+    //生存時間処理
     g_OutState[DTid_].LifeTime -= g_InState[0].iTime;
 
     if (g_OutState[DTid_].LifeTime <= 0)

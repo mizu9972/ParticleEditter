@@ -38,6 +38,7 @@ typedef struct {
 	int m_RotateSpeed       = 1;//回転速度
 	bool isChaser           = false;//ターゲットへ向かっていくパーティクルモード
 	bool isActive           = true;//Startメソッドと同時に起動するかどうか(他のパーティクルシステムの後から発生させる場合はfalse)
+	bool isEmitting = false;//他パーティクルから発生させられているかどうか
 	bool isLooping          = true;//ループするかどうか
 	bool isGPUParticle      = false;//GPUパーティクルONOFF
 	bool UseGravity = false;
@@ -103,36 +104,8 @@ private:
 		int isInitialized = 0;		//初期化済みか
 		int ZAngle        = 0;      //回転角度
 		int RandNum       = 0;      //ランダムに設定される数値
-		//int isSystemAlive = 0;      //システム終了判定
 	};
 	m_ParticleUAVState* OutState;
-
-	//パーティクル全体共通のパラメータ
-	//コンスタントバッファに流す
-	struct m_ConstantBufferParticle {
-		//XMFLOAT4 iPosition;//全体の位置
-		//XMINT4 iAngle;//角度
-		//int iAngleRange;//発射範囲
-		//float iDuaringTime;//継続時間
-		//float iMaxLifeTime;//最大生存時間
-		//float iSpeed;//速度
-		//int iRotateSpeed;//回転速度
-		//int isActive;//有効かどうか
-		//int isLooping;//ループするかどうか
-		//int iParticleNum;//パーティクルの個数
-		//float iTime;//経過時間
-		//XMFLOAT3 iTargetPosition;//追いかけるターゲットの座標
-		//int isChaser;
-		//int iMinChaseAngle;
-		//int iMaxChaseAngle;
-
-		//int UseGravity;
-		//XMFLOAT3 iGravity;
-		////バイト数調整用
-		//float Padding = 0;
-
-	};
-	m_ConstantBufferParticle m_CbParticle;
 
 	float NowTime;
 	CBillBoard m_BillBoard;
@@ -146,11 +119,13 @@ protected:
 	m_Particles* Particles = nullptr;
 
 	std::vector<m_Particles> m_ParticleVec;//生存パーティクル配列
+	std::vector<int> m_NextParticleNumberVector;
 
 	int m_ParticleNum;//パーティクル個数保存用
 	int m_MaxParticleNum;//パーティクル最大生成個数
 	int ParticlesDeathCount;//死亡パーティクルカウント
 	float m_SystemLifeTime;//パーティクルシステム残り時間
+	bool isEmitting = false;
 	bool isSystemActive = false;
 
 	template<typename T>
@@ -181,16 +156,18 @@ public:
 		UnInit();
 	};
 	
+	//コンピュートシェーダーの種類リスト
 	enum class eComputeShaderType{
 		INIT,
 		UPDATE,
 	};
+
 	//基本処理メソッド
 
 	//初期化
-	void Init();
-	void Init(t_ParticleSystemState* ParticleState_);
-	void Init(t_ParticleSystemState ParticleState_, const char* filename, ID3D11Device* device);
+	ParticleSystem& Init();
+	ParticleSystem& Init(t_ParticleSystemState* ParticleState_);
+	ParticleSystem& Init(t_ParticleSystemState ParticleState_, const char* filename, ID3D11Device* device);
 	void ZeroInit();//コンストラクタで数値設定した場合、生成時の状態に初期化できる
 	void InitComputeShader();//コンピュートシェーダーの初期化
 
@@ -199,7 +176,6 @@ public:
 	void (ParticleSystem::*fpUpdateFunc)() = &ParticleSystem::UpdateNomal;//関数ポインタ
 	void UpdateNomal();
 	void UpdateComputeShader();
-	void UpdateConstantBuffer();
 	void UpdateSRV();
 
 	XMFLOAT4 RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d);
@@ -220,7 +196,6 @@ public:
 
 	//パーティクル操作
 	void AddParticle(m_Particles* AddParticle);
-	void AddGPUParticle(m_Particles* AddParticle);
 	void ChangeGPUParticleMode(bool isGPUMode = true);//GPUパーティクルモード変更
 
 	//ファイル入出力メソッド
@@ -232,6 +207,7 @@ public:
 	//setter
 	void SetName(const char*  setName);//名前
 	ParticleSystem& SetActive(bool set);//有効無効
+	ParticleSystem& SetEmitte(bool set);
 	void SetTargetPos(float x, float y, float z);//ターゲット座標
 	void SetParticleSystemState(t_ParticleSystemState* SetState_);//構造体情報全体
 	void SetNextParticleSystem(ParticleSystem* next);
@@ -243,4 +219,5 @@ public:
 	char* getName();//名前
 	int getSystemNumber();//自身のパーティクルシステム番号
 	int getNextSystemNumber();//次のパーティクルシステム番号
+	std::vector<int> getNextSystemNumbers();
 };

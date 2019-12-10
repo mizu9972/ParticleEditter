@@ -2,6 +2,7 @@
 
 //ヘッダー
 #include <random>
+#include <algorithm>
 #include "CParticle.h"
 #include "dx11mathutil.h"
 #include "CCamera.h"
@@ -37,7 +38,7 @@ void DX11MatrixIdentity_subDefiner(DirectX::XMFLOAT4X4& mat) {
 
 //メソッド
 //初期化
-void ParticleSystem::Init() {
+ParticleSystem& ParticleSystem::Init() {
 
 	//パーティクル初期化
 	if (m_ParticleVec.empty() != true) {
@@ -65,9 +66,11 @@ void ParticleSystem::Init() {
 
 
 	Start();
+
+	return *this;
 }
 
-void ParticleSystem::Init(t_ParticleSystemState* ParticleState_) {
+ParticleSystem& ParticleSystem::Init(t_ParticleSystemState* ParticleState_) {
 	//パーティクル初期化
 	if (m_ParticleVec.empty() != true) {
 		m_ParticleVec.clear();
@@ -91,8 +94,9 @@ void ParticleSystem::Init(t_ParticleSystemState* ParticleState_) {
 	m_BillBoard.LoadTexTure(m_ParticleState.m_TextureName);
 	//----------------------------------------------------------------------------------------------------------------------------
 	Start();
+	return *this;
 }
-void ParticleSystem::Init(t_ParticleSystemState ParticleState_, const char* filename, ID3D11Device* device) {
+ParticleSystem& ParticleSystem::Init(t_ParticleSystemState ParticleState_, const char* filename, ID3D11Device* device) {
 	//パーティクル初期化
 	if (m_ParticleVec.empty() != true) {
 		m_ParticleVec.clear();
@@ -119,6 +123,7 @@ void ParticleSystem::Init(t_ParticleSystemState ParticleState_, const char* file
 	m_BillBoard.LoadTexTure(m_ParticleState.m_TextureName);
 	//----------------------------------------------------------------------------------------------------------------------------
 	Start();
+	return *this;
 }
 
 //ステータス初期化
@@ -144,11 +149,6 @@ void ParticleSystem::InitComputeShader() {
 	m_CpConstantBuffer.Attach(m_ConstantBuffer);
 	m_CpGetBuf.Attach(getbuf);
 	m_CpBuf.Attach(m_pbuf);
-
-	//CreateConstantBuffer(CDirectXGraphics::GetInstance()->GetDXDevice(),
-	//	sizeof(m_ConstantBufferParticle),
-	//	&m_CpConstantBuffer);
-
 }
 
 void ParticleSystem::Update() {
@@ -164,10 +164,16 @@ void ParticleSystem::UpdateComputeShader() {
 	NowTime = 1.0f / FPS;
 	m_SystemLifeTime -= NowTime;
 	//パーティクル終了判定
-	if (m_SystemLifeTime <= 0) {
-		if (m_ParticleState.m_NextSystemNumber != -1) {
-			//次のパーティクル開始
-			Notify(this);
+	if (isSystemActive == true) {
+		if (m_SystemLifeTime <= 0) {
+			if (m_NextParticleNumberVector.size() > 0) {
+				//次のパーティクル開始
+				Notify(this);
+			}
+			if(m_ParticleState.isLooping == false){
+				isSystemActive = false;
+			}
+			m_SystemLifeTime = m_ParticleState.m_DuaringTime;
 		}
 	}
 
@@ -290,7 +296,7 @@ void ParticleSystem::UpdateNomal() {
 		}
 		isSystemActive = false;
 
-		if (m_ParticleState.m_NextSystemNumber != -1) {
+		if (m_NextParticleNumberVector.size() > 0) {
 			//次のパーティクル開始
 			Notify(this);
 		}
@@ -327,66 +333,28 @@ void ParticleSystem::UpdateNomal() {
 	
 }
 
-void ParticleSystem::UpdateConstantBuffer() {
-
-	////コンスタントバッファ更新-------------------------------------------------------------------------------------------------------
-	//{
-	//	m_CbParticle.iPosition = { m_ParticleState.m_Position[0], m_ParticleState.m_Position[1],m_ParticleState.m_Position[2],0 };
-	//	m_CbParticle.iAngle = { m_ParticleState.m_Angle[0],    m_ParticleState.m_Angle[1],   m_ParticleState.m_Angle[2],   0 };
-	//	m_CbParticle.iAngleRange = m_ParticleState.m_AngleRange;
-	//	m_CbParticle.iDuaringTime = m_ParticleState.m_DuaringTime;
-	//	m_CbParticle.iMaxLifeTime = m_ParticleState.m_MaxLifeTime;
-	//	m_CbParticle.iSpeed = m_ParticleState.m_Speed;
-	//	m_CbParticle.iRotateSpeed = m_ParticleState.m_RotateSpeed;
-	//	m_CbParticle.isActive = m_ParticleState.isActive;
-	//	m_CbParticle.isLooping = m_ParticleState.isLooping;
-	//	m_CbParticle.iParticleNum = m_ParticleState.m_ParticleNum;
-	//	m_CbParticle.iTime = 1.0f / FPS;
-	//	m_CbParticle.iTargetPosition = m_TargetPos;
-	//	m_CbParticle.isChaser = m_ParticleState.isChaser;
-	//	m_CbParticle.iMinChaseAngle = m_ParticleState.m_MinChaseAngle;
-	//	m_CbParticle.iMaxChaseAngle = m_ParticleState.m_MaxChaseAngle;
-	//	m_CbParticle.iGravity = { m_ParticleState.m_Gravity[0],m_ParticleState.m_Gravity[1],m_ParticleState.m_Gravity[2] };
-	//	m_CbParticle.UseGravity = m_ParticleState.UseGravity;
-	//}
-	//CDirectXGraphics::GetInstance()->GetImmediateContext()->UpdateSubresource(
-	//	m_CpConstantBuffer.Get(),
-	//	0,
-	//	NULL,
-	//	&m_CbParticle,
-	//	0,
-	//	0
-	//);
-	//CDirectXGraphics::GetInstance()->GetImmediateContext()->CSSetConstantBuffers(
-	//	7,
-	//	1,
-	//	m_CpConstantBuffer.GetAddressOf()
-	//);
-
-	////--------------------------------------------------------------------------------------------------------------------------
-}
-
 void ParticleSystem::UpdateSRV(){
 	ID3D11Device* device = CDirectXGraphics::GetInstance()->GetDXDevice();
 
-	InState.iPosition = { m_ParticleState.m_Position[0],m_ParticleState.m_Position[1],m_ParticleState.m_Position[2],0 };
-	InState.iAngle = { m_ParticleState.m_Angle[0],m_ParticleState.m_Angle[1] ,m_ParticleState.m_Angle[2] ,0 };
-	InState.iAngleRange = m_ParticleState.m_AngleRange;
-	InState.iDuaringTime = m_ParticleState.m_DuaringTime;
-	InState.iMaxLifeTime = m_ParticleState.m_MaxLifeTime;
-	InState.iSpeed = m_ParticleState.m_Speed;
-	InState.iAccel = m_ParticleState.m_Accel;
-	InState.iRotateSpeed = m_ParticleState.m_RotateSpeed;
-	InState.isActive = m_ParticleState.isActive;
-	InState.isLooping = m_ParticleState.isLooping;
-	InState.iParticleNum = m_ParticleState.m_ParticleNum;
-	InState.iTime = 1.0f / FPS;
+	//入力用バッファを更新
+	InState.iPosition       = { m_ParticleState.m_Position[0],m_ParticleState.m_Position[1],m_ParticleState.m_Position[2],0 };
+	InState.iAngle          = { m_ParticleState.m_Angle[0],   m_ParticleState.m_Angle[1],   m_ParticleState.m_Angle[2],   0 };
+	InState.iAngleRange     = m_ParticleState.m_AngleRange;
+	InState.iDuaringTime    = m_ParticleState.m_DuaringTime;
+	InState.iMaxLifeTime    = m_ParticleState.m_MaxLifeTime;
+	InState.iSpeed          = m_ParticleState.m_Speed;
+	InState.iAccel          = m_ParticleState.m_Accel;
+	InState.iRotateSpeed    = m_ParticleState.m_RotateSpeed;
+	InState.isActive        = m_ParticleState.isActive;
+	InState.isLooping       = m_ParticleState.isLooping;
+	InState.iParticleNum    = m_ParticleState.m_ParticleNum;
+	InState.iTime           = 1.0f / FPS;
 	InState.iTargetPosition = m_TargetPos;
-	InState.isChaser = m_ParticleState.isChaser;
-	InState.iMinChaseAngle = m_ParticleState.m_MinChaseAngle;
-	InState.iMaxChaseAngle = m_ParticleState.m_MaxChaseAngle;
-	InState.iGravity = { m_ParticleState.m_Gravity[0],m_ParticleState.m_Gravity[1],m_ParticleState.m_Gravity[2] };
-	InState.UseGravity = m_ParticleState.UseGravity;
+	InState.isChaser        = m_ParticleState.isChaser;
+	InState.iMinChaseAngle  = m_ParticleState.m_MinChaseAngle;
+	InState.iMaxChaseAngle  = m_ParticleState.m_MaxChaseAngle;
+	InState.iGravity        = { m_ParticleState.m_Gravity[0],m_ParticleState.m_Gravity[1],m_ParticleState.m_Gravity[2] };
+	InState.UseGravity      = m_ParticleState.UseGravity;
 
 	if (m_CpSRV != nullptr) {
 		m_CpSRV.Reset();
@@ -394,7 +362,6 @@ void ParticleSystem::UpdateSRV(){
 	if (m_CpBuf != nullptr) {
 		m_CpBuf.Reset();
 	}
-	//入力用バッファを更新
 	CreateStructuredBuffer(device, sizeof(m_ParticleSRVState), 1, &InState, m_CpBuf.GetAddressOf());
 	CreateShaderResourceView(device, m_CpBuf.Get(), m_CpSRV.GetAddressOf());
 }
@@ -430,6 +397,10 @@ XMFLOAT4 ParticleSystem::RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d) {
 
 //パーティクル処理開始
 void ParticleSystem::Start() {
+	if (isEmitting == true && m_ParticleState.isEmitting == true) {
+		return;
+	}
+	isEmitting = m_ParticleState.isEmitting;
 	(this->*fpStartFunc)();
 }
 
@@ -476,6 +447,10 @@ void ParticleSystem::StartNomalParticle() {
 void ParticleSystem::StartGPUParticle(){
 	////GPUパーティクル設定---------------------------------
 
+	if (m_ParticleState.isActive == false) {
+		return;
+	}
+
 	ID3D11Device* device = CDirectXGraphics::GetInstance()->GetDXDevice();
 	ID3D11DeviceContext* devicecontext = CDirectXGraphics::GetInstance()->GetImmediateContext();
 	m_ParticleNum = m_ParticleState.m_ParticleNum;
@@ -501,6 +476,7 @@ void ParticleSystem::StartGPUParticle(){
 	////-------------------------------------------------
 
 	m_SystemLifeTime = m_ParticleState.m_DuaringTime;
+	isSystemActive = true;
 	if (m_ParticleVec.empty() != true) {
 		m_ParticleVec.clear();
 		m_ParticleVec.shrink_to_fit();
@@ -663,8 +639,7 @@ bool ParticleSystem::FInState(const char* FileName_) {
 	catch (int i) {//ファイル読み込み失敗したら
 		return i;
 	};
-/*
-	Init(m_ParticleState, "assets/ParticleTexture/particle.png");*/
+
 	return true;
 }
 
@@ -711,12 +686,27 @@ ParticleSystem& ParticleSystem::SetActive(bool set) {
 	return *this;
 }
 
+ParticleSystem& ParticleSystem::SetEmitte(bool set) {
+	isEmitting = set;
+	return *this;
+}
+
 void ParticleSystem::SetNextParticleSystem(ParticleSystem* next) {
 	//m_ParticleState.m_NextParticleSystem = next;
 }
 
 void ParticleSystem::SetNextParticleSystem(int NextNumber) {
-	m_ParticleState.m_NextSystemNumber = NextNumber;
+	//m_ParticleState.m_NextSystemNumber = NextNumber;
+	if (NextNumber == -1) {
+		m_NextParticleNumberVector.clear();
+		m_NextParticleNumberVector.shrink_to_fit();
+		return;
+	}
+
+	m_NextParticleNumberVector.emplace_back(NextNumber);
+	//ソートして連続した重複要素を削除
+	std::sort(m_NextParticleNumberVector.begin(), m_NextParticleNumberVector.end());
+	m_NextParticleNumberVector.erase(std::unique(m_NextParticleNumberVector.begin(), m_NextParticleNumberVector.end()), m_NextParticleNumberVector.end());
 }
 
 ParticleSystem& ParticleSystem::SetComputeShader(ID3D11ComputeShader* setShader, eComputeShaderType type) {
@@ -761,6 +751,10 @@ int ParticleSystem::getSystemNumber() {
 
 int ParticleSystem::getNextSystemNumber() {
 	return m_ParticleState.m_NextSystemNumber;
+}
+
+std::vector<int> ParticleSystem::getNextSystemNumbers() {
+	return m_NextParticleNumberVector;
 }
 
 void ParticleSystem::ChangeGPUParticleMode(bool isGPUMode) {

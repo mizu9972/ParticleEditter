@@ -1,20 +1,23 @@
 #include <list>
+#include <vector>
 #include <string>
 #include "CParticleEdit.h"
 #include "CCamera.h"
 
 #include "game.h"
 
-#define CHECK(x) (CheckDataChange += x)
-#define CHECK_RESULT (CheckDataChange > 0)
+#define CHECK(x) (CheckDataChange += x) //数値変更を感知
+#define CHECK_RESULT (CheckDataChange > 0) //変更されたかどうか判定
+static int CheckDataChange = 0;//ImGuiで数値が変更されたらtrueが返ってくるメソッドの仕様を利用して、数値変更を管理する変数
 
 extern int g_nCountFPS;
 constexpr auto PARTICLE_TEXTURE = "assets/ParticleTexture/particle.png";
 
 extern float g_SectionTime;
-static int CheckDataChange = 0;
 //初期化
 void ParticleEditor::Init() {
+	
+	//ホーミングターゲット初期化
 	m_TargetBillBoard.Init(
 		m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2],
 		50, 50,
@@ -22,6 +25,8 @@ void ParticleEditor::Init() {
 		"shader/psParticle.fx",
 		"shader/vsPrticle.fx"
 	);
+
+	m_ParticleSystems.Init();
 
 	float u[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 	float v[4] = { 1.0f, 0.0f, 1.0f, 0.0f };
@@ -41,6 +46,7 @@ void ParticleEditor::UnInit() {
 
 //更新
 void ParticleEditor::Update() {
+
 	m_TargetBillBoard.SetPosition(m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2]);//ターゲット
 
 	if (m_ViewParticleSystem != nullptr) {
@@ -52,7 +58,9 @@ void ParticleEditor::Update() {
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+	if (isActive == true) {
 	m_ParticleSystems.Update();//パーティクルシステム
+	}
 
 	if (m_ParticleSystems.getParticleSystemCount() <= 0) {
 		m_ViewParticleSystem = nullptr;
@@ -70,7 +78,7 @@ void ParticleEditor::Draw() {
 	if (m_ViewParticleSystem != nullptr) {
 		ImGuiDrawofParticleSystem(m_ViewParticleSystem);
 	}
-	// Rendering
+	// ImGui描画反映
 	ImGui::Render();
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
@@ -88,6 +96,7 @@ void ParticleEditor::ImGuiDrawMain() {
 
 	ImGui::SliderFloat3("TargetPosition", m_TargetPosf, -100, 100);
 
+	//パーティクルシステム追加操作
 	if (ImGui::Button("Create")) {
 		ParticleSystem* CreatedParticleSystem = m_ParticleSystems.AddParticleSystem();
 		std::string Name = "Particle" + std::to_string(m_ParticleSystems.getParticleSystemCount());
@@ -152,10 +161,10 @@ void ParticleEditor::ImGuiDrawMain() {
 	ImGui::Begin("oparate");
 
 	if (ImGui::Button("Start")) {
-
+		isActive = true;
 	}
 	if (ImGui::Button("Stop")) {
-
+		isActive = false;
 	}
 	if (ImGui::Button("Reset")) {
 		m_ParticleSystems.Start();
@@ -181,26 +190,24 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 
 	ImGui::Begin(pParticleSystem_->getName());
 
-	ImGui::InputText("",ViewState.m_Name,sizeof(ViewState.m_Name));
 
 	CheckDataChange = 0;
+	
+	//名前
+	if (ImGui::InputText("", ViewState.m_Name, sizeof(ViewState.m_Name))){
+		pParticleSystem_->SetName(ViewState.m_Name);
+	}
 
-	//座標
-	CHECK(ImGui::SliderFloat3("Position", ViewState.m_Position, -100.0f, 100.0f));
-
-	//放出角度
-	CHECK(ImGui::SliderInt3("Angle", ViewState.m_Angle, 1, 360));
-
-	//放出角度範囲
-	CHECK(ImGui::SliderInt("AngleRange", &ViewState.m_AngleRange, 1, 360));
-
-	CHECK(ImGui::SliderFloat("Duaring", &ViewState.m_DuaringTime, 0, 10));//周期
-	CHECK(ImGui::InputInt("ParticleNum", &ViewState.m_ParticleNum, 5, 1000));//パーティクルの個数
+	CHECK(ImGui::SliderFloat3("Position", ViewState.m_Position, -100.0f, 100.0f));  //座標
+	CHECK(ImGui::SliderInt3("Angle", ViewState.m_Angle, 1, 360));                   //放出角度
+	CHECK(ImGui::SliderInt("AngleRange", &ViewState.m_AngleRange, 1, 360));         //放出角度範囲
+	CHECK(ImGui::SliderFloat("Duaring", &ViewState.m_DuaringTime, 0, 10));          //周期
+	CHECK(ImGui::InputInt("ParticleNum", &ViewState.m_ParticleNum, 5, 1000));       //パーティクルの個数
 	CHECK(ImGui::SliderFloat("MaxLifeTime", &ViewState.m_MaxLifeTime, 0.0f, 10.0f));//最大生存時間
-	CHECK(ImGui::SliderFloat("Size", &ViewState.m_Size, 0.0f, 100.0f));//粒子の大きさ
-	CHECK(ImGui::SliderFloat("Speed", &ViewState.m_Speed, 0.0f, 100.0f));//移動速度
-	CHECK(ImGui::InputFloat("Accel", &ViewState.m_Accel));
-	CHECK(ImGui::SliderInt("RotateSpeed", &ViewState.m_RotateSpeed, 0, 100));//回転速度
+	CHECK(ImGui::SliderFloat("Size", &ViewState.m_Size, 0.0f, 100.0f));             //粒子の大きさ
+	CHECK(ImGui::SliderFloat("Speed", &ViewState.m_Speed, 0.0f, 100.0f));           //移動速度
+	CHECK(ImGui::InputFloat("Accel", &ViewState.m_Accel));                          //加速度
+	CHECK(ImGui::SliderInt("RotateSpeed", &ViewState.m_RotateSpeed, 0, 100));       //回転速度
 
 	//GPUパーティクルのチェックボックスがfalse->trueに変更されたらStart関数呼び出し
 	if (ImGui::Checkbox("GPUParticle", &ViewState.isGPUParticle)){//GPUパーティクル) {//変更判定
@@ -225,7 +232,16 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	}
 
 	CHECK(ImGui::Checkbox("isLooping", &ViewState.isLooping));//ループさせるかどうか
-	CHECK(ImGui::Checkbox("isActive", &ViewState.isActive));//発生させるかどうか
+
+	if (ImGui::Checkbox("isEmitter", &ViewState.isEmitting)) {//他のパーティクルからの発生に限らせるか
+		pParticleSystem_->SetEmitte(ViewState.isEmitting);
+		CheckDataChange += 1;
+	}
+	if (ImGui::Checkbox("isActive", &ViewState.isActive)) {
+		pParticleSystem_->SetActive(ViewState.isActive);
+		pParticleSystem_->Start();
+	}
+	//CHECK(ImGui::Checkbox("isActive", &ViewState.isActive));//発生させるかどうか
 
 	CHECK(ImGui::ColorEdit4("Color", ViewState.m_Color, 0));//色
 
@@ -234,12 +250,15 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 		pParticleSystem_->UpdateSRV();
 	}
 	//エミッター
-	int NextSystemNumber = ViewState.m_NextSystemNumber;
-	if (NextSystemNumber == -1) {
+	std::vector<int> NextSystemNumbers = pParticleSystem_->getNextSystemNumbers();
+	if (NextSystemNumbers.size() < 1) {
 		ImGui::Text("null");
 	}
 	else {
-		ImGui::Text(m_ParticleSystems.getParticleSystem()[NextSystemNumber]->getName());
+		for (int num = 0; num < NextSystemNumbers.size(); num++) {
+			ImGui::Text(m_ParticleSystems.getParticleSystem()[NextSystemNumbers[num]]->getName());
+			//ImGui::Text(m_ParticleSystems.getParticleSystem()[NextSystemNumber]->getName());
+		}
 	}
 	//エミッターの設定
 	//すべてのパーティクルシステムのリストをボタンとして表示する
@@ -251,7 +270,7 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 			}
 		}
 		if (ImGui::Button("Null")) {
-			pParticleSystem_->SetNextParticleSystem(-1);
+			pParticleSystem_->SetNextParticleSystem(-1);//-1を入れるとリスト初期化
 		}
 		ImGui::TreePop();
 	}
@@ -319,11 +338,23 @@ bool ParticleEditor::InputData(const char* FileName_) {
 
 		int ParticleCount = 0;
 		fread(&ParticleCount, sizeof(int), 1, Fp);//read1
-
+		std::vector<int> nextNumbers;
+		int NumbersSize;
 		for (int Count = 0; Count < ParticleCount; Count++) {
 			//データを読み込んで追加
 			fread(&GetState, sizeof(t_ParticleSystemState), 1, Fp);//read2
-			m_ParticleSystems.AddParticleSystem(&GetState);
+			fread(&NumbersSize, sizeof(int), 1, Fp);//read3 要素数読み込み
+
+			nextNumbers.clear();
+			for (int num = 0; num < NumbersSize; num++) {
+				int setNumber;
+				fread(&setNumber, sizeof(int), 1, Fp);//read4 要素読み込み
+				nextNumbers.emplace_back(setNumber);
+			}
+
+			m_ParticleSystems.AddParticleSystem(&GetState,nextNumbers);
+
+
 		}
 		m_ParticleSystems.setParticleCounter(ParticleCount);
 
@@ -355,8 +386,19 @@ void ParticleEditor::OutputData() {
 	fwrite(&ParticleCount, sizeof(int), 1, Fp);//write1
 
 	//データ書き出し
+	std::vector<int> nextNumbers;
+	int NumbersSize;
 	for (auto iParticleSystem : m_ParticleSystems.getParticleSystem()) {
 		fwrite(&iParticleSystem.second->GetState(), sizeof(t_ParticleSystemState), 1, Fp);//write2
+
+		//パーティクル番号リスト出力
+		nextNumbers = iParticleSystem.second->getNextSystemNumbers();
+		NumbersSize = static_cast<int>(nextNumbers.size());
+		fwrite(&NumbersSize, sizeof(int), 1, Fp);//write3 //要素数書き出し
+		for (int num = 0; num < NumbersSize; num++) {
+			fwrite(&nextNumbers[num], sizeof(int), 1, Fp);//write4 //要素を配列で書き出し
+		}
+
 	}
 
 	fclose(Fp);

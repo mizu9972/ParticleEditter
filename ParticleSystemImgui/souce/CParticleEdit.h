@@ -9,6 +9,7 @@
 #include "imgui_impl_win32.h"
 
 //パーティクルシステムのエディタークラス
+//ImGuiを利用してパーティクルシステムのステータスを表示・操作する
 class ParticleEditor {
 private:
 	ParticleSystemParent m_ParticleSystems;//パーティクルシステム親オブジェクト
@@ -22,6 +23,8 @@ private:
 	ParticleEditor() {};
 	~ParticleEditor() = default;
 
+	bool isActive = true;
+	//ImGui表示設定
 	void ImGuiDrawMain();
 	void ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_);
 public:
@@ -35,12 +38,16 @@ public:
 		return &instance;
 	}
 
+	//基本処理
 	void Init();
 	void UnInit();
 	void Update();
 	void Draw();
+
+	//パーティクルシステム全削除
 	void DeleteParticleSystems();
 
+	//ファイル入出力
 	bool InputData(const char* FileName_);
 	void OutputData();
 };
