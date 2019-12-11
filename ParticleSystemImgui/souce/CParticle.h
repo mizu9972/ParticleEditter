@@ -127,6 +127,8 @@ protected:
 	float m_SystemLifeTime;//パーティクルシステム残り時間
 	bool isEmitting = false;
 	bool isSystemActive = false;
+	bool isUpdateActive = true;
+	bool isDrawActive = true;
 
 	template<typename T>
 	using ComPtr = Microsoft::WRL::ComPtr<T>;
@@ -220,4 +222,7 @@ public:
 	int getSystemNumber();//自身のパーティクルシステム番号
 	int getNextSystemNumber();//次のパーティクルシステム番号
 	std::vector<int> getNextSystemNumbers();
+	bool* getisUpdateActive();
+	bool* getisDrawActive();
+	float getLifeTime();
 };

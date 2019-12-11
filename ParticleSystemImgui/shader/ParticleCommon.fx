@@ -95,7 +95,7 @@ void ParticleInit(uint DTid_)
 
     g_OutState[DTid_].m_Matrix = QttoMatrix(setQuot); //çsóÒÇ…ïœä∑ÇµÇƒîΩâf
 
-    g_OutState[DTid_].m_Matrix._14 = g_InState[0].iPosition.x;
+    g_OutState[DTid_].m_Matrix._14 = -1 * g_InState[0].iPosition.x;
     g_OutState[DTid_].m_Matrix._24 = g_InState[0].iPosition.y;
     g_OutState[DTid_].m_Matrix._34 = g_InState[0].iPosition.z;
    

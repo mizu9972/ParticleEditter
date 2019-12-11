@@ -20,7 +20,7 @@ void ParticleEditor::Init() {
 	//ホーミングターゲット初期化
 	m_TargetBillBoard.Init(
 		m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2],
-		50, 50,
+		30, 30,
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
 		"shader/psParticle.fx",
 		"shader/vsPrticle.fx"
@@ -32,7 +32,7 @@ void ParticleEditor::Init() {
 	float v[4] = { 1.0f, 0.0f, 1.0f, 0.0f };
 
 	m_TargetBillBoard.SetUV(u, v);
-	m_TargetBillBoard.LoadTexTure(PARTICLE_TEXTURE);
+	m_TargetBillBoard.LoadTexTure("assets/ParticleTexture/en.png");
 }
 
 //終了処理
@@ -49,9 +49,6 @@ void ParticleEditor::Update() {
 
 	m_TargetBillBoard.SetPosition(m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2]);//ターゲット
 
-	if (m_ViewParticleSystem != nullptr) {
-		m_ViewParticleSystem->SetTargetPos(m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2]);
-	}
 	//ImGui表示
 	ImVec4 clear_color = ImVec4(0.25f, 0.5f, 0.35f, 1.00f);
 	ImGui_ImplDX11_NewFrame();
@@ -84,7 +81,6 @@ void ParticleEditor::Draw() {
 }
 
 void ParticleEditor::ImGuiDrawMain() {
-
 	//Imguiウィンドウ設定
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.0f, 0.7f, 0.2f, 1.0f));
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0.0f, 0.3f, 0.1f, 1.0f));
@@ -94,7 +90,11 @@ void ParticleEditor::ImGuiDrawMain() {
 	ImGui::Begin("Main");
 	ImGui::Text("FPS:%d", g_nCountFPS);
 
-	ImGui::SliderFloat3("TargetPosition", m_TargetPosf, -100, 100);
+	if (ImGui::SliderFloat3("TargetPosition", m_TargetPosf, -100, 100)) {
+		for (auto iParticleSystem : m_ParticleSystems.getParticleSystem()) {
+			iParticleSystem.second->SetTargetPos(m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2]);
+		}
+	}
 
 	//パーティクルシステム追加操作
 	if (ImGui::Button("Create")) {
@@ -143,7 +143,7 @@ void ParticleEditor::ImGuiDrawMain() {
 	}
 	ImGui::EndChild();
 
-	if (ImGui::Button("Reset")) {
+	if (ImGui::Button("Delete")) {
 		DeleteParticleSystems();
 	}
 	ImGui::End();
@@ -155,10 +155,10 @@ void ParticleEditor::ImGuiDrawMain() {
 	//Imguiウィンドウ設定
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.0f, 0.7f, 0.2f, 1.0f));
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0.0f, 0.3f, 0.1f, 1.0f));
-	ImGui::SetNextWindowPos(ImVec2(SCREEN_X - 400, SCREEN_Y - 100), ImGuiSetCond_Once);
+	ImGui::SetNextWindowPos(ImVec2(200, SCREEN_Y - 100), ImGuiSetCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Once);
 
-	ImGui::Begin("oparate");
+	ImGui::Begin("SystemOparate");
 
 	if (ImGui::Button("Start")) {
 		isActive = true;
@@ -190,7 +190,6 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 
 	ImGui::Begin(pParticleSystem_->getName());
 
-
 	CheckDataChange = 0;
 	
 	//名前
@@ -198,16 +197,19 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 		pParticleSystem_->SetName(ViewState.m_Name);
 	}
 
-	CHECK(ImGui::SliderFloat3("Position", ViewState.m_Position, -100.0f, 100.0f));  //座標
-	CHECK(ImGui::SliderInt3("Angle", ViewState.m_Angle, 1, 360));                   //放出角度
-	CHECK(ImGui::SliderInt("AngleRange", &ViewState.m_AngleRange, 1, 360));         //放出角度範囲
-	CHECK(ImGui::SliderFloat("Duaring", &ViewState.m_DuaringTime, 0, 10));          //周期
+	ImGui::ProgressBar(1.0f - (pParticleSystem_->getLifeTime() / ViewState.m_DuaringTime), ImVec2(200, 20));
+	CHECK(ImGui::DragFloat3("Position", ViewState.m_Position, 1.0f));  //座標
+	CHECK(ImGui::DragInt3("Angle", ViewState.m_Angle, 1.0f));                   //放出角度
+	CHECK(ImGui::DragInt("AngleRange", &ViewState.m_AngleRange,1, 1, 360));         //放出角度範囲
+	CHECK(ImGui::InputFloat("Duaring", &ViewState.m_DuaringTime, 1, 10));          //周期
+
+
 	CHECK(ImGui::InputInt("ParticleNum", &ViewState.m_ParticleNum, 5, 1000));       //パーティクルの個数
-	CHECK(ImGui::SliderFloat("MaxLifeTime", &ViewState.m_MaxLifeTime, 0.0f, 10.0f));//最大生存時間
-	CHECK(ImGui::SliderFloat("Size", &ViewState.m_Size, 0.0f, 100.0f));             //粒子の大きさ
-	CHECK(ImGui::SliderFloat("Speed", &ViewState.m_Speed, 0.0f, 100.0f));           //移動速度
-	CHECK(ImGui::InputFloat("Accel", &ViewState.m_Accel));                          //加速度
-	CHECK(ImGui::SliderInt("RotateSpeed", &ViewState.m_RotateSpeed, 0, 100));       //回転速度
+	CHECK(ImGui::InputFloat("MaxLifeTime", &ViewState.m_MaxLifeTime, 1.0f, 10.0f));//最大生存時間
+	CHECK(ImGui::InputFloat("Size", &ViewState.m_Size, 1.0f, 100.0f));             //粒子の大きさ
+	CHECK(ImGui::InputFloat("Speed", &ViewState.m_Speed, 1.0f, 100.0f));           //移動速度
+	CHECK(ImGui::InputFloat("Accel", &ViewState.m_Accel, 0.1f));                          //加速度
+	CHECK(ImGui::InputInt("RotateSpeed", &ViewState.m_RotateSpeed, 1, 100));       //回転速度
 
 	//GPUパーティクルのチェックボックスがfalse->trueに変更されたらStart関数呼び出し
 	if (ImGui::Checkbox("GPUParticle", &ViewState.isGPUParticle)){//GPUパーティクル) {//変更判定
@@ -279,7 +281,9 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 
 	//テクスチャ関連
 	{
-		ImGui::Text(ViewState.m_TextureName);
+
+		ImGui::Text(ViewState.m_TextureName);//テクスチャパス表示
+		
 		//テクスチャ読み込み
 		WIN32_FIND_DATA win32fd;
 		HANDLE hFind;//ファイル操作ハンドル
@@ -305,6 +309,24 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
 
+	//Imguiウィンドウ設定
+	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.0f, 0.7f, 0.2f, 1.0f));
+	ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0.0f, 0.3f, 0.1f, 1.0f));
+	ImGui::SetNextWindowPos(ImVec2(SCREEN_X - 400, SCREEN_Y - 100), ImGuiSetCond_Once);
+	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Once);
+
+	ImGui::Begin("ParticleOparate");
+
+	ImGui::Checkbox("Update", pParticleSystem_->getisUpdateActive());
+	ImGui::Checkbox("Draw", pParticleSystem_->getisDrawActive());
+	if (ImGui::Button("Reset")) {
+		pParticleSystem_->Start();
+	}
+
+	ImGui::End();
+
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
 }
 
 void ParticleEditor::DeleteParticleSystems() {

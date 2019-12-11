@@ -153,6 +153,9 @@ void ParticleSystem::InitComputeShader() {
 
 void ParticleSystem::Update() {
 	//XVˆ—
+	if (isUpdateActive == false) {
+		return;
+	}
 	(this->*fpUpdateFunc)();
 }
 
@@ -486,7 +489,9 @@ void ParticleSystem::StartGPUParticle(){
 
 //•`‰æˆ—
 void ParticleSystem::Draw(ID3D11DeviceContext* device) {
-
+	if (isDrawActive == false) {
+		return;
+	}
 	(this->*fpDrawFunc)(device);
 }
 
@@ -589,7 +594,7 @@ void ParticleSystem::AddParticle(m_Particles* AddParticle) {
 	DX11MtxFromQt(newParticle.Matrix, tempqt3);
 
 
-	newParticle.Matrix._41 = m_ParticleState.m_Position[0];
+	newParticle.Matrix._41 = -1 * m_ParticleState.m_Position[0];
 	newParticle.Matrix._42 = m_ParticleState.m_Position[1];
 	newParticle.Matrix._43 = m_ParticleState.m_Position[2];
 
@@ -755,6 +760,18 @@ int ParticleSystem::getNextSystemNumber() {
 
 std::vector<int> ParticleSystem::getNextSystemNumbers() {
 	return m_NextParticleNumberVector;
+}
+
+bool* ParticleSystem::getisUpdateActive() {
+	return &isUpdateActive;
+}
+
+bool* ParticleSystem::getisDrawActive() {
+	return &isDrawActive;
+}
+
+float ParticleSystem::getLifeTime() {
+	return m_SystemLifeTime;
 }
 
 void ParticleSystem::ChangeGPUParticleMode(bool isGPUMode) {
