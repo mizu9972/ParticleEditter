@@ -98,10 +98,11 @@ void ParticleEditor::ImGuiDrawMain() {
 
 	//パーティクルシステム追加操作
 	if (ImGui::Button("Create")) {
-		ParticleSystem* CreatedParticleSystem = m_ParticleSystems.AddParticleSystem();
-		std::string Name = "Particle" + std::to_string(m_ParticleSystems.getParticleSystemCount());
-		CreatedParticleSystem->SetName(Name.c_str());//名前設定
-		m_ViewParticleSystem = CreatedParticleSystem;
+		//ParticleSystem* CreatedParticleSystem = m_ParticleSystems.AddParticleSystem();
+		//std::string Name = "Particle" + std::to_string(m_ParticleSystems.getParticleSystemCount());
+		//CreatedParticleSystem->SetName(Name.c_str());//名前設定
+		//m_ViewParticleSystem = CreatedParticleSystem;
+		AddParticleSystem();
 	}
 
 	//ファイル読み込み
@@ -188,21 +189,35 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	ImGui::SetNextWindowPos(ImVec2(SCREEN_X - 200, 0), ImGuiSetCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(200, SCREEN_Y), ImGuiSetCond_Once);
 
-	ImGui::Begin(pParticleSystem_->getName());
+	ImGui::Begin(pParticleSystem_->getName(), nullptr, ImGuiWindowFlags_MenuBar);
 
-	CheckDataChange = 0;
+	CheckDataChange = 0;//数値変更監視変数初期化
+
+	if (ImGui::BeginMenuBar()) {
+		if (ImGui::BeginMenu("Copy")) {
+			AddParticleSystem(&ViewState);//コピー
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Delete")) {
+			m_ParticleSystems.RemoveParticleSystem(pParticleSystem_->getSystemNumber());
+			m_ViewParticleSystem = nullptr;
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
 	
 	//名前
 	if (ImGui::InputText("", ViewState.m_Name, sizeof(ViewState.m_Name))){
 		pParticleSystem_->SetName(ViewState.m_Name);
 	}
 
-	ImGui::ProgressBar(1.0f - (pParticleSystem_->getLifeTime() / ViewState.m_DuaringTime), ImVec2(200, 20));
+	//パーティクル発生状況バー
+	ImGui::ProgressBar(1.0f - (pParticleSystem_->getLifeTime() / (ViewState.m_DuaringTime + ViewState.m_StartDelayTime)), ImVec2(180, 20));
 	CHECK(ImGui::DragFloat3("Position", ViewState.m_Position, 1.0f));  //座標
 	CHECK(ImGui::DragInt3("Angle", ViewState.m_Angle, 1.0f));                   //放出角度
 	CHECK(ImGui::DragInt("AngleRange", &ViewState.m_AngleRange,1, 1, 360));         //放出角度範囲
 	CHECK(ImGui::InputFloat("Duaring", &ViewState.m_DuaringTime, 1, 10));          //周期
-
+	CHECK(ImGui::InputFloat("StartDelayTime", &ViewState.m_StartDelayTime, 1, 10));//開始遅延時間
 
 	CHECK(ImGui::InputInt("ParticleNum", &ViewState.m_ParticleNum, 5, 1000));       //パーティクルの個数
 	CHECK(ImGui::InputFloat("MaxLifeTime", &ViewState.m_MaxLifeTime, 1.0f, 10.0f));//最大生存時間
@@ -331,6 +346,17 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 
 void ParticleEditor::DeleteParticleSystems() {
 	m_ParticleSystems.DeleteParticleSystem();
+}
+
+void ParticleEditor::AddParticleSystem(t_ParticleSystemState* setState) {
+	ParticleSystem* CreatedParticleSystem = m_ParticleSystems.AddParticleSystem();
+	std::string Name = "Particle" + std::to_string(m_ParticleSystems.getParticleSystemCount());
+	if (setState != nullptr) {
+		CreatedParticleSystem->SetParticleSystemState(setState);
+	}
+
+	CreatedParticleSystem->SetName(Name.c_str());
+	m_ViewParticleSystem = CreatedParticleSystem;
 }
 
 bool ParticleEditor::InputData(const char* FileName_) {

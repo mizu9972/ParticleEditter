@@ -176,7 +176,7 @@ void ParticleSystem::UpdateComputeShader() {
 			if(m_ParticleState.isLooping == false){
 				isSystemActive = false;
 			}
-			m_SystemLifeTime = m_ParticleState.m_DuaringTime;
+			m_SystemLifeTime = m_ParticleState.m_DuaringTime + m_ParticleState.m_StartDelayTime;
 		}
 	}
 
@@ -344,6 +344,7 @@ void ParticleSystem::UpdateSRV(){
 	InState.iAngle          = { m_ParticleState.m_Angle[0],   m_ParticleState.m_Angle[1],   m_ParticleState.m_Angle[2],   0 };
 	InState.iAngleRange     = m_ParticleState.m_AngleRange;
 	InState.iDuaringTime    = m_ParticleState.m_DuaringTime;
+	InState.iDelayTime      = m_ParticleState.m_StartDelayTime;
 	InState.iMaxLifeTime    = m_ParticleState.m_MaxLifeTime;
 	InState.iSpeed          = m_ParticleState.m_Speed;
 	InState.iAccel          = m_ParticleState.m_Accel;
@@ -419,7 +420,7 @@ void ParticleSystem::StartNomalParticle() {
 	isSystemActive = true;
 	ParticlesDeathCount = 0;
 
-	m_SystemLifeTime = m_ParticleState.m_DuaringTime;
+	m_SystemLifeTime = m_ParticleState.m_DuaringTime + m_ParticleState.m_StartDelayTime;
 
 	//変更されたステータス反映
 	{
@@ -437,7 +438,7 @@ void ParticleSystem::StartNomalParticle() {
 
 		//発生までの待機時間設定
 		//パーティクルの発生時間をパーティクル数で等分し、それぞれ割り当てる
-		p_PickParticle->DelayTime = m_ParticleState.m_DuaringTime / m_MaxParticleNum * ParticlesNum;
+		p_PickParticle->DelayTime = (m_ParticleState.m_DuaringTime / m_MaxParticleNum * ParticlesNum) + m_ParticleState.m_StartDelayTime;
 
 		p_PickParticle->CountTime = 0;
 		//待機中に
@@ -478,7 +479,7 @@ void ParticleSystem::StartGPUParticle(){
 	devicecontext->Unmap(m_CpGetBuf.Get(), 0);
 	////-------------------------------------------------
 
-	m_SystemLifeTime = m_ParticleState.m_DuaringTime;
+	m_SystemLifeTime = m_ParticleState.m_DuaringTime + m_ParticleState.m_StartDelayTime;
 	isSystemActive = true;
 	if (m_ParticleVec.empty() != true) {
 		m_ParticleVec.clear();
@@ -678,8 +679,9 @@ void ParticleSystem::FOutState() {
 	SetCurrentDirectory(crDir);//カレントディレクトリを元に戻す
 }
 
-//アクセス
+//アクセサ
 void ParticleSystem::SetParticleSystemState(t_ParticleSystemState* SetParticleSystemState_) {
+	//パーティクルシステムの設定を反映させる
 	memcpy(&m_ParticleState, SetParticleSystemState_, sizeof(t_ParticleSystemState));
 }
 void ParticleSystem::SetName(const char* setName) {

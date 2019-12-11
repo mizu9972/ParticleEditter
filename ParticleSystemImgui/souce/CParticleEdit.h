@@ -44,8 +44,9 @@ public:
 	void Update();
 	void Draw();
 
-	//パーティクルシステム全削除
-	void DeleteParticleSystems();
+	//パーティクルシステム操作
+	void AddParticleSystem(t_ParticleSystemState* setState = nullptr);
+	void DeleteParticleSystems();//全削除
 
 	//ファイル入出力
 	bool InputData(const char* FileName_);

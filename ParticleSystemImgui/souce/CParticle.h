@@ -27,6 +27,7 @@ typedef struct {
 
 	int m_AngleRange        = 360;//”­¶‚³‚¹‚éŠp“x‚Ì”ÍˆÍ
 
+	float m_StartDelayTime = 0;
 	float m_DuaringTime     = 10;//”­¶ŠÔ
 	float m_Size            = 20;//‘å‚«‚³
 	float m_MaxLifeTime     = 10;//Å’·¶‘¶ŠÔ
@@ -75,6 +76,7 @@ private:
 		XMINT4 iAngle;//Šp“x
 		int iAngleRange;//”­Ë”ÍˆÍ
 		float iDuaringTime;//Œp‘±ŠÔ
+		float iDelayTime;      //’x‰„ŠÔ
 		float iMaxLifeTime;//Å‘å¶‘¶ŠÔ
 		float iSpeed;//‘¬“x
 		float iAccel;

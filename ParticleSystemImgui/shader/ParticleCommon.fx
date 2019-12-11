@@ -39,6 +39,7 @@ struct ParticleSRVState
     int4 iAngle; //äpìx
     int iAngleRange; //î≠éÀîÕàÕ
     float iDuaringTime; //åpë±éûä‘
+    float iDelayTime;
     float iMaxLifeTime; //ç≈ëÂê∂ë∂éûä‘
     float iSpeed; //ë¨ìx
     float iAccel;
@@ -105,7 +106,7 @@ void ParticleInit(uint DTid_)
     
     g_OutState[DTid_].ZAngle = fRandom(DTid_) % 360;
 
-    g_OutState[DTid_].DelayTime = g_InState[0].iDuaringTime / g_InState[0].iParticleNum * DTid_;
+    g_OutState[DTid_].DelayTime = (g_InState[0].iDuaringTime / g_InState[0].iParticleNum * DTid_) + g_InState[0].iDelayTime;
     g_OutState[DTid_].CountTime = 0;
     g_OutState[DTid_].isAlive = true;
     g_OutState[DTid_].isWaiting = true;
