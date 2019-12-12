@@ -48,5 +48,6 @@ public:
 	//アクセサ
 	void setParticleCounter(int set) { m_ParticleCounter = set; };
 	std::unordered_map<int, ParticleSystem*> getParticleSystem() { return m_ParticleSystemDictionary; };
+	int getParticleSystemNum() { return static_cast<int>(m_ParticleSystemDictionary.size()); };
 	int getParticleSystemCount() { return m_ParticleCounter; };
 };

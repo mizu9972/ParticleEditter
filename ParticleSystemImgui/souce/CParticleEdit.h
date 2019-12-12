@@ -24,10 +24,17 @@ private:
 	~ParticleEditor() = default;
 
 	bool isActive = true;
-	bool isDrawTargetObj = true;
+	bool isDrawTargetObj = false;
 	//ImGuiï\é¶ê›íË
 	void ImGuiDrawMain();
 	void ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_);
+
+	enum class WARNING_REACTION{
+		OK,      //OKâüÇ≥ÇÍÇΩ
+		CANCEL,  //CancelâüÇ≥ÇÍÇΩ
+		DONT_PUSH//âüÇ≥ÇÍÇƒÇ¢Ç»Ç¢
+	};
+	WARNING_REACTION ImGuiWarningText(const char* text);
 public:
 	ParticleEditor(const ParticleEditor&) = delete;
 	ParticleEditor(ParticleEditor&&) = delete;

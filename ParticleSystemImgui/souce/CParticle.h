@@ -27,24 +27,24 @@ typedef struct {
 
 	int m_AngleRange        = 360;//発生させる角度の範囲
 
-	float m_StartDelayTime = 0;
+	float m_StartDelayTime  = 0;//開始遅延時間
 	float m_DuaringTime     = 10;//発生時間
 	float m_Size            = 20;//大きさ
 	float m_MaxLifeTime     = 10;//最長生存時間
 	float m_Speed           = 50;//速度
-	float m_Accel           = 0;
-	float m_MinSpeed = 0;
-	float m_MaxSpeed = 100;
+	float m_Accel           = 0;//加速度
+	float m_MinSpeed        = 0;//最小速度
+	float m_MaxSpeed        = 100;//最大速度
 	int m_ParticleNum       = 256;//生成するパーティクル個数 //即時反映されない
 
 	float m_Color[4]        = {1.0f,1.0f,1.0f,1.0f};//パーティクルの色
 	int m_RotateSpeed       = 1;//回転速度
 	bool isChaser           = false;//ターゲットへ向かっていくパーティクルモード
 	bool isActive           = true;//Startメソッドと同時に起動するかどうか(他のパーティクルシステムの後から発生させる場合はfalse)
-	bool isEmitting = false;//他パーティクルから発生させられているかどうか
+	bool isEmitting         = false;//他パーティクルから発生させられているかどうか
 	bool isLooping          = true;//ループするかどうか
 	bool isGPUParticle      = false;//GPUパーティクルONOFF
-	bool UseGravity = false;
+	bool UseGravity         = false;//重力有効
 
 	float m_Gravity[3] = { 0,0,0 };
 
@@ -53,7 +53,7 @@ typedef struct {
 	int m_MaxChaseAngle = 5;
 
 	int m_SystemNumber;//自身の番号(mapで管理するkeyになる)
-	int m_NextSystemNumber = -1;
+	int m_NextSystemNumber = -1;//次に発生させるパーティクルの番号
 }t_ParticleSystemState;
 
 
@@ -173,9 +173,7 @@ public:
 	//基本処理メソッド
 
 	//初期化
-	ParticleSystem& Init();
-	ParticleSystem& Init(t_ParticleSystemState* ParticleState_);
-	ParticleSystem& Init(t_ParticleSystemState ParticleState_, const char* filename, ID3D11Device* device);
+	ParticleSystem& Init(t_ParticleSystemState* ParticleState_ = nullptr, const char* filename = nullptr);
 	void ZeroInit();//コンストラクタで数値設定した場合、生成時の状態に初期化できる
 	void InitComputeShader();//コンピュートシェーダーの初期化
 

@@ -38,53 +38,60 @@ void DX11MatrixIdentity_subDefiner(DirectX::XMFLOAT4X4& mat) {
 
 //メソッド
 //初期化
-ParticleSystem& ParticleSystem::Init() {
-
+//ParticleSystem& ParticleSystem::Init(t_ParticleSystemState* ParticleState_) {
+//	//パーティクル初期化
+//	if (m_ParticleVec.empty() != true) {
+//		m_ParticleVec.clear();
+//	}
+//
+//	t_ParticleSystemState newState;
+//	//引数のステータスを設定
+//	if (ParticleState_ != nullptr) {
+//		newState = *ParticleState_;
+//	
+//	}
+//	SetParticleSystemState(&newState);
+//	InitComputeShader();
+//
+//	//ビルボード初期化---------------------------------------------------------------------------------------------------------------
+//	m_BillBoard.Init(0, 0, 0,
+//		newState.m_Size, newState.m_Size,
+//		XMFLOAT4(newState.m_Color[0], newState.m_Color[1], newState.m_Color[2], newState.m_Color[3]),
+//		PARTICLE_PS_SHADER,
+//		PARTICLE_VS_SHADER);
+//
+//	float u[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+//	float v[4] = { 1.0f, 0.0f, 1.0f, 0.0f };
+//	m_BillBoard.SetUV(u, v);
+//	m_BillBoard.LoadTexTure(m_ParticleState.m_TextureName);
+//	//----------------------------------------------------------------------------------------------------------------------------
+//	(this->*fpStartFunc)();
+//	return *this;
+//}
+ParticleSystem& ParticleSystem::Init(t_ParticleSystemState* ParticleState_, const char* filename) {
 	//パーティクル初期化
 	if (m_ParticleVec.empty() != true) {
 		m_ParticleVec.clear();
 	}
 
-	//初期ステータスを設定
 	t_ParticleSystemState newState;
+	//引数のステータスを設定
+	if (ParticleState_ != nullptr) {
+		newState = *ParticleState_;
+
+	}
 	SetParticleSystemState(&newState);
-	
 	InitComputeShader();
-	
-	//ビルボード初期化---------------------------------------------------------------------------------------------------------------
-	m_BillBoard.Init(0, 0, 0,
-		m_ParticleState.m_Size, m_ParticleState.m_Size,
-		XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]),
-		PARTICLE_PS_SHADER,
-		PARTICLE_VS_SHADER);
-	float u[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
-	float v[4] = { 1.0f, 0.0f, 1.0f, 0.0f };
 
-	m_BillBoard.SetUV(u, v);
-	m_BillBoard.LoadTexTure(m_ParticleState.m_TextureName);
-	//----------------------------------------------------------------------------------------------------------------------------
-
-
-	Start();
-
-	return *this;
-}
-
-ParticleSystem& ParticleSystem::Init(t_ParticleSystemState* ParticleState_) {
-	//パーティクル初期化
-	if (m_ParticleVec.empty() != true) {
-		m_ParticleVec.clear();
+	if (filename != nullptr) {
+		// ファイル名を保存
+		strcpy_s(m_ParticleState.m_TextureName, filename);
 	}
 
-	//引数のステータスを設定
-	SetParticleSystemState(ParticleState_);
-
-	InitComputeShader();
-
 	//ビルボード初期化---------------------------------------------------------------------------------------------------------------
 	m_BillBoard.Init(0, 0, 0,
-		ParticleState_->m_Size, ParticleState_->m_Size,
-		XMFLOAT4(ParticleState_->m_Color[0], ParticleState_->m_Color[1], ParticleState_->m_Color[2], ParticleState_->m_Color[3]),
+		newState.m_Size, newState.m_Size,
+		XMFLOAT4(newState.m_Color[0], newState.m_Color[1], newState.m_Color[2], newState.m_Color[3]),
 		PARTICLE_PS_SHADER,
 		PARTICLE_VS_SHADER);
 
@@ -93,36 +100,7 @@ ParticleSystem& ParticleSystem::Init(t_ParticleSystemState* ParticleState_) {
 	m_BillBoard.SetUV(u, v);
 	m_BillBoard.LoadTexTure(m_ParticleState.m_TextureName);
 	//----------------------------------------------------------------------------------------------------------------------------
-	Start();
-	return *this;
-}
-ParticleSystem& ParticleSystem::Init(t_ParticleSystemState ParticleState_, const char* filename, ID3D11Device* device) {
-	//パーティクル初期化
-	if (m_ParticleVec.empty() != true) {
-		m_ParticleVec.clear();
-	}
-
-	//引数のステータスを設定
-	SetParticleSystemState(&ParticleState_);
-
-	// ファイル名を保存
-	strcpy_s(m_ParticleState.m_TextureName, filename);
-
-	InitComputeShader();
-
-	//ビルボード初期化---------------------------------------------------------------------------------------------------------------
-	m_BillBoard.Init(0, 0, 0,
-		m_ParticleState.m_Size, m_ParticleState.m_Size, 
-		XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]),
-		PARTICLE_PS_SHADER,
-		PARTICLE_VS_SHADER);
-
-	float u[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
-	float v[4] = { 1.0f, 0.0f, 1.0f, 0.0f };
-	m_BillBoard.SetUV(u, v);
-	m_BillBoard.LoadTexTure(m_ParticleState.m_TextureName);
-	//----------------------------------------------------------------------------------------------------------------------------
-	Start();
+	(this->*fpStartFunc)();
 	return *this;
 }
 
@@ -260,13 +238,6 @@ void ParticleSystem::UpdateNomal() {
 
 		m_ParticleVec[ParticleNum].CountTime += NowTime;
 
-		////重力計算
-		//if (m_ParticleState.UseGravity) {
-		//	m_ParticleVec[ParticleNum].Matrix._31 += m_ParticleState.m_Gravity[0] / 100.0f;
-		//	m_ParticleVec[ParticleNum].Matrix._32 += m_ParticleState.m_Gravity[1] / 100.0f;
-		//	m_ParticleVec[ParticleNum].Matrix._33 += m_ParticleState.m_Gravity[2] / 100.0f;
-		//}	
-
 		//加速度計算
 		Speed_ = m_ParticleState.m_Speed + m_ParticleState.m_Accel * m_ParticleVec[ParticleNum].CountTime * m_ParticleVec[ParticleNum].CountTime;
 		if (m_ParticleState.m_Accel != 0.0f) {
@@ -357,7 +328,7 @@ void ParticleSystem::UpdateSRV(){
 	InState.iMaxLifeTime    = m_ParticleState.m_MaxLifeTime;
 	InState.iSpeed          = m_ParticleState.m_Speed;
 	InState.iAccel          = m_ParticleState.m_Accel;
-	InState.iMinChaseAngle  = m_ParticleState.m_MinSpeed;
+	InState.iMinSpeed       = m_ParticleState.m_MinSpeed;
 	InState.iMaxSpeed       = m_ParticleState.m_MaxSpeed;
 	InState.iRotateSpeed    = m_ParticleState.m_RotateSpeed;
 	InState.isActive        = m_ParticleState.isActive;
@@ -485,8 +456,8 @@ void ParticleSystem::StartGPUParticle(){
 	RunComputeShader(devicecontext, m_InitComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(), m_ParticleNum, 1, 1);
 
 	m_CpGetBuf = CreateAndCopyToBuffer(device, devicecontext, m_CpResult.Get());
-	D3D11_MAPPED_SUBRESOURCE MappedSubResource;
-	devicecontext->Map(m_CpGetBuf.Get(), 0, D3D11_MAP_READ, 0, &MappedSubResource);
+	//D3D11_MAPPED_SUBRESOURCE MappedSubResource;
+	devicecontext->Map(m_CpGetBuf.Get(), 0, D3D11_MAP_READ, 0, &m_MappedSubResource);
 	devicecontext->Unmap(m_CpGetBuf.Get(), 0);
 	////-------------------------------------------------
 
@@ -665,7 +636,7 @@ bool ParticleSystem::FInTex(const char* FileName_) {
 	std::string Texname = ".\\InPutData/";
 	Texname += FileName_;//ファイルの位置を指定
 
-	Init(m_ParticleState, Texname.c_str(),CDirectXGraphics::GetInstance()->GetDXDevice());//指定したファイルを利用して初期化
+	Init(&m_ParticleState, Texname.c_str());//指定したファイルを利用して初期化
 
 	return 0;
 }
@@ -693,6 +664,9 @@ void ParticleSystem::FOutState() {
 //アクセサ
 void ParticleSystem::SetParticleSystemState(t_ParticleSystemState* SetParticleSystemState_) {
 	//パーティクルシステムの設定を反映させる
+	if (SetParticleSystemState_ == nullptr) {
+		return;
+	}
 	memcpy(&m_ParticleState, SetParticleSystemState_, sizeof(t_ParticleSystemState));
 }
 void ParticleSystem::SetName(const char* setName) {
