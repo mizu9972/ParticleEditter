@@ -32,7 +32,9 @@ typedef struct {
 	float m_Size            = 20;//大きさ
 	float m_MaxLifeTime     = 10;//最長生存時間
 	float m_Speed           = 50;//速度
-	float m_Accel = 0;
+	float m_Accel           = 0;
+	float m_MinSpeed = 0;
+	float m_MaxSpeed = 100;
 	int m_ParticleNum       = 256;//生成するパーティクル個数 //即時反映されない
 
 	float m_Color[4]        = {1.0f,1.0f,1.0f,1.0f};//パーティクルの色
@@ -80,6 +82,8 @@ private:
 		float iMaxLifeTime;//最大生存時間
 		float iSpeed;//速度
 		float iAccel;
+		float iMinSpeed;
+		float iMaxSpeed;
 		int iRotateSpeed;//回転速度
 		int isActive;//有効かどうか
 		int isLooping;//ループするかどうか

@@ -260,21 +260,30 @@ void ParticleSystem::UpdateNomal() {
 
 		m_ParticleVec[ParticleNum].CountTime += NowTime;
 
-		//重力計算
-		if (m_ParticleState.UseGravity) {
-			m_ParticleVec[ParticleNum].Matrix._31 += m_ParticleState.m_Gravity[0] / 100.0f;
-			m_ParticleVec[ParticleNum].Matrix._32 += m_ParticleState.m_Gravity[1] / 100.0f;
-			m_ParticleVec[ParticleNum].Matrix._33 += m_ParticleState.m_Gravity[2] / 100.0f;
-		}
+		////重力計算
+		//if (m_ParticleState.UseGravity) {
+		//	m_ParticleVec[ParticleNum].Matrix._31 += m_ParticleState.m_Gravity[0] / 100.0f;
+		//	m_ParticleVec[ParticleNum].Matrix._32 += m_ParticleState.m_Gravity[1] / 100.0f;
+		//	m_ParticleVec[ParticleNum].Matrix._33 += m_ParticleState.m_Gravity[2] / 100.0f;
+		//}	
 
+		//加速度計算
 		Speed_ = m_ParticleState.m_Speed + m_ParticleState.m_Accel * m_ParticleVec[ParticleNum].CountTime * m_ParticleVec[ParticleNum].CountTime;
-
+		if (m_ParticleState.m_Accel != 0.0f) {
+			Speed_ = min(Speed_, m_ParticleState.m_MaxSpeed);
+			Speed_ = max(Speed_, m_ParticleState.m_MinSpeed);
+		}
 		//速度分移動させる
 		m_ParticleVec[ParticleNum].Matrix._41 += m_ParticleVec[ParticleNum].Matrix._31 * Speed_ * NowTime;
 		m_ParticleVec[ParticleNum].Matrix._42 += m_ParticleVec[ParticleNum].Matrix._32 * Speed_ * NowTime;
 		m_ParticleVec[ParticleNum].Matrix._43 += m_ParticleVec[ParticleNum].Matrix._33 * Speed_ * NowTime;
 
-
+		if (m_ParticleState.UseGravity) {
+			//重力
+			m_ParticleVec[ParticleNum].Matrix._41 += m_ParticleState.m_Gravity[0] / 100.0f * m_ParticleVec[ParticleNum].CountTime;
+			m_ParticleVec[ParticleNum].Matrix._42 += m_ParticleState.m_Gravity[1] / 100.0f * m_ParticleVec[ParticleNum].CountTime;
+			m_ParticleVec[ParticleNum].Matrix._43 += m_ParticleState.m_Gravity[2] / 100.0f * m_ParticleVec[ParticleNum].CountTime;
+		}
 		//生存時間減少
 		m_ParticleVec[ParticleNum].LifeTime -= NowTime;
 
@@ -348,6 +357,8 @@ void ParticleSystem::UpdateSRV(){
 	InState.iMaxLifeTime    = m_ParticleState.m_MaxLifeTime;
 	InState.iSpeed          = m_ParticleState.m_Speed;
 	InState.iAccel          = m_ParticleState.m_Accel;
+	InState.iMinChaseAngle  = m_ParticleState.m_MinSpeed;
+	InState.iMaxSpeed       = m_ParticleState.m_MaxSpeed;
 	InState.iRotateSpeed    = m_ParticleState.m_RotateSpeed;
 	InState.isActive        = m_ParticleState.isActive;
 	InState.isLooping       = m_ParticleState.isLooping;

@@ -43,6 +43,8 @@ struct ParticleSRVState
     float iMaxLifeTime; //最大生存時間
     float iSpeed; //速度
     float iAccel;
+    float iMinSpeed;
+    float iMaxSpeed;
     int iRotateSpeed; //回転速度
     int isActive; //有効かどうか
     int isLooping; //ループするかどうか
@@ -200,26 +202,38 @@ void ParticleUpdate(uint DTid_)
         TargetChase(DTid_);
     }
 
-    //重力処理
-    if (g_InState[0].UseGravity == 1)
-    {
-        g_OutState[DTid_].m_Matrix._13 += g_InState[0].iGravity.x / 100.0f;
-        g_OutState[DTid_].m_Matrix._23 += g_InState[0].iGravity.y / 100.0f;
-        g_OutState[DTid_].m_Matrix._33 += g_InState[0].iGravity.z / 100.0f;
+    ////重力処理
+    //if (g_InState[0].UseGravity == 1)
+    //{
+    //    g_OutState[DTid_].m_Matrix._13 += g_InState[0].iGravity.x / 100.0f;
+    //    g_OutState[DTid_].m_Matrix._23 += g_InState[0].iGravity.y / 100.0f;
+    //    g_OutState[DTid_].m_Matrix._33 += g_InState[0].iGravity.z / 100.0f;
 
-    }
+    //}
 
     g_OutState[DTid_].CountTime += 1.0f / 60.0f;//時間経過
 
     Speed = g_InState[0].iSpeed + g_InState[0].iAccel * g_OutState[DTid_].CountTime * g_OutState[DTid_].CountTime;//加速度処理
 
+    if (g_InState[0].iAccel != 0.0f)
+    {
+        Speed = min(Speed, g_InState[0].iMaxSpeed);
+        Speed = max(Speed, g_InState[0].iMinSpeed);
+    }
     //移動計算
     g_OutState[DTid_].m_Matrix._14 += g_OutState[DTid_].m_Matrix._13 * Speed * g_InState[0].iTime;
     g_OutState[DTid_].m_Matrix._24 += g_OutState[DTid_].m_Matrix._23 * Speed * g_InState[0].iTime;
     g_OutState[DTid_].m_Matrix._34 += g_OutState[DTid_].m_Matrix._33 * Speed * g_InState[0].iTime;
 
+    if (g_InState[0].UseGravity == 1)
+    {
+        g_OutState[DTid_].m_Matrix._14 += g_InState[0].iGravity.x / 100.0f * g_OutState[DTid_].CountTime;
+        g_OutState[DTid_].m_Matrix._24 += g_InState[0].iGravity.y / 100.0f * g_OutState[DTid_].CountTime;
+        g_OutState[DTid_].m_Matrix._34 += g_InState[0].iGravity.z / 100.0f * g_OutState[DTid_].CountTime;
+
+    }
     //生存時間処理
-    g_OutState[DTid_].LifeTime -= g_InState[0].iTime;
+        g_OutState[DTid_].LifeTime -= g_InState[0].iTime;
 
     if (g_OutState[DTid_].LifeTime <= 0)
     {

@@ -24,6 +24,7 @@ private:
 	~ParticleEditor() = default;
 
 	bool isActive = true;
+	bool isDrawTargetObj = true;
 	//ImGuiï\é¶ê›íË
 	void ImGuiDrawMain();
 	void ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_);

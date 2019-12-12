@@ -67,7 +67,9 @@ void ParticleEditor::Update() {
 void ParticleEditor::Draw() {
 	m_ParticleSystems.Draw();
 
-	m_TargetBillBoard.DrawBillBoardAdd(CCamera::GetInstance()->GetCameraMatrix());//ターゲット
+	if (isDrawTargetObj) {
+		m_TargetBillBoard.DrawBillBoardAdd(CCamera::GetInstance()->GetCameraMatrix());//ターゲット
+	}
 
 	ImGuiDrawMain();//総合UI
 
@@ -95,13 +97,10 @@ void ParticleEditor::ImGuiDrawMain() {
 			iParticleSystem.second->SetTargetPos(m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2]);
 		}
 	}
+	ImGui::Checkbox("TargetRendering", &isDrawTargetObj);
 
 	//パーティクルシステム追加操作
 	if (ImGui::Button("Create")) {
-		//ParticleSystem* CreatedParticleSystem = m_ParticleSystems.AddParticleSystem();
-		//std::string Name = "Particle" + std::to_string(m_ParticleSystems.getParticleSystemCount());
-		//CreatedParticleSystem->SetName(Name.c_str());//名前設定
-		//m_ViewParticleSystem = CreatedParticleSystem;
 		AddParticleSystem();
 	}
 
@@ -131,11 +130,6 @@ void ParticleEditor::ImGuiDrawMain() {
 	}
 
 	ImGui::BeginChild(ImGui::GetID((void*)0), ImVec2(250, 300), ImGuiWindowFlags_NoTitleBar);
-	//for (ParticleSystem* iParticleSystem : m_ParticleSystems.getParticleSystem()) {
-	//	if (ImGui::Button(iParticleSystem->getName())) {
-	//		m_ViewParticleSystem = iParticleSystem;
-	//	}
-	//}
 
 	for (auto iParticleSystem : m_ParticleSystems.getParticleSystem()) {
 		if (ImGui::Button(iParticleSystem.second->getName())) {
@@ -213,18 +207,34 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 
 	//パーティクル発生状況バー
 	ImGui::ProgressBar(1.0f - (pParticleSystem_->getLifeTime() / (ViewState.m_DuaringTime + ViewState.m_StartDelayTime)), ImVec2(180, 20));
-	CHECK(ImGui::DragFloat3("Position", ViewState.m_Position, 1.0f));  //座標
-	CHECK(ImGui::DragInt3("Angle", ViewState.m_Angle, 1.0f));                   //放出角度
-	CHECK(ImGui::DragInt("AngleRange", &ViewState.m_AngleRange,1, 1, 360));         //放出角度範囲
-	CHECK(ImGui::InputFloat("Duaring", &ViewState.m_DuaringTime, 1, 10));          //周期
-	CHECK(ImGui::InputFloat("StartDelayTime", &ViewState.m_StartDelayTime, 1, 10));//開始遅延時間
 
-	CHECK(ImGui::InputInt("ParticleNum", &ViewState.m_ParticleNum, 5, 1000));       //パーティクルの個数
-	CHECK(ImGui::InputFloat("MaxLifeTime", &ViewState.m_MaxLifeTime, 1.0f, 10.0f));//最大生存時間
-	CHECK(ImGui::InputFloat("Size", &ViewState.m_Size, 1.0f, 100.0f));             //粒子の大きさ
-	CHECK(ImGui::InputFloat("Speed", &ViewState.m_Speed, 1.0f, 100.0f));           //移動速度
-	CHECK(ImGui::InputFloat("Accel", &ViewState.m_Accel, 0.1f));                          //加速度
-	CHECK(ImGui::InputInt("RotateSpeed", &ViewState.m_RotateSpeed, 1, 100));       //回転速度
+	ImGui::Spacing();
+	if (ImGui::CollapsingHeader("Main Component")) {
+		CHECK(ImGui::DragFloat3("Position", ViewState.m_Position, 1.0f));  //座標
+		CHECK(ImGui::DragInt3("Angle", ViewState.m_Angle, 1.0f));                   //放出角度
+		CHECK(ImGui::DragInt("AngleRange", &ViewState.m_AngleRange, 1, 1, 360));         //放出角度範囲
+		CHECK(ImGui::InputInt("ParticleNum", &ViewState.m_ParticleNum, 5, 1000));       //パーティクルの個数
+		CHECK(ImGui::InputFloat("Size", &ViewState.m_Size, 1.0f, 100.0f));             //粒子の大きさ
+	}
+
+	if (ImGui::CollapsingHeader("Time Edit")) {
+		CHECK(ImGui::InputFloat("Duaring", &ViewState.m_DuaringTime, 1, 10));          //周期
+		CHECK(ImGui::InputFloat("StartDelayTime", &ViewState.m_StartDelayTime, 1, 10));//開始遅延時間
+		CHECK(ImGui::InputFloat("MaxLifeTime", &ViewState.m_MaxLifeTime, 1.0f, 10.0f));//最大生存時間
+	}
+
+	if (ImGui::CollapsingHeader("Speed Edit")) {
+		CHECK(ImGui::InputFloat("Speed", &ViewState.m_Speed, 1.0f, 100.0f));           //移動速度
+		CHECK(ImGui::InputFloat("Accel", &ViewState.m_Accel, 0.1f));                   //加速度
+		if (ViewState.m_Accel != 0.0f) {
+
+			CHECK(ImGui::DragFloat("minSpeed", &ViewState.m_MinSpeed));
+			CHECK(ImGui::DragFloat("maxSpeed", &ViewState.m_MaxSpeed));
+
+		}
+		CHECK(ImGui::InputInt("RotateSpeed", &ViewState.m_RotateSpeed, 1, 100));       //回転速度
+	}
+
 
 	//GPUパーティクルのチェックボックスがfalse->trueに変更されたらStart関数呼び出し
 	if (ImGui::Checkbox("GPUParticle", &ViewState.isGPUParticle)){//GPUパーティクル) {//変更判定
@@ -274,7 +284,6 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	else {
 		for (int num = 0; num < NextSystemNumbers.size(); num++) {
 			ImGui::Text(m_ParticleSystems.getParticleSystem()[NextSystemNumbers[num]]->getName());
-			//ImGui::Text(m_ParticleSystems.getParticleSystem()[NextSystemNumber]->getName());
 		}
 	}
 	//エミッターの設定
