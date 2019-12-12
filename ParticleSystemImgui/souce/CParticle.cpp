@@ -37,37 +37,35 @@ void DX11MatrixIdentity_subDefiner(DirectX::XMFLOAT4X4& mat) {
 }
 
 //メソッド
+
+//関数ポインタ利用して切り替わる処理を呼び出すメソッド---------------------------
+//パーティクル処理開始
+void ParticleSystem::Start() {
+	if (isEmitting == true && m_ParticleState.isEmitting == true) {
+		return;
+	}
+	isEmitting = m_ParticleState.isEmitting;
+	(this->*fpStartFunc)();
+}
+
+//更新処理
+void ParticleSystem::Update() {
+	if (isUpdateActive == false) {
+		return;
+	}
+	(this->*fpUpdateFunc)();
+}
+
+//描画処理
+void ParticleSystem::Draw(ID3D11DeviceContext* device) {
+	if (isDrawActive == false) {
+		return;
+	}
+	(this->*fpDrawFunc)(device);
+}
+//--------------------------------------------------------------------
+
 //初期化
-//ParticleSystem& ParticleSystem::Init(t_ParticleSystemState* ParticleState_) {
-//	//パーティクル初期化
-//	if (m_ParticleVec.empty() != true) {
-//		m_ParticleVec.clear();
-//	}
-//
-//	t_ParticleSystemState newState;
-//	//引数のステータスを設定
-//	if (ParticleState_ != nullptr) {
-//		newState = *ParticleState_;
-//	
-//	}
-//	SetParticleSystemState(&newState);
-//	InitComputeShader();
-//
-//	//ビルボード初期化---------------------------------------------------------------------------------------------------------------
-//	m_BillBoard.Init(0, 0, 0,
-//		newState.m_Size, newState.m_Size,
-//		XMFLOAT4(newState.m_Color[0], newState.m_Color[1], newState.m_Color[2], newState.m_Color[3]),
-//		PARTICLE_PS_SHADER,
-//		PARTICLE_VS_SHADER);
-//
-//	float u[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
-//	float v[4] = { 1.0f, 0.0f, 1.0f, 0.0f };
-//	m_BillBoard.SetUV(u, v);
-//	m_BillBoard.LoadTexTure(m_ParticleState.m_TextureName);
-//	//----------------------------------------------------------------------------------------------------------------------------
-//	(this->*fpStartFunc)();
-//	return *this;
-//}
 ParticleSystem& ParticleSystem::Init(t_ParticleSystemState* ParticleState_, const char* filename) {
 	//パーティクル初期化
 	if (m_ParticleVec.empty() != true) {
@@ -118,9 +116,8 @@ void ParticleSystem::ZeroInit() {
 
 //コンピュートシェーダー初期化
 void ParticleSystem::InitComputeShader() {
-	ID3D11Device* device = CDirectXGraphics::GetInstance()->GetDXDevice();
-	ID3D11DeviceContext* devicecontext = CDirectXGraphics::GetInstance()->GetImmediateContext();	
 
+	//Comポインタ設定
 	m_CpSRV.Attach(m_pSRV);
 	m_CpUAV.Attach(m_pUAV);
 	m_CpResult.Attach(m_pResult);
@@ -129,14 +126,7 @@ void ParticleSystem::InitComputeShader() {
 	m_CpBuf.Attach(m_pbuf);
 }
 
-void ParticleSystem::Update() {
-	//更新処理
-	if (isUpdateActive == false) {
-		return;
-	}
-	(this->*fpUpdateFunc)();
-}
-
+//GPUパーティクルシステム更新
 void ParticleSystem::UpdateComputeShader() {
 
 	if (m_ParticleNum <= 0) {
@@ -321,7 +311,7 @@ void ParticleSystem::UpdateSRV(){
 
 	//入力用バッファを更新
 	InState.iPosition       = { m_ParticleState.m_Position[0],m_ParticleState.m_Position[1],m_ParticleState.m_Position[2],0 };
-	InState.iAngle          = { m_ParticleState.m_Angle[0],   m_ParticleState.m_Angle[1],   m_ParticleState.m_Angle[2],   0 };
+	InState.iAngle          = { 360 - m_ParticleState.m_Angle[0],360 - m_ParticleState.m_Angle[1],360 - m_ParticleState.m_Angle[2],0 };
 	InState.iAngleRange     = m_ParticleState.m_AngleRange;
 	InState.iDuaringTime    = m_ParticleState.m_DuaringTime;
 	InState.iDelayTime      = m_ParticleState.m_StartDelayTime;
@@ -379,15 +369,6 @@ XMFLOAT4 ParticleSystem::RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d) {
 	}
 
 	return q;
-}
-
-//パーティクル処理開始
-void ParticleSystem::Start() {
-	if (isEmitting == true && m_ParticleState.isEmitting == true) {
-		return;
-	}
-	isEmitting = m_ParticleState.isEmitting;
-	(this->*fpStartFunc)();
 }
 
 void ParticleSystem::StartNomalParticle() {
@@ -453,10 +434,11 @@ void ParticleSystem::StartGPUParticle(){
 	CreateStructuredBuffer(device, sizeof(m_ParticleUAVState), m_ParticleNum, nullptr, m_CpResult.GetAddressOf());
 	CreateUnOrderAccessView(device, m_CpResult.Get(), m_CpUAV.GetAddressOf());
 
+	//初期化用コンピュートシェーダー実行
 	RunComputeShader(devicecontext, m_InitComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(), m_ParticleNum, 1, 1);
 
 	m_CpGetBuf = CreateAndCopyToBuffer(device, devicecontext, m_CpResult.Get());
-	//D3D11_MAPPED_SUBRESOURCE MappedSubResource;
+
 	devicecontext->Map(m_CpGetBuf.Get(), 0, D3D11_MAP_READ, 0, &m_MappedSubResource);
 	devicecontext->Unmap(m_CpGetBuf.Get(), 0);
 	////-------------------------------------------------
@@ -469,14 +451,6 @@ void ParticleSystem::StartGPUParticle(){
 	}
 }
 
-
-//描画処理
-void ParticleSystem::Draw(ID3D11DeviceContext* device) {
-	if (isDrawActive == false) {
-		return;
-	}
-	(this->*fpDrawFunc)(device);
-}
 
 //描画メソッド
 void ParticleSystem::DrawNomal(ID3D11DeviceContext* device) {
@@ -513,7 +487,7 @@ void ParticleSystem::GPUDraw(ID3D11DeviceContext* device) {
 }
 
 void ParticleSystem::UnInit() {
-
+	//終了処理
 	if (Particles != nullptr) {
 		delete[] Particles;
 		Particles = nullptr;
@@ -681,10 +655,6 @@ ParticleSystem& ParticleSystem::SetActive(bool set) {
 ParticleSystem& ParticleSystem::SetEmitte(bool set) {
 	isEmitting = set;
 	return *this;
-}
-
-void ParticleSystem::SetNextParticleSystem(ParticleSystem* next) {
-	//m_ParticleState.m_NextParticleSystem = next;
 }
 
 void ParticleSystem::SetNextParticleSystem(int NextNumber) {

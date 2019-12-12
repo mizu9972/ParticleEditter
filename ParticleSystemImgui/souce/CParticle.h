@@ -216,7 +216,6 @@ public:
 	ParticleSystem& SetEmitte(bool set);
 	void SetTargetPos(float x, float y, float z);//ターゲット座標
 	void SetParticleSystemState(t_ParticleSystemState* SetState_);//構造体情報全体
-	void SetNextParticleSystem(ParticleSystem* next);
 	void SetNextParticleSystem(int NextNumber);//次のパーティクルシステム番号
 	ParticleSystem& SetComputeShader(ID3D11ComputeShader* setShader, eComputeShaderType type);//コンピュートシェーダー
 	ParticleSystem& setSystemNumber(int setNumber);//自身のパーティクルシステム番号

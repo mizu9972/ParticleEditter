@@ -1,6 +1,5 @@
 #pragma once
 
-#include <list>
 #include <unordered_map>
 #include "Shader.h"
 #include "CParticle.h"
@@ -12,13 +11,12 @@
 class ParticleSystemParent :public Observer{
 private: 
 	std::unordered_map<int, ParticleSystem*> m_ParticleSystemDictionary;//パーティクルシステム群
-	t_ParticleSystemState DefaultParticleState;//初期設定
 
 	//コンピュートシェーダー
 	ID3D11ComputeShader* m_ComputeShader = nullptr;
 	ID3D11ComputeShader* m_InitComputeShader = nullptr;
 
-	int m_ParticleCounter = 0;
+	int m_ParticleCounter = 0;//パーティクルシステムそれぞれに持たせる固有の番号
 public:
 	ParticleSystemParent() {
 	}
@@ -37,8 +35,8 @@ public:
 	ParticleSystem* AddParticleSystem();
 	ParticleSystem* AddParticleSystem(t_ParticleSystemState* setState);
 	ParticleSystem* AddParticleSystem(t_ParticleSystemState* setState, std::vector<int>& setNumbers);
+
 	//パーティクルシステム削除
-	void RemoveParticleSystem(ParticleSystem* pParticleSystem_);///不要
 	void RemoveParticleSystem(int removeKey);
 	void DeleteParticleSystem();//全削除
 

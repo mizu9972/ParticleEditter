@@ -11,7 +11,6 @@
 static int CheckDataChange = 0;//ImGuiで数値が変更されたらtrueが返ってくるメソッドの仕様を利用して、数値変更を管理する変数
 
 extern int g_nCountFPS;
-constexpr auto PARTICLE_TEXTURE = "assets/ParticleTexture/particle.png";
 
 //初期化
 void ParticleEditor::Init() {
@@ -117,6 +116,8 @@ void ParticleEditor::ImGuiDrawMain() {
 				if (ImGui::Button(win32fd.cFileName)) {        //発見したファイルをボタンとして表示
 					                                           //ボタンが押されたらそのファイルを読み込み反映
 					InputData(win32fd.cFileName);
+
+					m_ViewParticleSystem = nullptr;
 				}
 			} while (FindNextFile(hFind, &win32fd));           //次のファイルを捜索
 		}
@@ -284,9 +285,9 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 		CHECK(ImGui::InputFloat("MaxLifeTime", &ViewState.m_MaxLifeTime, 1.0f, 10.0f));  //最大生存時間
 	}
 
-	if (ImGui::CollapsingHeader("Speed")) {
+	if (ImGui::CollapsingHeader("Move")) {
 		CHECK(ImGui::InputFloat("Speed", &ViewState.m_Speed, 1.0f, 100.0f));             //移動速度
-		CHECK(ImGui::InputFloat("Accel", &ViewState.m_Accel, 0.1f));                     //加速度
+		CHECK(ImGui::InputFloat("Accel", &ViewState.m_Accel, 0.1f, 10.0f));              //加速度
 		if (ViewState.m_Accel != 0.0f) {
 			CHECK(ImGui::DragFloat("minSpeed", &ViewState.m_MinSpeed));                  //最小速度
 			CHECK(ImGui::DragFloat("maxSpeed", &ViewState.m_MaxSpeed));                  //最大速度
@@ -303,7 +304,7 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	CHECK(ImGui::Checkbox("isChaser", &ViewState.isChaser));                    //オブジェクトを追いかけるか
 
 	if (ViewState.isChaser) {
-		                                                                        //#TODO 効果がわかりづらい
+		//#TODO 効果がわかりづらい
 		CHECK(ImGui::SliderInt("minAngle", &ViewState.m_MinChaseAngle, 0, 360));//最小角度
 		CHECK(ImGui::SliderInt("maxAngle", &ViewState.m_MaxChaseAngle, 0, 360));//最大角度
 	}
@@ -313,7 +314,7 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 		CHECK(ImGui::InputFloat3("Gravity", ViewState.m_Gravity));              //重力加速度設定
 	}
 
-	CHECK(ImGui::Checkbox("Looping", &ViewState.isLooping));                  //ループさせるかどうか
+	CHECK(ImGui::Checkbox("Looping", &ViewState.isLooping));                    //ループさせるかどうか
 
 	if (ImGui::Checkbox("isEmitter", &ViewState.isEmitting)) {                  //他のパーティクルからの発生に限らせるか
 		pParticleSystem_->SetEmitte(ViewState.isEmitting);
@@ -371,8 +372,6 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 
 		ImGui::Text(ViewState.m_TextureName);                      //テクスチャパス表示
 		
-		                                                           //読み込み可テクスチャリスト表示
-		                                                           //テクスチャ読み込み
 		WIN32_FIND_DATA win32fd;
 		HANDLE hFind;                                              //ファイル操作ハンドル
 
@@ -449,18 +448,26 @@ ParticleEditor::WARNING_REACTION ParticleEditor::ImGuiWarningText(const char* te
 	return Reaction;
 }
 
+//全削除
 void ParticleEditor::DeleteParticleSystems() {
 	m_ParticleSystems.DeleteParticleSystem();
 }
 
+//パーティクルシステム追加
 void ParticleEditor::AddParticleSystem(t_ParticleSystemState* setState) {
-	ParticleSystem* CreatedParticleSystem = m_ParticleSystems.AddParticleSystem();
-	std::string Name = "Particle" + std::to_string(m_ParticleSystems.getParticleSystemCount());
+	ParticleSystem* CreatedParticleSystem = m_ParticleSystems.AddParticleSystem();//追加
+
+	
 	if (setState != nullptr) {
+		//コピー元データがあるなら設定
 		CreatedParticleSystem->SetParticleSystemState(setState);
 	}
 
+	//名前設定
+	std::string Name = "Particle" + std::to_string(m_ParticleSystems.getParticleSystemCount());
 	CreatedParticleSystem->SetName(Name.c_str());
+	
+	//編集中にする
 	m_ViewParticleSystem = CreatedParticleSystem;
 }
 
@@ -524,7 +531,7 @@ void ParticleEditor::OutputData() {
 	if (m_ParticleSystems.getParticleSystemCount() == 0) {
 		return;
 	}
-//カレントディレクトリを操作する
+	//カレントディレクトリを操作する
 	TCHAR crDir[MAX_PATH + 1];
 	GetCurrentDirectory(MAX_PATH + 1, crDir);//操作前のディレクトリを取得
 	SetCurrentDirectory(".\\OutPutData");//書き出し先のフォルダへカレントディレクトリを変更

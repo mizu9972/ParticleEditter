@@ -8,7 +8,7 @@
 float4 CreateRotateQt(float radian, float angleX, float angleY, float angleZ)
 {
     float4 retQt;
-
+    radian = radian % 360;
     float hRadian = 0.5f * radian;
     float sinRad = sin(hRadian);
 

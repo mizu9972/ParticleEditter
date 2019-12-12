@@ -20,6 +20,7 @@ void ParticleSystemParent::UnInit() {
 		m_ComputeShader = nullptr;
 	}
 }
+
 void ParticleSystemParent::Start() {
 	//パーティクル再生
 	for (auto iParticleSystem : m_ParticleSystemDictionary) {
@@ -76,27 +77,33 @@ void ParticleSystemParent::InputParticleSystem(const char* filename) {
 
 //リスト操作処理
 ParticleSystem* ParticleSystemParent::AddParticleSystem() {
-	//追加
+	//パーティクルシステム追加
+	//初期設定で追加用
+
 	ParticleSystem* newParticleSystem = new ParticleSystem;
 
+	//初期化
 	newParticleSystem->
 		SetComputeShader(m_InitComputeShader, ParticleSystem::eComputeShaderType::INIT)
 		.SetComputeShader(m_ComputeShader, ParticleSystem::eComputeShaderType::UPDATE)
 		.Init()
 		.setSystemNumber(m_ParticleCounter);
 		
-	newParticleSystem->AddObsever(this);
+	newParticleSystem->AddObsever(this);//パーティクルシステム終了通知対象へ追加
+
+	//辞書登録
 	m_ParticleSystemDictionary[m_ParticleCounter] = newParticleSystem;
 	m_ParticleCounter++;
 
 	return newParticleSystem;
 }
-
-//パーティクルシステム追加
 ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* setState) {
-	//追加
+	//パーティクルシステム追加
+	//コピー等編集された設定で初期化用
+
 	ParticleSystem* newParticleSystem = new ParticleSystem;
 
+	//初期化
 	newParticleSystem->
 		SetComputeShader(m_InitComputeShader,ParticleSystem::eComputeShaderType::INIT)
 		.SetComputeShader(m_ComputeShader,ParticleSystem::eComputeShaderType::UPDATE)
@@ -104,17 +111,21 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 		.Init(setState)
 		.setSystemNumber(m_ParticleCounter);
 		
-	newParticleSystem->AddObsever(this);
+	newParticleSystem->AddObsever(this);//パーティクルシステム終了通知対象へ追加
+
+	//辞書登録
 	m_ParticleSystemDictionary[m_ParticleCounter] = newParticleSystem;
 	m_ParticleCounter++;
 
 	return newParticleSystem;
 }
-
 ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* setState, std::vector<int>& setNumbers) {
-	//追加
+	//パーティクルシステム追加
+	//ファイル読み込み用
+
 	ParticleSystem* newParticleSystem = new ParticleSystem;
 
+	//初期化
 	newParticleSystem->
 		SetComputeShader(m_InitComputeShader, ParticleSystem::eComputeShaderType::INIT)
 		.SetComputeShader(m_ComputeShader, ParticleSystem::eComputeShaderType::UPDATE)
@@ -122,11 +133,14 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 		.Init(setState)
 		.setSystemNumber(m_ParticleCounter);
 	
+	//システム番号設定
 	for (int num = 0; num < setNumbers.size(); num++) {
 		newParticleSystem->SetNextParticleSystem(setNumbers[num]);
 	}
 
-	newParticleSystem->AddObsever(this);
+	newParticleSystem->AddObsever(this);//パーティクルシステム終了通知対象へ追加
+
+	//辞書登録
 	m_ParticleSystemDictionary[m_ParticleCounter] = newParticleSystem;
 	m_ParticleCounter++;
 
@@ -134,20 +148,14 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 }
 
 //パーティクルシステム削除
-void ParticleSystemParent::RemoveParticleSystem(ParticleSystem* pParticleSystem_) {
-	//削除
-	delete pParticleSystem_;
-}
-
 void ParticleSystemParent::RemoveParticleSystem(int removeKey) {
 
-	m_ParticleSystemDictionary[removeKey]->RemoveObserver(this);
-	m_ParticleSystemDictionary.erase(removeKey);
+	m_ParticleSystemDictionary[removeKey]->RemoveObserver(this);//通知対象から外す
+	m_ParticleSystemDictionary.erase(removeKey);//削除
 }
 
 void ParticleSystemParent::DeleteParticleSystem() {
 	//全削除
-
 	for (auto iParticleSystem : m_ParticleSystemDictionary) {
 		iParticleSystem.second->UnInit();
 		iParticleSystem.second->RemoveObserver(this);
@@ -166,7 +174,4 @@ void ParticleSystemParent::OnNotify(Subject* subject_) {
 	for (int num = 0; num < nextNumbers.size(); num++) {
 		m_ParticleSystemDictionary[nextNumbers[num]]->SetActive(true).SetEmitte(false).Start();
 	}
- //	int NextSystemNumber = PSystem->getNextSystemNumber();
-	//m_ParticleSystemDictionary[NextSystemNumber]->SetActive(true)
-	//	.Start();
 }

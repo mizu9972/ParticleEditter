@@ -16,15 +16,17 @@ private:
 
 	ParticleSystem* m_ViewParticleSystem = nullptr;//設定画面を表示するパーティクルシステム
 
-	XMFLOAT3 m_TargetPos = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	float m_TargetPosf[3] = { 0.0f,0.0f,0.0f };
+	//ホーミングターゲット
 	CBillBoard m_TargetBillBoard;
+	float m_TargetPosf[3] = { 0.0f,0.0f,0.0f };
+	bool isDrawTargetObj = false;
+
 
 	ParticleEditor() {};
 	~ParticleEditor() = default;
 
 	bool isActive = true;
-	bool isDrawTargetObj = false;
+
 	//ImGui表示設定
 	void ImGuiDrawMain();
 	void ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_);
@@ -34,7 +36,7 @@ private:
 		CANCEL,  //Cancel押された
 		DONT_PUSH//押されていない
 	};
-	WARNING_REACTION ImGuiWarningText(const char* text);
+	WARNING_REACTION ImGuiWarningText(const char* text);//警告表示
 public:
 	ParticleEditor(const ParticleEditor&) = delete;
 	ParticleEditor(ParticleEditor&&) = delete;

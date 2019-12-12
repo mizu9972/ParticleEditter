@@ -3,36 +3,6 @@
 #ifndef PARTICLE_COMMON
 #define PARTICLE_COMMON
 
-
-
-//cbuffer ConstantBufferParticle : register(b7)
-//{
-//    float4 iPosition;
-//    int4 iAngle;
-//    int iAngleRange;
-//    float iDuaringTime;
-//    float iMaxLifeTime;
-//    float iSpeed;
-//    int iRotateSpeed;
-//    int isActive;
-//    int isLooping;
-
-//    int iParticleNum;
-//    float iTime;
-//    float3 iTargetPos;
-
-//    int isChaser;
-//    int iMinChaseAngle;
-//    int iMaxChaseAngle;
-
-//    int UseGravity;
-//    float3 iGravity;
-//    //バイト数調整用
-//    //float Padding = 0;
-//    //float Padding1 = 0;
-//    //float Padding2 = 0;
-//}
-
 struct ParticleSRVState
 {
     float4 iPosition; //全体の位置
