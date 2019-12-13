@@ -130,8 +130,8 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 		SetComputeShader(m_InitComputeShader, ParticleSystem::eComputeShaderType::INIT)
 		.SetComputeShader(m_ComputeShader, ParticleSystem::eComputeShaderType::UPDATE)
 		.SetEmitte(setState->isEmitting)
-		.Init(setState)
-		.setSystemNumber(m_ParticleCounter);
+		.Init(setState);
+		//.setSystemNumber(m_ParticleCounter);
 	
 	//システム番号設定
 	for (int num = 0; num < setNumbers.size(); num++) {
@@ -141,8 +141,8 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 	newParticleSystem->AddObsever(this);//パーティクルシステム終了通知対象へ追加
 
 	//辞書登録
-	m_ParticleSystemDictionary[m_ParticleCounter] = newParticleSystem;
-	m_ParticleCounter++;
+	m_ParticleSystemDictionary[newParticleSystem->getSystemNumber()] = newParticleSystem;
+	m_ParticleCounter = max(newParticleSystem->getSystemNumber(), m_ParticleCounter + 1);
 
 	return newParticleSystem;
 }

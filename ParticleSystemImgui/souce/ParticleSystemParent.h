@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_map>
+#include <map>
 #include "Shader.h"
 #include "CParticle.h"
 #include "Observer.h"
@@ -9,8 +9,8 @@
 //ファイル入出力するのはこのクラスから
 //複数作成し得るパーティクルシステムをまとめて管理する
 class ParticleSystemParent :public Observer{
-private: 
-	std::unordered_map<int, ParticleSystem*> m_ParticleSystemDictionary;//パーティクルシステム群
+private:
+	std::map<int, ParticleSystem*> m_ParticleSystemDictionary;//パーティクルシステム群
 
 	//コンピュートシェーダー
 	ID3D11ComputeShader* m_ComputeShader = nullptr;
@@ -45,7 +45,7 @@ public:
 
 	//アクセサ
 	void setParticleCounter(int set) { m_ParticleCounter = set; };
-	std::unordered_map<int, ParticleSystem*> getParticleSystem() { return m_ParticleSystemDictionary; };
+	std::map<int, ParticleSystem*> getParticleSystem() { return m_ParticleSystemDictionary; };
 	int getParticleSystemNum() { return static_cast<int>(m_ParticleSystemDictionary.size()); };
 	int getParticleSystemCount() { return m_ParticleCounter; };
 };

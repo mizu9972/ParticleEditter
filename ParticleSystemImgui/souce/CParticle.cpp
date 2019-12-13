@@ -98,7 +98,8 @@ ParticleSystem& ParticleSystem::Init(t_ParticleSystemState* ParticleState_, cons
 	m_BillBoard.SetUV(u, v);
 	m_BillBoard.LoadTexTure(m_ParticleState.m_TextureName);
 	//----------------------------------------------------------------------------------------------------------------------------
-	(this->*fpStartFunc)();
+	//(this->*fpStartFunc)();
+	Start();
 	return *this;
 }
 
@@ -611,7 +612,7 @@ bool ParticleSystem::FInTex(const char* FileName_) {
 	Texname += FileName_;//ファイルの位置を指定
 
 	Init(&m_ParticleState, Texname.c_str());//指定したファイルを利用して初期化
-
+	(this->*fpStartFunc)();
 	return 0;
 }
 

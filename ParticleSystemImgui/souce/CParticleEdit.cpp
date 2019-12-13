@@ -23,6 +23,7 @@ void ParticleEditor::Init() {
 		"shader/psParticle.fx",
 		"shader/vsPrticle.fx"
 	);
+	strcpy_s(m_FileName, sizeof(m_FileName), "ParticleState");
 
 	m_ParticleSystems.Init();
 
@@ -107,7 +108,7 @@ void ParticleEditor::ImGuiDrawMain() {
 	//ファイル読み込み
 	WIN32_FIND_DATA win32fd;
 	HANDLE hFind;                                              //ファイル操作ハンドル
-	std::string DirectoryName = ".\\InPutData\\*.txt";         //読み込むフォルダのディレクトリと拡張子指定
+	std::string DirectoryName = ".\\ParticleData\\*.ptc";         //読み込むフォルダのディレクトリと拡張子指定
 	
 	if (ImGui::TreeNode("Import")) {                           //Imguiのツリーが開かれたら
 		hFind = FindFirstFile(DirectoryName.c_str(), &win32fd);//ファイルが存在するか確認
@@ -126,8 +127,13 @@ void ParticleEditor::ImGuiDrawMain() {
 
 	}
 	//ファイル書き出し
-	if (ImGui::Button("Export")) {
-		OutputData();
+	
+	if (ImGui::TreeNode("Export")) {
+		ImGui::InputText("FileName", m_FileName, sizeof(m_FileName));
+		if (ImGui::Button("Export Data")) {
+			OutputData(m_FileName);
+		}
+		ImGui::TreePop();
 	}
 
 
@@ -425,8 +431,8 @@ ParticleEditor::WARNING_REACTION ParticleEditor::ImGuiWarningText(const char* te
 	//Imguiウィンドウ設定
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.0f, 0.7f, 0.2f, 1.0f));
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0.0f, 0.3f, 0.1f, 1.0f));
-	ImGui::SetNextWindowPos(ImVec2(SCREEN_X / 2 - 100, SCREEN_Y / 2 - 50), ImGuiSetCond_Once);
-	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Once);
+	ImGui::SetNextWindowPos(ImVec2(SCREEN_X / 2 - 75, SCREEN_Y / 2 - 40), ImGuiSetCond_Once);
+	ImGui::SetNextWindowSize(ImVec2(150, 80), ImGuiSetCond_Once);
 
 	ImGui::Begin("Watning");
 
@@ -450,17 +456,18 @@ ParticleEditor::WARNING_REACTION ParticleEditor::ImGuiWarningText(const char* te
 
 //全削除
 void ParticleEditor::DeleteParticleSystems() {
+	m_ViewParticleSystem = nullptr;
 	m_ParticleSystems.DeleteParticleSystem();
 }
 
 //パーティクルシステム追加
 void ParticleEditor::AddParticleSystem(t_ParticleSystemState* setState) {
-	ParticleSystem* CreatedParticleSystem = m_ParticleSystems.AddParticleSystem();//追加
-
-	
+	ParticleSystem* CreatedParticleSystem;
 	if (setState != nullptr) {
-		//コピー元データがあるなら設定
-		CreatedParticleSystem->SetParticleSystemState(setState);
+		CreatedParticleSystem = m_ParticleSystems.AddParticleSystem(setState);//追加	
+	}
+	else {
+		CreatedParticleSystem = m_ParticleSystems.AddParticleSystem();//追加
 	}
 
 	//名前設定
@@ -482,7 +489,7 @@ bool ParticleEditor::InputData(const char* FileName_) {
 
 
 	GetCurrentDirectory(MAX_PATH + 1, crDir);//操作前のディレクトリを取得
-	SetCurrentDirectory(".\\InPutData");//読み込み先フォルダへカレントディレクトリを変更
+	SetCurrentDirectory(".\\ParticleData");//読み込み先フォルダへカレントディレクトリを変更
 
 	//ファイル読み込み
 	FILE *Fp;
@@ -503,6 +510,7 @@ bool ParticleEditor::InputData(const char* FileName_) {
 		for (int Count = 0; Count < ParticleCount; Count++) {
 			//データを読み込んで追加
 			fread(&GetState, sizeof(t_ParticleSystemState), 1, Fp);//read2
+			
 			fread(&NumbersSize, sizeof(int), 1, Fp);//read3 要素数読み込み
 
 			nextNumbers.clear();
@@ -526,7 +534,7 @@ bool ParticleEditor::InputData(const char* FileName_) {
 	return true;
 }
 
-void ParticleEditor::OutputData() {
+void ParticleEditor::OutputData(char* FileName_) {
 	//パーティクルシステムの情報をファイルへ書き出し
 	if (m_ParticleSystems.getParticleSystemCount() == 0) {
 		return;
@@ -534,12 +542,16 @@ void ParticleEditor::OutputData() {
 	//カレントディレクトリを操作する
 	TCHAR crDir[MAX_PATH + 1];
 	GetCurrentDirectory(MAX_PATH + 1, crDir);//操作前のディレクトリを取得
-	SetCurrentDirectory(".\\OutPutData");//書き出し先のフォルダへカレントディレクトリを変更
+	SetCurrentDirectory(".\\ParticleData");//書き出し先のフォルダへカレントディレクトリを変更
 
 	//ファイル書き出し
 	FILE *Fp;
 
-	fopen_s(&Fp, "ParticleState.txt", "wb");
+	char ExtName[128];
+	strcpy_s(ExtName, sizeof(ExtName), FileName_);
+	strcat_s(ExtName, sizeof(ExtName), ".ptc");
+
+	fopen_s(&Fp, ExtName, "wb");
 
 	//先頭にパーティクルの個数を記述
 	int ParticleCount = m_ParticleSystems.getParticleSystemCount();

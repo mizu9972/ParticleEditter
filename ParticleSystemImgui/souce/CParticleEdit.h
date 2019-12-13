@@ -16,6 +16,9 @@ private:
 
 	ParticleSystem* m_ViewParticleSystem = nullptr;//設定画面を表示するパーティクルシステム
 
+	//出力ファイル名
+	char m_FileName[64];
+
 	//ホーミングターゲット
 	CBillBoard m_TargetBillBoard;
 	float m_TargetPosf[3] = { 0.0f,0.0f,0.0f };
@@ -60,5 +63,5 @@ public:
 
 	//ファイル入出力
 	bool InputData(const char* FileName_);
-	void OutputData();
+	void OutputData(char* FileName_);
 };
