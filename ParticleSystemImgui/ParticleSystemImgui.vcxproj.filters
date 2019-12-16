@@ -13,9 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="ソース ファイル\imgui">
-      <UniqueIdentifier>{1a068e5b-9ce2-411d-b977-a849de0db58f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ソース ファイル\class">
       <UniqueIdentifier>{46d25be4-b078-4c25-b142-f1af90002ff6}</UniqueIdentifier>
     </Filter>
@@ -43,6 +40,9 @@
     <Filter Include="リソース ファイル\compute">
       <UniqueIdentifier>{a0f2f85f-9c91-40ca-95be-b240e2ca151f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\ImGui">
+      <UniqueIdentifier>{81bf26b2-6eb7-497d-a62f-2ffa90b2823a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="souce\Shader.cpp">
@@ -59,21 +59,6 @@
     </ClCompile>
     <ClCompile Include="souce\dx11mathutil.cpp">
       <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="souce\imgui.cpp">
-      <Filter>ソース ファイル\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="souce\imgui_draw.cpp">
-      <Filter>ソース ファイル\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="souce\imgui_impl_dx11.cpp">
-      <Filter>ソース ファイル\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="souce\imgui_impl_win32.cpp">
-      <Filter>ソース ファイル\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="souce\imgui_widgets.cpp">
-      <Filter>ソース ファイル\imgui</Filter>
     </ClCompile>
     <ClCompile Include="souce\CDirectXGraphics.cpp">
       <Filter>ソース ファイル\class</Filter>
@@ -117,6 +102,21 @@
     <ClCompile Include="souce\CParticleEdit.cpp">
       <Filter>ソース ファイル\Particle</Filter>
     </ClCompile>
+    <ClCompile Include="souce\ImGui\imgui.cpp">
+      <Filter>ソース ファイル\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\ImGui\imgui_draw.cpp">
+      <Filter>ソース ファイル\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\ImGui\imgui_impl_dx11.cpp">
+      <Filter>ソース ファイル\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\ImGui\imgui_impl_win32.cpp">
+      <Filter>ソース ファイル\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\ImGui\imgui_widgets.cpp">
+      <Filter>ソース ファイル\ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="souce\NonCopyable.h">
@@ -140,21 +140,6 @@
     <ClInclude Include="souce\DatFile.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="souce\imgui.h">
-      <Filter>ヘッダー ファイル\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\imgui_impl_dx11.h">
-      <Filter>ヘッダー ファイル\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\imgui_impl_win32.h">
-      <Filter>ヘッダー ファイル\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\imgui_internal.h">
-      <Filter>ヘッダー ファイル\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\imconfig.h">
-      <Filter>ヘッダー ファイル\imgui</Filter>
-    </ClInclude>
     <ClInclude Include="souce\CCamera.h">
       <Filter>ヘッダー ファイル\class</Filter>
     </ClInclude>
@@ -175,15 +160,6 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\imstb_rectpack.h">
-      <Filter>ヘッダー ファイル\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\imstb_textedit.h">
-      <Filter>ヘッダー ファイル\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\imstb_truetype.h">
-      <Filter>ヘッダー ファイル\imgui</Filter>
     </ClInclude>
     <ClInclude Include="souce\DX11Settransform.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -214,6 +190,30 @@
     </ClInclude>
     <ClInclude Include="souce\CParticleEdit.h">
       <Filter>ヘッダー ファイル\particle</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ImGui\imconfig.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ImGui\imgui.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ImGui\imgui_impl_dx11.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ImGui\imgui_impl_win32.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ImGui\imgui_internal.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ImGui\imstb_rectpack.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ImGui\imstb_textedit.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ImGui\imstb_truetype.h">
+      <Filter>ヘッダー ファイル\imgui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

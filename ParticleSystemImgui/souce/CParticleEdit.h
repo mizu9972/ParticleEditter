@@ -4,9 +4,9 @@
 #include "CParticle.h"
 #include "CBillBoard.h"
 
-#include "imgui.h"
-#include "imgui_impl_dx11.h"
-#include "imgui_impl_win32.h"
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_dx11.h"
+#include "ImGui/imgui_impl_win32.h"
 
 //パーティクルシステムのエディタークラス
 //ImGuiを利用してパーティクルシステムのステータスを表示・操作する

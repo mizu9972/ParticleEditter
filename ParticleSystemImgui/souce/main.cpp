@@ -14,8 +14,8 @@
 #include <thread>
 #include <crtdbg.h>
 #include "game.h"
-#include "imgui.h"
-#include "imgui_impl_dx11.h"
+#include "ImGui/imgui.h"
+#include "ImGui/imgui_impl_dx11.h"
 
 //-----------------------------------------------------------------------------
 // ƒ}ƒNƒ‚Ì’è‹`
