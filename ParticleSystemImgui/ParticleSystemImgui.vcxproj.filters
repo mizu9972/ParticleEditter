@@ -43,6 +43,12 @@
     <Filter Include="ソース ファイル\ImGui">
       <UniqueIdentifier>{81bf26b2-6eb7-497d-a62f-2ffa90b2823a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\ImGuizmo">
+      <UniqueIdentifier>{28afa7b8-320d-4348-adfa-303624b6ffb9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\ImGuizmo">
+      <UniqueIdentifier>{c2b2e24f-626c-492e-a57f-95d03ab6cb40}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="souce\Shader.cpp">
@@ -116,6 +122,18 @@
     </ClCompile>
     <ClCompile Include="souce\ImGui\imgui_widgets.cpp">
       <Filter>ソース ファイル\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\ImGui\ImCurveEdit.cpp">
+      <Filter>ソース ファイル\ImGuizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\ImGui\ImGradient.cpp">
+      <Filter>ソース ファイル\ImGuizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\ImGui\ImGuizmo.cpp">
+      <Filter>ソース ファイル\ImGuizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="souce\ImGui\ImSequencer.cpp">
+      <Filter>ソース ファイル\ImGuizmo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -214,6 +232,18 @@
     </ClInclude>
     <ClInclude Include="souce\ImGui\imstb_truetype.h">
       <Filter>ヘッダー ファイル\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ImGui\ImCurveEdit.h">
+      <Filter>ヘッダー ファイル\ImGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ImGui\ImGradient.h">
+      <Filter>ヘッダー ファイル\ImGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ImGui\ImGuizmo.h">
+      <Filter>ヘッダー ファイル\ImGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ImGui\ImSequencer.h">
+      <Filter>ヘッダー ファイル\ImGuizmo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
