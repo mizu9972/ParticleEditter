@@ -93,9 +93,6 @@
     <ClCompile Include="souce\CBillBoard.cpp">
       <Filter>ソース ファイル\class</Filter>
     </ClCompile>
-    <ClCompile Include="souce\CHomingMissile.cpp">
-      <Filter>ソース ファイル\class</Filter>
-    </ClCompile>
     <ClCompile Include="souce\DatFile.cpp">
       <Filter>ソース ファイル\File</Filter>
     </ClCompile>
@@ -191,9 +188,6 @@
     <ClInclude Include="souce\DX11Settransform.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="souce\C2DQuadtex.h">
-      <Filter>ヘッダー ファイル\class</Filter>
-    </ClInclude>
     <ClInclude Include="souce\CDirectxGraphics.h">
       <Filter>ヘッダー ファイル\class</Filter>
     </ClInclude>
@@ -210,9 +204,6 @@
       <Filter>ヘッダー ファイル\particle</Filter>
     </ClInclude>
     <ClInclude Include="souce\CBillBoard.h">
-      <Filter>ヘッダー ファイル\class</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\CHomingMissile.h">
       <Filter>ヘッダー ファイル\class</Filter>
     </ClInclude>
     <ClInclude Include="souce\Observer.h">

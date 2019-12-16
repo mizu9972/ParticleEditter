@@ -133,7 +133,6 @@
   <ItemGroup>
     <ClCompile Include="souce\CBillBoard.cpp" />
     <ClCompile Include="souce\CDirectXGraphics.cpp" />
-    <ClCompile Include="souce\CHomingMissile.cpp" />
     <ClCompile Include="souce\CModel.cpp" />
     <ClCompile Include="souce\ComputeShader.cpp" />
     <ClCompile Include="souce\CParticle.cpp" />
@@ -159,12 +158,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="souce\C2DQuadtex.h" />
     <ClInclude Include="souce\CBillBoard.h" />
     <ClInclude Include="souce\CCamera.h" />
     <ClInclude Include="souce\CDirectInput.h" />
     <ClInclude Include="souce\CDirectxGraphics.h" />
-    <ClInclude Include="souce\CHomingMissile.h" />
     <ClInclude Include="souce\CLight.h" />
     <ClInclude Include="souce\CModel.h" />
     <ClInclude Include="souce\CParticle.h" />
@@ -232,6 +229,7 @@
     </FxCompile>
     <FxCompile Include="shader\ParticleCommon.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="shader\ps.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -243,6 +241,7 @@
     </FxCompile>
     <FxCompile Include="shader\psParticle.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="shader\psskydome.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -262,6 +261,7 @@
     </FxCompile>
     <FxCompile Include="shader\Quo.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="shader\Squareps.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
@@ -289,6 +289,7 @@
     </FxCompile>
     <FxCompile Include="shader\vsPrticle.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="shader\vstriangle.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

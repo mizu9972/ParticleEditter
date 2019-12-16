@@ -218,7 +218,9 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	ImGui::SetNextWindowPos(ImVec2(SCREEN_X - 300, 0), ImGuiSetCond_Once);
 	ImGui::SetNextWindowSize(ImVec2(300, SCREEN_Y), ImGuiSetCond_Once);
 
-	ImGui::Begin(pParticleSystem_->getName(), nullptr, ImGuiWindowFlags_MenuBar);
+	char WindowName[256] = "ParticleSystem : ";
+	strcat_s(WindowName, sizeof(WindowName), pParticleSystem_->getName());
+	ImGui::Begin(WindowName, nullptr, ImGuiWindowFlags_MenuBar);
 
 	CheckDataChange = 0;//”’l•ÏXŠÄ‹•Ï”‰Šú‰»
 
