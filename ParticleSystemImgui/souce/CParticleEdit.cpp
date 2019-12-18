@@ -1,10 +1,13 @@
 #include <list>
 #include <vector>
 #include <string>
+#include "ImGui/ImGuizmoUtil.h"
 #include "CParticleEdit.h"
 #include "CCamera.h"
 
 #include "game.h"
+
+void EditTransform(const float *cameraView, float *cameraProjection, float* matrix);
 
 #define CHECK(x) (CheckDataChange += x) //数値変更を感知
 #define CHECK_RESULT (CheckDataChange > 0) //変更されたかどうか判定
@@ -211,7 +214,12 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	t_ParticleSystemState ViewState = pParticleSystem_->GetState();
 
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
+	ImGuiIO& io = ImGui::GetIO();
+	float fov = 27.0f;
+	
+	CCamera::GetInstance()->Perspective(fov, io.DisplaySize.x / io.DisplaySize.y, 0.1f, 100.f, cameraProjection);
+	//ImGuizmo
+	ImGuizmo::BeginFrame();
 	//Imguiウィンドウ設定
 	ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(0.0f, 0.7f, 0.2f, 1.0f));
 	ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(0.0f, 0.3f, 0.1f, 1.0f));
@@ -222,8 +230,20 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	strcat_s(WindowName, sizeof(WindowName), pParticleSystem_->getName());
 	ImGui::Begin(WindowName, nullptr, ImGuiWindowFlags_MenuBar);
 
+	CCamera::GetInstance()->CreateView(cameraView);
+	//ImGuizmo::DrawGrid(cameraView, CCamera::GetInstance()->GetProjectionMatrixf16(), pParticleSystem_->getMatrixf16(), 10.0f);
 	CheckDataChange = 0;//数値変更監視変数初期化
 
+	float objectMatrix[16] =
+	{ 1.f, 0.f, 0.f, 0.f,
+	  0.f, 1.f, 0.f, 0.f,
+	  0.f, 0.f, 1.f, 0.f,
+	  0.f, 0.f, 0.f, 1.f };
+	ImGuizmo::Enable(true);
+
+	float* a = pParticleSystem_->getMatrixf16();
+	EditTransform(cameraView, cameraProjection, objectMatrix);
+	//ImGuizmo::DrawCube(cameraView, cameraProjection, objectMatrix);
 	//パーティクルシステム制御
 	{
 		static bool DeleteFlag = false;
@@ -402,6 +422,8 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	//---------------------------------------------------------------------------------------
 	ImGui::End();
 
+	ImGuizmo::ViewManipulate(cameraView, 8.0f, ImVec2(200, 0), ImVec2(128, 128), 0x101010);
+
 	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
 
@@ -574,9 +596,84 @@ void ParticleEditor::OutputData(char* FileName_) {
 		}
 
 	}
-
+	
 	fclose(Fp);
 
 	SetCurrentDirectory(crDir);//カレントディレクトリを元に戻す
 
+}
+
+void EditTransform(const float *cameraView, float *cameraProjection, float* matrix)
+{
+	static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
+	static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
+	static bool useSnap = false;
+	static float snap[3] = { 1.f, 1.f, 1.f };
+	static float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
+	static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
+	static bool boundSizing = false;
+	static bool boundSizingSnap = false;
+
+	if (ImGui::IsKeyPressed(90))
+		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+	if (ImGui::IsKeyPressed(69))
+		mCurrentGizmoOperation = ImGuizmo::ROTATE;
+	if (ImGui::IsKeyPressed(82)) // r Key
+		mCurrentGizmoOperation = ImGuizmo::SCALE;
+	if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
+		mCurrentGizmoOperation = ImGuizmo::ROTATE;
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+		mCurrentGizmoOperation = ImGuizmo::SCALE;
+	float f[3] = { 1.0f,1.0f,1.0f };
+	float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+	ImGuizmo::DecomposeMatrixToComponents(matrix, matrixTranslation, matrixRotation, matrixScale);
+	ImGui::InputFloat3("Tr", matrixTranslation, 3);
+	ImGui::InputFloat3("Rt", matrixRotation, 3);
+	ImGui::InputFloat3("Sc", matrixScale, 3);
+	ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, matrix);
+
+	//ImGuizmo::RecomposeMatrixFromComponents(f, f, f, matrix);
+
+	if (mCurrentGizmoOperation != ImGuizmo::SCALE)
+	{
+		if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
+			mCurrentGizmoMode = ImGuizmo::LOCAL;
+		ImGui::SameLine();
+		if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
+			mCurrentGizmoMode = ImGuizmo::WORLD;
+	}
+	if (ImGui::IsKeyPressed(83))
+		useSnap = !useSnap;
+	ImGui::Checkbox("", &useSnap);
+	ImGui::SameLine();
+	 
+	switch (mCurrentGizmoOperation)
+	{
+	case ImGuizmo::TRANSLATE:
+		ImGui::InputFloat3("Snap", &snap[0]);
+		break;
+	case ImGuizmo::ROTATE:
+		ImGui::InputFloat("Angle Snap", &snap[0]);
+		break;
+	case ImGuizmo::SCALE:
+		ImGui::InputFloat("Scale Snap", &snap[0]);
+		break;
+	}
+	ImGui::Checkbox("Bound Sizing", &boundSizing);
+	if (boundSizing)
+	{
+		ImGui::PushID(3);
+		ImGui::Checkbox("", &boundSizingSnap);
+		ImGui::SameLine();
+		ImGui::InputFloat3("Snap", boundsSnap);
+		ImGui::PopID();
+	}
+
+	ImGuiIO& io = ImGui::GetIO();
+	ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+	ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
 }

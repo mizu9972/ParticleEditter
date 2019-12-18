@@ -149,6 +149,7 @@
     <ClCompile Include="souce\ImGui\ImGradient.cpp" />
     <ClCompile Include="souce\ImGui\imgui.cpp" />
     <ClCompile Include="souce\ImGui\ImGuizmo.cpp" />
+    <ClCompile Include="souce\ImGui\ImGuizmoUtil.cpp" />
     <ClCompile Include="souce\ImGui\imgui_draw.cpp" />
     <ClCompile Include="souce\ImGui\imgui_impl_dx11.cpp" />
     <ClCompile Include="souce\ImGui\imgui_impl_win32.cpp" />
@@ -185,6 +186,7 @@
     <ClInclude Include="souce\ImGui\ImGradient.h" />
     <ClInclude Include="souce\ImGui\imgui.h" />
     <ClInclude Include="souce\ImGui\ImGuizmo.h" />
+    <ClInclude Include="souce\ImGui\ImGuizmoUtil.h" />
     <ClInclude Include="souce\ImGui\imgui_impl_dx11.h" />
     <ClInclude Include="souce\ImGui\imgui_impl_win32.h" />
     <ClInclude Include="souce\ImGui\imgui_internal.h" />

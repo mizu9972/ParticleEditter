@@ -700,6 +700,18 @@ ParticleSystem& ParticleSystem::setSystemNumber(int setNumber) {
 	return *this;
 }
 
+float* ParticleSystem::getMatrixf16() {
+	//TODO ‰ñ“]ˆÚ“®‚Ì”½‰f
+	float retMat[16] = {
+		1.f, 0.f, 0.f, 0.f,
+		0.f, 1.f, 0.f, 0.f,
+		0.f, 0.f, 1.f, 0.f,
+		m_ParticleState.m_Position[0], m_ParticleState.m_Position[1], m_ParticleState.m_Position[3], 1.f
+	};
+
+	return retMat;
+}
+
 t_ParticleSystemState ParticleSystem::GetState() {
 	return m_ParticleState;
 }

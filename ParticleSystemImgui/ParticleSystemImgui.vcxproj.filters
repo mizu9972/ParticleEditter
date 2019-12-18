@@ -135,6 +135,9 @@
     <ClCompile Include="souce\ImGui\ImSequencer.cpp">
       <Filter>ソース ファイル\ImGuizmo</Filter>
     </ClCompile>
+    <ClCompile Include="souce\ImGui\ImGuizmoUtil.cpp">
+      <Filter>ソース ファイル\ImGuizmo</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="souce\NonCopyable.h">
@@ -243,6 +246,9 @@
       <Filter>ヘッダー ファイル\ImGuizmo</Filter>
     </ClInclude>
     <ClInclude Include="souce\ImGui\ImSequencer.h">
+      <Filter>ヘッダー ファイル\ImGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ImGui\ImGuizmoUtil.h">
       <Filter>ヘッダー ファイル\ImGuizmo</Filter>
     </ClInclude>
   </ItemGroup>

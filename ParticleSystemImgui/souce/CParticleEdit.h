@@ -8,6 +8,10 @@
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
 
+#include "ImGui/ImGuizmo.h"
+//#include "ImGui/ImCurveEdit.h"
+//#include "ImGui/ImGradient.h"
+
 //パーティクルシステムのエディタークラス
 //ImGuiを利用してパーティクルシステムのステータスを表示・操作する
 class ParticleEditor {
@@ -24,7 +28,6 @@ private:
 	float m_TargetPosf[3] = { 0.0f,0.0f,0.0f };
 	bool isDrawTargetObj = false;
 
-
 	ParticleEditor() {};
 	~ParticleEditor() = default;
 
@@ -40,6 +43,16 @@ private:
 		DONT_PUSH//押されていない
 	};
 	WARNING_REACTION ImGuiWarningText(const char* text);//警告表示
+
+
+	//ImGuizmo
+	float cameraView[16] =
+	{ 1.f, 0.f, 0.f, 0.f,
+	  0.f, 1.f, 0.f, 0.f,
+	  0.f, 0.f, 1.f, 0.f,
+	  0.f, 0.f, 0.f, 1.f };
+
+	float cameraProjection[16];
 public:
 	ParticleEditor(const ParticleEditor&) = delete;
 	ParticleEditor(ParticleEditor&&) = delete;

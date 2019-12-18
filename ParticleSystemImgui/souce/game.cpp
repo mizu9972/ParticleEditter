@@ -89,6 +89,7 @@ bool GameInit(HINSTANCE hinst, HWND hwnd, int width, int height, bool fullscreen
 
 	CCamera::GetInstance()->Init(1.0f, 10000.0f, XM_PIDIV2, SCREEN_X, SCREEN_Y, eye, lookat, up);
 
+	CCamera::GetInstance()->SetRadius(50.0f);
 	// 平行光源初期化
 	DX11LightInit(DirectX::XMFLOAT4(1,1,-1,0));		// 平行光源の方向をセット
 
@@ -113,6 +114,7 @@ void GameInput(){
 //==============================================================================
 void GameUpdate(){
 	ParticleEditor::getInstance()->Update();
+	CCamera::GetInstance()->UpdateSphereCamera();
 }
 
 //==============================================================================

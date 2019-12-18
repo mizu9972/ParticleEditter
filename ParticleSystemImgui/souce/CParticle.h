@@ -220,6 +220,7 @@ public:
 	ParticleSystem& SetComputeShader(ID3D11ComputeShader* setShader, eComputeShaderType type);//コンピュートシェーダー
 	ParticleSystem& setSystemNumber(int setNumber);//自身のパーティクルシステム番号
 	//getter
+	float* getMatrixf16();
 	t_ParticleSystemState GetState();//構造体情報全体
 	char* getName();//名前
 	int getSystemNumber();//自身のパーティクルシステム番号
