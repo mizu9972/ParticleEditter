@@ -70,6 +70,9 @@ public:
 	void Update();
 	void Draw();
 
+	//マニピュレータ
+	void EditTransform(t_ParticleSystemState* ViewState);
+
 	//パーティクルシステム操作
 	void AddParticleSystem(t_ParticleSystemState* setState = nullptr);
 	void DeleteParticleSystems();//全削除

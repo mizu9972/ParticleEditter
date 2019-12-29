@@ -706,7 +706,7 @@ float* ParticleSystem::getMatrixf16() {
 		1.f, 0.f, 0.f, 0.f,
 		0.f, 1.f, 0.f, 0.f,
 		0.f, 0.f, 1.f, 0.f,
-		m_ParticleState.m_Position[0], m_ParticleState.m_Position[1], m_ParticleState.m_Position[3], 1.f
+		m_ParticleState.m_Position[0], m_ParticleState.m_Position[1], m_ParticleState.m_Position[2], 1.f
 	};
 
 	return retMat;
