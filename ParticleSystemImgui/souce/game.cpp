@@ -32,10 +32,6 @@ constexpr auto PARTICLE_TEXTURE = "assets/ParticleTexture/particle.png";
 //-----------------------------------------------------------------------------
 // グローバル変数
 //-----------------------------------------------------------------------------
-
-CModel				g_skydome;
-XMFLOAT4X4			g_matskydome;
-
 extern int g_nCountFPS;//FPS
 
 //-----------------------------------------------------------------------------
@@ -73,11 +69,6 @@ bool GameInit(HINSTANCE hinst, HWND hwnd, int width, int height, bool fullscreen
 
 	// DIRECTINPUT初期化
 	CDirectInput::GetInstance().Init(hinst, hwnd, width, height);
-
-	// スカイドーム読み込み
-	g_skydome.Init("assets/skydome.x.dat","shader/vs.fx","shader/psskydome.fx");
-
-	DX11MtxIdentity(g_matskydome);
 
 	ParticleEditor::getInstance()->Init();//エディター初期化
 
@@ -139,10 +130,6 @@ void GameRender() {
 	// プロジェクション変換行列セット
 	mat = CCamera::GetInstance()->GetProjectionMatrix();
 	DX11SetTransform::GetInstance()->SetTransform(DX11SetTransform::TYPE::PROJECTION, mat);
-
-	// ワールド変換行列
-	DX11SetTransform::GetInstance()->SetTransform(DX11SetTransform::TYPE::WORLD, g_matskydome);
-	g_skydome.Draw();
 
 	ParticleEditor::getInstance()->Draw();
 

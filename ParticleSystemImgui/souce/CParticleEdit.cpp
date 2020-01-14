@@ -4,10 +4,12 @@
 #include "ImGui/ImGuizmoUtil.h"
 #include "CParticleEdit.h"
 #include "CCamera.h"
+#include "dx11mathutil.h"
+#include "DX11Settransform.h"
 
 #include "game.h"
 
-void EditTransform(const float *cameraView, float *cameraProjection, float* matrix);
+//void EditTransform(const float *cameraView, float *cameraProjection, float* matrix);
 
 #define CHECK(x) (CheckDataChange += x) //数値変更を感知
 #define CHECK_RESULT (CheckDataChange > 0) //変更されたかどうか判定
@@ -35,6 +37,22 @@ void ParticleEditor::Init() {
 
 	m_TargetBillBoard.SetUV(u, v);
 	m_TargetBillBoard.LoadTexTure("assets/ParticleTexture/en.png");
+
+	//スカイボックス初期化
+	DX11MtxIdentity(m_SkyboxMatrix);//行列初期化
+
+	//スカイボックスを初期化してmapに登録する処理
+	auto SkyboxInit = [this](const char* Keyname,const char* Filename,const char* VertexFilename,const char* PixelFilename) {
+		m_SkyBoxes.emplace(Keyname, new CModel());//mapに追加
+		m_SkyBoxes[Keyname]->Init(Filename, VertexFilename, PixelFilename);//初期化
+	};
+
+	//スカイボックス初期化
+	SkyboxInit("Skydome", "assets/skydome.x.dat", "shader/vs.fx", "shader/psskydome.fx");
+	SkyboxInit("DarkSky", "assets/darkskydome.x.dat", "shader/vs.fx", "shader/psskydome.fx");
+
+	//表示用スカイボックス設定
+	m_ViewSkybox = m_SkyBoxes.at("Skydome");
 }
 
 //終了処理
@@ -44,6 +62,12 @@ void ParticleEditor::UnInit() {
 		m_ViewParticleSystem = nullptr;
 	}
 	m_ParticleSystems.UnInit();
+
+	for (auto iSkyboxes : m_SkyBoxes) {
+		iSkyboxes.second->Uninit();
+		delete iSkyboxes.second;
+	}
+	m_SkyBoxes.clear();
 }
 
 //更新
@@ -67,6 +91,10 @@ void ParticleEditor::Update() {
 }
 //描画
 void ParticleEditor::Draw() {
+	// ワールド変換行列
+	DX11SetTransform::GetInstance()->SetTransform(DX11SetTransform::TYPE::WORLD, m_SkyboxMatrix);
+	m_ViewSkybox->Draw();
+
 	m_ParticleSystems.Draw();
 
 	if (isDrawTargetObj) {
@@ -148,6 +176,16 @@ void ParticleEditor::ImGuiDrawMain() {
 		}
 	}
 	ImGui::EndChild();
+
+	//スカイボックス設定
+	if (ImGui::TreeNode("Skybox")) {
+		for (auto iSkyboxes : m_SkyBoxes) {
+			if (ImGui::Button(iSkyboxes.first)) {
+				m_ViewSkybox = iSkyboxes.second;
+			}
+		}
+		ImGui::TreePop();
+	}
 
 	//パーティクルシステム全体への操作
 	{
@@ -680,9 +718,9 @@ void ParticleEditor::EditTransform(t_ParticleSystemState* ViewState) {
 	matrixTranslation[1] = ViewState->m_Position[1] / 2.0f;
 	matrixTranslation[2] = -1 * ViewState->m_Position[0] / 2.0f;
 
-	matrixRotation[0] = ViewState->m_Angle[0];
-	matrixRotation[1] = ViewState->m_Angle[1];
-	matrixRotation[2] = ViewState->m_Angle[2];
+	matrixRotation[0] = static_cast<float>(ViewState->m_Angle[0]);
+	matrixRotation[1] = static_cast<float>(ViewState->m_Angle[1]);
+	matrixRotation[2] = static_cast<float>(ViewState->m_Angle[2]);
 
 
 	//各要素編集
@@ -712,9 +750,9 @@ void ParticleEditor::EditTransform(t_ParticleSystemState* ViewState) {
 		CheckDataChange += 1;
 	}
 
-	ViewState->m_Angle[0] = 180 - matrixRotation[0];
-	ViewState->m_Angle[1] = 180 - matrixRotation[1];
-	ViewState->m_Angle[2] = 180 - matrixRotation[2];
+	ViewState->m_Angle[0] = static_cast<int>(180 - matrixRotation[0]);
+	ViewState->m_Angle[1] = static_cast<int>(180 - matrixRotation[1]);
+	ViewState->m_Angle[2] = static_cast<int>(180 - matrixRotation[2]);
 
 
 }

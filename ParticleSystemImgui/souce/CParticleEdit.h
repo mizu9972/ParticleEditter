@@ -1,16 +1,17 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "ParticleSystemParent.h"
 #include "CParticle.h"
 #include "CBillBoard.h"
+#include "CModel.h"
 
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
 
 #include "ImGui/ImGuizmo.h"
-//#include "ImGui/ImCurveEdit.h"
-//#include "ImGui/ImGradient.h"
 
 //パーティクルシステムのエディタークラス
 //ImGuiを利用してパーティクルシステムのステータスを表示・操作する
@@ -20,6 +21,9 @@ private:
 
 	ParticleSystem* m_ViewParticleSystem = nullptr;//設定画面を表示するパーティクルシステム
 
+	XMFLOAT4X4 m_SkyboxMatrix;
+	std::unordered_map<const char*, CModel*> m_SkyBoxes;
+	CModel* m_ViewSkybox;
 	//出力ファイル名
 	char m_FileName[64];
 
@@ -53,6 +57,9 @@ private:
 	  0.f, 0.f, 0.f, 1.f };
 
 	float cameraProjection[16];
+
+	//マニピュレータ
+	void EditTransform(t_ParticleSystemState* ViewState);
 public:
 	ParticleEditor(const ParticleEditor&) = delete;
 	ParticleEditor(ParticleEditor&&) = delete;
@@ -69,9 +76,6 @@ public:
 	void UnInit();
 	void Update();
 	void Draw();
-
-	//マニピュレータ
-	void EditTransform(t_ParticleSystemState* ViewState);
 
 	//パーティクルシステム操作
 	void AddParticleSystem(t_ParticleSystemState* setState = nullptr);
