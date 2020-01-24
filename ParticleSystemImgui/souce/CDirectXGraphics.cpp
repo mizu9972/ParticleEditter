@@ -246,7 +246,7 @@ bool CDirectXGraphics::Init(HWND hWnd, unsigned int Width, unsigned int Height, 
 	}
 
 	// bind the render target view and depth stencil buffer to the output render pipeline
-    m_lpImmediateContext->OMSetRenderTargets( 1, &m_lpRenderTargetView, NULL() );///m_depthStencilView => NULL()
+    m_lpImmediateContext->OMSetRenderTargets( 1, &m_lpRenderTargetView, m_depthStencilView);///m_depthStencilView => NULL()
 
 	// setup the raster description which will determine how and what polygons will be drawn
 	rasterDesc.AntialiasedLineEnable = false;

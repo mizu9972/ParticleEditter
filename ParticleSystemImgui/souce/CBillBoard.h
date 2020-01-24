@@ -42,6 +42,7 @@ class CBillBoard{
 	ID3D11BlendState*			m_pBlendStateSrcAlpha = nullptr;
 	ID3D11BlendState*			m_pBlendStateOne      = nullptr;
 	ID3D11BlendState*			m_pBlendStateDefault  = nullptr;
+	ID3D11BlendState*			m_pBlendStateInv	  = nullptr;
 	ID3D11VertexShader*			m_pVertexShader       = nullptr;	// 頂点シェーダー入れ物
 	ID3D11PixelShader*			m_pPixelShader        = nullptr;	// ピクセルシェーダー入れ物
 	ID3D11InputLayout*			m_pVertexLayout       = nullptr;	// 頂点フォーマット定義
@@ -74,6 +75,10 @@ private:
 	void SetBlendStateDefault();
 	// デフォルトのブレンドステートを生成する
 	void CreateBlendStateDefault();
+	// 線形合成のブレンドステートを設定する
+	void SetBlendStateInv();
+	// 線形合成のブレンドステートを生成する
+	void CreateBlendStateInv();
 public:
 	CBillBoard():m_x(0),m_y(0),m_z(0),m_srv(nullptr),m_dev(nullptr), m_devcontext(nullptr){
 	};
@@ -134,7 +139,7 @@ public:
 		CreateBlendStateSrcAlpha();			// アルファブレンディング用ブレンドステート生成
 		CreateBlendStateOne();				// 加算合成用のブレンドステート生成
 		CreateBlendStateDefault();			// デフォルトのブレンドステート生成
-
+		CreateBlendStateInv();
 		return true;
 	}
 
@@ -166,6 +171,11 @@ public:
 		if (m_pBlendStateDefault != nullptr) {
 			m_pBlendStateDefault->Release();
 			m_pBlendStateDefault = nullptr;
+		}
+
+		if (m_pBlendStateInv != nullptr) {
+			m_pBlendStateInv->Release();
+			m_pBlendStateInv = nullptr;
 		}
 
 		if (m_pPixelShader != nullptr) {

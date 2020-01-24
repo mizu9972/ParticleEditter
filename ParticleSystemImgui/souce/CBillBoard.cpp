@@ -117,7 +117,7 @@ void CBillBoard::CalcBillBoardMatrix(const DirectX::XMFLOAT4X4& cameramat){
 // 描画
 void CBillBoard::Draw() {
 	// Ｚバッファ無効化
-	void TurnOffZbuffer();
+	//TurnOffZbuffer();
 
 	// シェーダーリソースビューをピクセルシェーダーへセット
 	m_devcontext->PSSetShaderResources(0, 1, &m_srv);
@@ -145,7 +145,7 @@ void CBillBoard::Draw() {
 	m_devcontext->Draw(4,0);									// 4頂点描画(頂点バッファのみで描画)
 
 	// Ｚバッファ有効化
-	void TurnOnZbuffer();
+	//TurnOnZbuffer();
 }
 void CBillBoard::ParticleDraw(ConstantBufferParticle* cb) {
 
@@ -246,6 +246,10 @@ void CBillBoard::SetBlendStateOne() {
 	m_devcontext->OMSetBlendState(m_pBlendStateOne, blendFactor, 0xffffffff);
 }
 
+void CBillBoard::SetBlendStateInv() {
+	float blendFactor[4] = { 0.0f,0.0f,0.0f,0.0f };
+	m_devcontext->OMSetBlendState(m_pBlendStateInv, blendFactor, 0xffffffff);
+}
 void CBillBoard::CreateBlendStateSrcAlpha(){
 	
 	D3D11_BLEND_DESC BlendDesc;
@@ -308,6 +312,25 @@ void CBillBoard::CreateBlendStateDefault() {
 	m_dev->CreateBlendState(&BlendDesc, &m_pBlendStateDefault);
 }
 
+void CBillBoard::CreateBlendStateInv() {
+	D3D11_BLEND_DESC BlendDesc;
+
+	ZeroMemory(&BlendDesc, sizeof(BlendDesc));
+	BlendDesc.AlphaToCoverageEnable = FALSE;
+	BlendDesc.IndependentBlendEnable = FALSE;
+
+	BlendDesc.RenderTarget[0].BlendEnable = TRUE;
+	BlendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+	BlendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+	BlendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	BlendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	BlendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+	BlendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	BlendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+	m_dev->CreateBlendState(&BlendDesc, &m_pBlendStateInv);
+}
+
 // ビルボードを描画(Ｚ軸で回転)
 void CBillBoard::DrawRotateBillBoard(const DirectX::XMFLOAT4X4 &cameramat, float angle){
 
@@ -339,6 +362,7 @@ void CBillBoard::DrawRotateBillBoard(const DirectX::XMFLOAT4X4 &cameramat, float
 }
 
 void CBillBoard::DrawOnly(const DirectX::XMFLOAT4X4 &cameramat,float angle) {
+
 	// カメラ行列から　ビルボード用のマトリックスを作成
 	CalcBillBoardMatrix(cameramat);
 
@@ -355,7 +379,7 @@ void CBillBoard::DrawOnly(const DirectX::XMFLOAT4X4 &cameramat,float angle) {
 	m_mat._43 = m_z;
 
 	//アルファブレンディングをセットする
-	SetBlendStateOne();
+	SetBlendStateInv();
 
 	// ワールド変換行列
 	DX11SetTransform::GetInstance()->SetTransform(DX11SetTransform::TYPE::WORLD, m_mat);
@@ -364,8 +388,9 @@ void CBillBoard::DrawOnly(const DirectX::XMFLOAT4X4 &cameramat,float angle) {
 	//Draw();
 	m_devcontext->Draw(4, 0);
 
-	//アルファブレンディングをセットする
+	//アルファブレンディングをリセットする
 	SetBlendStateDefault();
+
 }
 
 void CBillBoard::SetDrawUtility() {

@@ -6,11 +6,8 @@
 #include "CParticle.h"
 #include "dx11mathutil.h"
 #include "CCamera.h"
-#include "CDirectxGraphics.h"
-
 //デバッグ用
 #include "CTimer.h"
-
 
 #define		SCREEN_X		1200
 #define		SCREEN_Y		600
@@ -24,6 +21,9 @@
 constexpr auto PARTICLE_TEXTURE = "assets/ParticleTexture/particle.png";
 constexpr auto PARTICLE_PS_SHADER = "shader/psParticle.fx";
 constexpr auto PARTICLE_VS_SHADER = "shader/vsPrticle.fx";
+
+constexpr auto SOFTPARTICLE_PS_SHADER = "shader/psSoftParticle.fx";
+constexpr auto SOFTPARTICLE_VS_SHADER = "shader/vsSoftParticle.fx";
 /*------------------------
 単位行列にする
 --------------------------*/
@@ -57,17 +57,22 @@ void ParticleSystem::Update() {
 }
 
 //描画処理
-void ParticleSystem::Draw(ID3D11DeviceContext* device) {
+void ParticleSystem::Draw() {
 	if (isDrawActive == false) {
 		return;
 	}
-	(this->*fpDrawFunc)(device);
+
+	(this->*fpDrawFunc)();
+
 }
 //--------------------------------------------------------------------
 
 //初期化
-ParticleSystem& ParticleSystem::Init(t_ParticleSystemState* ParticleState_, const char* filename) {
+ParticleSystem& ParticleSystem::Init(ID3D11Device* device, ID3D11DeviceContext* devicecontext,t_ParticleSystemState* ParticleState_, const char* filename) {
 	//パーティクル初期化
+
+	m_Device = device;
+	m_DeviceContext = devicecontext;
 	if (m_ParticleVec.empty() != true) {
 		m_ParticleVec.clear();
 	}
@@ -87,11 +92,13 @@ ParticleSystem& ParticleSystem::Init(t_ParticleSystemState* ParticleState_, cons
 	}
 
 	//ビルボード初期化---------------------------------------------------------------------------------------------------------------
-	m_BillBoard.Init(0, 0, 0,
+	ChangeSoftParticleMode(newState.isSoftParticle);
+	
+	/*m_BillBoard.Init(0, 0, 0,
 		newState.m_Size, newState.m_Size,
 		XMFLOAT4(newState.m_Color[0], newState.m_Color[1], newState.m_Color[2], newState.m_Color[3]),
 		PARTICLE_PS_SHADER,
-		PARTICLE_VS_SHADER);
+		PARTICLE_VS_SHADER);*/
 
 	float u[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 	float v[4] = { 1.0f, 0.0f, 1.0f, 0.0f };
@@ -99,6 +106,7 @@ ParticleSystem& ParticleSystem::Init(t_ParticleSystemState* ParticleState_, cons
 	m_BillBoard.LoadTexTure(m_ParticleState.m_TextureName);
 	//----------------------------------------------------------------------------------------------------------------------------
 	//(this->*fpStartFunc)();
+
 	Start();
 	return *this;
 }
@@ -149,19 +157,17 @@ void ParticleSystem::UpdateComputeShader() {
 		}
 	}
 
-	ID3D11DeviceContext* devicecontext = CDirectXGraphics::GetInstance()->GetImmediateContext();
-
 	//コンピュートシェーダーを実行
 	const UINT dispatchX = UINT(ceil(float(m_ParticleNum) / float(THREAD_NUM * PARTICLE_NUM_PER_THREAD)));
-	RunComputeShader(devicecontext, m_ComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(), dispatchX, 1, 1);
+	RunComputeShader(m_DeviceContext, m_ComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(), dispatchX, 1, 1);
 
 	//データ受け取り
-	devicecontext->CopyResource(m_CpGetBuf.Get() , m_CpResult.Get());//バッファコピー
-	devicecontext->Map(m_CpGetBuf.Get(), 0, D3D11_MAP_READ, 0, &m_MappedSubResource);
+	m_DeviceContext->CopyResource(m_CpGetBuf.Get() , m_CpResult.Get());//バッファコピー
+	m_DeviceContext->Map(m_CpGetBuf.Get(), 0, D3D11_MAP_READ, 0, &m_MappedSubResource);
 
 	OutState = reinterpret_cast<m_ParticleUAVState*>(m_MappedSubResource.pData);//データ獲得
 
-	devicecontext->Unmap(m_CpGetBuf.Get(), 0);
+	m_DeviceContext->Unmap(m_CpGetBuf.Get(), 0);
 }
 
 void ParticleSystem::UpdateNomal() {
@@ -308,7 +314,6 @@ void ParticleSystem::UpdateNomal() {
 }
 
 void ParticleSystem::UpdateSRV(){
-	ID3D11Device* device = CDirectXGraphics::GetInstance()->GetDXDevice();
 
 	//入力用バッファを更新
 	InState.iPosition       = { m_ParticleState.m_Position[0],m_ParticleState.m_Position[1],m_ParticleState.m_Position[2],0 };
@@ -339,8 +344,8 @@ void ParticleSystem::UpdateSRV(){
 	if (m_CpBuf != nullptr) {
 		m_CpBuf.Reset();
 	}
-	CreateStructuredBuffer(device, sizeof(m_ParticleSRVState), 1, &InState, m_CpBuf.GetAddressOf());
-	CreateShaderResourceView(device, m_CpBuf.Get(), m_CpSRV.GetAddressOf());
+	CreateStructuredBuffer(m_Device, sizeof(m_ParticleSRVState), 1, &InState, m_CpBuf.GetAddressOf());
+	CreateShaderResourceView(m_Device, m_CpBuf.Get(), m_CpSRV.GetAddressOf());
 }
 
 XMFLOAT4 ParticleSystem::RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d) {
@@ -419,8 +424,6 @@ void ParticleSystem::StartGPUParticle(){
 		return;
 	}
 
-	ID3D11Device* device = CDirectXGraphics::GetInstance()->GetDXDevice();
-	ID3D11DeviceContext* devicecontext = CDirectXGraphics::GetInstance()->GetImmediateContext();
 	m_ParticleNum = m_ParticleState.m_ParticleNum;
 	if (m_CpUAV != nullptr) {
 		m_CpUAV.Reset();
@@ -432,16 +435,16 @@ void ParticleSystem::StartGPUParticle(){
 	//入力用バッファを更新
 	UpdateSRV();
 	//出力用バッファを更新
-	CreateStructuredBuffer(device, sizeof(m_ParticleUAVState), m_ParticleNum, nullptr, m_CpResult.GetAddressOf());
-	CreateUnOrderAccessView(device, m_CpResult.Get(), m_CpUAV.GetAddressOf());
+	CreateStructuredBuffer(m_Device, sizeof(m_ParticleUAVState), m_ParticleNum, nullptr, m_CpResult.GetAddressOf());
+	CreateUnOrderAccessView(m_Device, m_CpResult.Get(), m_CpUAV.GetAddressOf());
 
 	//初期化用コンピュートシェーダー実行
-	RunComputeShader(devicecontext, m_InitComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(), m_ParticleNum, 1, 1);
+	RunComputeShader(m_DeviceContext, m_InitComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(), m_ParticleNum, 1, 1);
 
-	m_CpGetBuf = CreateAndCopyToBuffer(device, devicecontext, m_CpResult.Get());
+	m_CpGetBuf = CreateAndCopyToBuffer(m_Device, m_DeviceContext, m_CpResult.Get());
 
-	devicecontext->Map(m_CpGetBuf.Get(), 0, D3D11_MAP_READ, 0, &m_MappedSubResource);
-	devicecontext->Unmap(m_CpGetBuf.Get(), 0);
+	m_DeviceContext->Map(m_CpGetBuf.Get(), 0, D3D11_MAP_READ, 0, &m_MappedSubResource);
+	m_DeviceContext->Unmap(m_CpGetBuf.Get(), 0);
 	////-------------------------------------------------
 
 	m_SystemLifeTime = m_ParticleState.m_DuaringTime + m_ParticleState.m_StartDelayTime;
@@ -454,7 +457,7 @@ void ParticleSystem::StartGPUParticle(){
 
 
 //描画メソッド
-void ParticleSystem::DrawNomal(ID3D11DeviceContext* device) {
+void ParticleSystem::DrawNomal() {
 
 	m_BillBoard.SetDrawUtility();
 	for (int ParticleNum = 0; ParticleNum < m_ParticleVec.size(); ParticleNum++) {
@@ -471,7 +474,7 @@ void ParticleSystem::DrawNomal(ID3D11DeviceContext* device) {
 }
 
 //GPUパーティクル用の描画メソッド
-void ParticleSystem::GPUDraw(ID3D11DeviceContext* device) {
+void ParticleSystem::GPUDraw() {
 
 	m_BillBoard.SetDrawUtility();
 	for (int Count = 0; Count < m_ParticleNum; Count++) {
@@ -611,7 +614,7 @@ bool ParticleSystem::FInTex(const char* FileName_) {
 	std::string Texname = ".\\InPutData/";
 	Texname += FileName_;//ファイルの位置を指定
 
-	Init(&m_ParticleState, Texname.c_str());//指定したファイルを利用して初期化
+	Init(m_Device, m_DeviceContext,&m_ParticleState, Texname.c_str());//指定したファイルを利用して初期化
 	(this->*fpStartFunc)();
 	return 0;
 }
@@ -643,6 +646,7 @@ void ParticleSystem::SetParticleSystemState(t_ParticleSystemState* SetParticleSy
 		return;
 	}
 	memcpy(&m_ParticleState, SetParticleSystemState_, sizeof(t_ParticleSystemState));
+	ChangeGPUParticleMode(SetParticleSystemState_->isGPUParticle);
 }
 void ParticleSystem::SetName(const char* setName) {
 	strcpy_s(m_ParticleState.m_Name, setName);
@@ -755,5 +759,24 @@ void ParticleSystem::ChangeGPUParticleMode(bool isGPUMode) {
 		fpStartFunc = &ParticleSystem::StartNomalParticle;
 		fpUpdateFunc = &ParticleSystem::UpdateNomal;
 		fpDrawFunc = &ParticleSystem::DrawNomal;
+	}
+}
+
+void ParticleSystem::ChangeSoftParticleMode(bool isSoftParticle) {
+	//ソフトパーティクルかどうかによって利用するシェーダーを切り替え、ビルボードを初期化する
+	m_ParticleState.isSoftParticle = isSoftParticle;
+	if (isSoftParticle) {
+		m_BillBoard.Init(0, 0, 0,
+			m_ParticleState.m_Size, m_ParticleState.m_Size,
+			XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]),
+			SOFTPARTICLE_PS_SHADER,
+			SOFTPARTICLE_VS_SHADER);
+	}
+	else {
+		m_BillBoard.Init(0, 0, 0,
+			m_ParticleState.m_Size, m_ParticleState.m_Size,
+			XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]),
+			PARTICLE_PS_SHADER,
+			PARTICLE_VS_SHADER);
 	}
 }

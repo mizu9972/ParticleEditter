@@ -322,5 +322,11 @@
     <FxCompile Include="shader\csInitParticle.hlsl">
       <Filter>リソース ファイル\compute</Filter>
     </FxCompile>
+    <FxCompile Include="shader\psSoftParticle.fx">
+      <Filter>リソース ファイル\pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\vsSoftParticle.fx">
+      <Filter>リソース ファイル\vertex</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

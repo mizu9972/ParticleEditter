@@ -16,13 +16,30 @@ private:
 	ID3D11ComputeShader* m_ComputeShader = nullptr;
 	ID3D11ComputeShader* m_InitComputeShader = nullptr;
 
+	ID3D11Device* m_Device = nullptr;
+	ID3D11DeviceContext* m_Devicecontext = nullptr;
+
+	ID3D11DepthStencilView* m_DepthstencilView = nullptr;
+	ID3D11DepthStencilView* m_DepthstencilViewRTV = nullptr;
+	ID3D11ShaderResourceView* m_DepthSRV = nullptr;
+
+	//レンダーターゲットビュー
+	ID3D11RenderTargetView* m_RenderTargetView = nullptr;
+	ID3D11RenderTargetView* m_BackRTV = nullptr;
+
 	int m_ParticleCounter = 0;//パーティクルシステムそれぞれに持たせる固有の番号
+
+	bool InitDepthBuffer(unsigned int Width, unsigned int Height, ID3D11DepthStencilView* DepthstencilView);
+
+	//レンダーターゲットビューからシェーダーリソースビューを取得
+	ID3D11ShaderResourceView* getSRVfromRTV(ID3D11RenderTargetView* ResourceView);
+	HRESULT CreateRTV(ID3D11RenderTargetView** outRTV, DXGI_FORMAT format, IDXGISwapChain* SwapChain);
 public:
 	ParticleSystemParent() {
 	}
 
 	//基本処理
-	void Init();
+	void Init(ID3D11Device* device,ID3D11DeviceContext* devicecontext, ID3D11DepthStencilView* depthstencilView = nullptr, ID3D11RenderTargetView* RenderTargetView = nullptr, IDXGISwapChain* SwapChain = nullptr /*ID3D11DepthStencilView* depthstencilView = nullptr, ID3D11RenderTargetView* RenderTargetView = nullptr*/);
 	void UnInit();
 	void Start();
 	void Update();
@@ -39,6 +56,10 @@ public:
 	//パーティクルシステム削除
 	void RemoveParticleSystem(int removeKey);
 	void DeleteParticleSystem();//全削除
+
+	//Zバッファ操作
+	void TurnOnZbuffer();
+	void TurnOffZbuffer();
 
 	//仮想関数実装
 	virtual void OnNotify(Subject* subject_ = nullptr);

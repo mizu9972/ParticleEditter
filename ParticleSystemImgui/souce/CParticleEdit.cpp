@@ -18,7 +18,7 @@ static int CheckDataChange = 0;//ImGuiで数値が変更されたらtrueが返ってくるメソッ
 extern int g_nCountFPS;
 
 //初期化
-void ParticleEditor::Init() {
+void ParticleEditor::Init(unsigned int Width, unsigned int Height, ID3D11Device* device, ID3D11DeviceContext* devicecontext) {
 	
 	//ホーミングターゲット初期化
 	m_TargetBillBoard.Init(
@@ -30,22 +30,25 @@ void ParticleEditor::Init() {
 	);
 	strcpy_s(m_FileName, sizeof(m_FileName), "ParticleState");
 
-	m_ParticleSystems.Init();
+	m_ParticleSystems.Init(device,devicecontext,CDirectXGraphics::GetInstance()->GetDepthStencilView(),CDirectXGraphics::GetInstance()->GetRenderTargetView(),CDirectXGraphics::GetInstance()->GetSwapChain()/*Width, Height, device, devicecontext, CDirectXGraphics::GetInstance()->GetDepthStencilView(), CDirectXGraphics::GetInstance()->GetRenderTargetView()*/);
 
 	float u[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 	float v[4] = { 1.0f, 0.0f, 1.0f, 0.0f };
 
-	m_TargetBillBoard.SetUV(u, v);
-	m_TargetBillBoard.LoadTexTure("assets/ParticleTexture/en.png");
+	//m_TargetBillBoard.SetUV(u, v);
+	//m_TargetBillBoard.LoadTexTure("assets/ParticleTexture/en.png");
 
 	//スカイボックス初期化
 	DX11MtxIdentity(m_SkyboxMatrix);//行列初期化
+	DX11MtxIdentity(m_CubeMat);
 
 	//スカイボックスを初期化してmapに登録する処理
 	auto SkyboxInit = [this](const char* Keyname,const char* Filename,const char* VertexFilename,const char* PixelFilename) {
 		m_SkyBoxes.emplace(Keyname, new CModel());//mapに追加
 		m_SkyBoxes[Keyname]->Init(Filename, VertexFilename, PixelFilename);//初期化
 	};
+	m_Cube = new CModel();
+	m_Cube->Init("assets/skydome.x.dat", "shader/vs.fx", "shader/psskydome.fx");
 
 	//スカイボックス初期化
 	SkyboxInit("Skydome", "assets/skydome.x.dat", "shader/vs.fx", "shader/psskydome.fx");
@@ -62,7 +65,9 @@ void ParticleEditor::UnInit() {
 		m_ViewParticleSystem = nullptr;
 	}
 	m_ParticleSystems.UnInit();
-
+	m_Cube->Uninit();
+	delete m_Cube;
+	m_Cube = nullptr;
 	for (auto iSkyboxes : m_SkyBoxes) {
 		iSkyboxes.second->Uninit();
 		delete iSkyboxes.second;
@@ -73,8 +78,10 @@ void ParticleEditor::UnInit() {
 //更新
 void ParticleEditor::Update() {
 
-	m_TargetBillBoard.SetPosition(m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2]);//ターゲット
-
+	//m_TargetBillBoard.SetPosition(m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2]);//ターゲット
+	m_CubeMat._41 = m_TargetPosf[0];
+	m_CubeMat._42 = m_TargetPosf[1];
+	m_CubeMat._43 = m_TargetPosf[2];
 	//ImGui表示
 	ImVec4 clear_color = ImVec4(0.25f, 0.5f, 0.35f, 1.00f);
 	ImGui_ImplDX11_NewFrame();
@@ -91,15 +98,21 @@ void ParticleEditor::Update() {
 }
 //描画
 void ParticleEditor::Draw() {
+
 	// ワールド変換行列
 	DX11SetTransform::GetInstance()->SetTransform(DX11SetTransform::TYPE::WORLD, m_SkyboxMatrix);
-	m_ViewSkybox->Draw();
+	//m_ViewSkybox->Draw();
+
+	if (isDrawTargetObj) {
+		//m_TargetBillBoard.DrawBillBoardAdd(CCamera::GetInstance()->GetCameraMatrix());//ターゲット
+
+		DX11SetTransform::GetInstance()->SetTransform(DX11SetTransform::TYPE::WORLD, m_CubeMat);
+		DX11MtxScale(0.01f, 0.01f, 0.01f, m_CubeMat);
+		m_Cube->Draw();
+	}
 
 	m_ParticleSystems.Draw();
 
-	if (isDrawTargetObj) {
-		m_TargetBillBoard.DrawBillBoardAdd(CCamera::GetInstance()->GetCameraMatrix());//ターゲット
-	}
 
 	ImGuiDrawMain();//総合UI
 
@@ -418,6 +431,10 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	}
 
 	CHECK(ImGui::ColorEdit4("Color", ViewState.m_Color, 0));//色
+
+	if (ImGui::Checkbox("isSoftParticle", &ViewState.isSoftParticle)) {
+		pParticleSystem_->ChangeSoftParticleMode(ViewState.isSoftParticle);
+	}
 
 	//監視したい設定項目はここより上の行に書く
 	//監視結果-----------------------------------------------------------------------------

@@ -11,6 +11,9 @@
 #define     FPS 60
 
 using namespace DirectX;
+template<typename ComPtrT>
+using ComPtr = Microsoft::WRL::ComPtr<ComPtrT>;
+
 class ParticleSystem;
 
 //パーティクルシステム設定構造体
@@ -45,6 +48,7 @@ typedef struct {
 	bool isLooping          = true;//ループするかどうか
 	bool isGPUParticle      = false;//GPUパーティクルONOFF
 	bool UseGravity         = false;//重力有効
+	bool isSoftParticle = false;//ソフトパーティクルにするかどうか
 
 	float m_Gravity[3] = { 0,0,0 };
 
@@ -135,10 +139,10 @@ protected:
 	bool isSystemActive = false;
 	bool isUpdateActive = true;
 	bool isDrawActive = true;
-
-	template<typename T>
-	using ComPtr = Microsoft::WRL::ComPtr<T>;
+	
 	//コンピュートシェーダー関連
+	ID3D11Device* m_Device = nullptr;
+	ID3D11DeviceContext* m_DeviceContext = nullptr;
 	ID3D11ComputeShader* m_ComputeShader          = nullptr;//コンピュートシェーダー(ParticleSystemParentで初期化されたものを受け取る)
 	ID3D11ComputeShader* m_InitComputeShader      = nullptr;//初期化用コンピュートシェーダー(ParticleSystemParentで初期化されたものを受け取る)
 	ID3D11Buffer* m_pResult                       = nullptr;//出力バッファ
@@ -173,7 +177,7 @@ public:
 	//基本処理メソッド
 
 	//初期化
-	ParticleSystem& Init(t_ParticleSystemState* ParticleState_ = nullptr, const char* filename = nullptr);
+	ParticleSystem& Init(ID3D11Device* device, ID3D11DeviceContext* devicecontext,t_ParticleSystemState* ParticleState_ = nullptr, const char* filename = nullptr);
 	void ZeroInit();//コンストラクタで数値設定した場合、生成時の状態に初期化できる
 	void InitComputeShader();//コンピュートシェーダーの初期化
 
@@ -192,10 +196,10 @@ public:
 	void StartGPUParticle();
 	
 	//描画
-	void Draw(ID3D11DeviceContext* device);
-	void (ParticleSystem::*fpDrawFunc)(ID3D11DeviceContext* device) = &ParticleSystem::DrawNomal;//関数ポインタ
-	void DrawNomal(ID3D11DeviceContext* device);
-	void GPUDraw(ID3D11DeviceContext* device);
+	void Draw();
+	void (ParticleSystem::*fpDrawFunc)() = &ParticleSystem::DrawNomal;//関数ポインタ
+	void DrawNomal();
+	void GPUDraw();
 
 	//終了処理
 	void UnInit();
@@ -203,6 +207,7 @@ public:
 	//パーティクル操作
 	void AddParticle(m_Particles* AddParticle);
 	void ChangeGPUParticleMode(bool isGPUMode = true);//GPUパーティクルモード変更
+	void ChangeSoftParticleMode(bool isSoftParticle = true);//ソフトパーティクルモード切替
 
 	//ファイル入出力メソッド
 	bool FInState(const char* FileName_);

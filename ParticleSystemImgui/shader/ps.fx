@@ -3,10 +3,16 @@
 //--------------------------------------------------------------------------------------
 #include	"psvscommon.fx"
 
+struct PS_OUTPUT
+{
+    float4 target0 : SV_TARGET0;
+    float2 target1 : SV_TARGET1;
+    
+};
 //--------------------------------------------------------------------------------------
 //  ピクセルシェーダー
 //--------------------------------------------------------------------------------------
-float4 main(VS_OUTPUT input) : SV_Target
+PS_OUTPUT main(VS_OUTPUT input)
 {
 	float4 N = input.Normal;
 	float4 L = LightDirection;
@@ -30,8 +36,10 @@ float4 main(VS_OUTPUT input) : SV_Target
 	float4 specular = s * specularMaterial;
 
 	float4 texcol = g_Tex.Sample(g_SamplerLinear, input.Tex);
-	float4 col;
-	col = specular + diffuse * texcol;
-	col.a = 1.0f;
+    PS_OUTPUT col;
+	col.target0 = specular + diffuse * texcol;
+    col.target0.a = 1.0f;
+    
+    col.target1 = input.Pos.zw;
 	return col;
 }

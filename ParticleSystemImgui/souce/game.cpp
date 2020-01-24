@@ -70,7 +70,7 @@ bool GameInit(HINSTANCE hinst, HWND hwnd, int width, int height, bool fullscreen
 	// DIRECTINPUT初期化
 	CDirectInput::GetInstance().Init(hinst, hwnd, width, height);
 
-	ParticleEditor::getInstance()->Init();//エディター初期化
+	ParticleEditor::getInstance()->Init(width, height, CDirectXGraphics::GetInstance()->GetDXDevice(),CDirectXGraphics::GetInstance()->GetImmediateContext());//エディター初期化
 
 	// カメラ変換行列初期化
 	// プロジェクション変換行列初期化

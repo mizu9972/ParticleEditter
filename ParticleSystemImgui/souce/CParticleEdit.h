@@ -29,8 +29,19 @@ private:
 
 	//ホーミングターゲット
 	CBillBoard m_TargetBillBoard;
+	//オブジェクト
+	CModel* m_Cube;
+	XMFLOAT4X4 m_CubeMat = {
+		0.0f,0.0f,0.0f,0.0f,
+		0.0f,0.0f,0.0f,0.0f,
+		0.0f,0.0f,0.0f,0.0f,
+		0.0f,0.0f,0.0f,0.0f
+	};
+
 	float m_TargetPosf[3] = { 0.0f,0.0f,0.0f };
 	bool isDrawTargetObj = false;
+
+
 
 	ParticleEditor() {};
 	~ParticleEditor() = default;
@@ -72,7 +83,7 @@ public:
 	}
 
 	//基本処理
-	void Init();
+	void Init(unsigned int Width, unsigned int Height, ID3D11Device* device, ID3D11DeviceContext* devicecontext);
 	void UnInit();
 	void Update();
 	void Draw();
