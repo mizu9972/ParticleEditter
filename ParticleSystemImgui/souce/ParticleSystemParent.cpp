@@ -101,7 +101,7 @@ void ParticleSystemParent::Update() {
 }
 
 void ParticleSystemParent::Draw() {
-	float ClearColor[4] = { 255.0f,255.0f,255.0f,255.0f };
+	float ClearColor[4] = { 0.0f,0.0f,0.0f,0.0f };
 	//描画
 	if (m_RenderTargetView != nullptr && m_DepthstencilView != nullptr && m_BackRTV != nullptr) {
 		//レンダーターゲットサーフェイスを設定
@@ -109,7 +109,7 @@ void ParticleSystemParent::Draw() {
 		RTV[0] = m_BackRTV;
 		RTV[1] = NULL;
 
-		m_Devicecontext->OMSetRenderTargets(2, RTV, nullptr);
+		m_Devicecontext->OMSetRenderTargets(2, RTV, m_DepthstencilView);
 		//レンダーターゲットビューからシェーダーリソースビュー取得
 		ID3D11ShaderResourceView* SRV = getSRVfromRTV(m_RenderTargetView);
 		ID3D11ShaderResourceView* ResetSRV = nullptr;

@@ -13,6 +13,8 @@ private:
 	ID3D11DepthStencilState*	m_depthStencilState = nullptr;		// Ｚバッファ、ステンシルステート
 	ID3D11DepthStencilView*		m_depthStencilView = nullptr;		// Ｚバッファ、ステンシルビュー
 	ID3D11RasterizerState*		m_rasterState = nullptr;			// ラスターステータス
+	ID3D11RasterizerState*		m_rasterState2 = nullptr;			// ラスターステータス
+
 
 	D3D_DRIVER_TYPE				m_DriverType;			// ドライバタイプ
 	D3D_FEATURE_LEVEL			m_FeatureLevel;			// 機能レベル
@@ -80,4 +82,8 @@ public:
 
 	// アルファブレンド無効化
 	void TurnOffAlphaBlending();
+
+
+	void SetWireFrame();
+	void SetFilSolid();
 };

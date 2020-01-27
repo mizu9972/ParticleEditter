@@ -41,7 +41,7 @@ private:
 	float m_TargetPosf[3] = { 0.0f,0.0f,0.0f };
 	bool isDrawTargetObj = false;
 
-
+	ID3D11ShaderResourceView* m_test;
 
 	ParticleEditor() {};
 	~ParticleEditor() = default;

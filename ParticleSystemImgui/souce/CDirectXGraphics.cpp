@@ -267,6 +267,20 @@ bool CDirectXGraphics::Init(HWND hWnd, unsigned int Width, unsigned int Height, 
 		return false;
 	}
 
+	rasterDesc.AntialiasedLineEnable = false;
+	rasterDesc.CullMode = D3D11_CULL_NONE;
+	rasterDesc.DepthBias = 0;
+	rasterDesc.DepthBiasClamp = 0.0f;
+	rasterDesc.DepthClipEnable = true;
+		rasterDesc.FillMode = D3D11_FILL_WIREFRAME;		// ワイヤフレームにしたいとき
+	//rasterDesc.FillMode = D3D11_FILL_SOLID;
+	rasterDesc.FrontCounterClockwise = false;
+	rasterDesc.MultisampleEnable = false;
+	rasterDesc.ScissorEnable = false;
+	rasterDesc.SlopeScaledDepthBias = 0.0f;
+
+	hr = m_lpDevice->CreateRasterizerState(&rasterDesc, &m_rasterState2);
+	
 	//  set the rasterizer state
 	m_lpImmediateContext->RSSetState(m_rasterState);
 
@@ -362,6 +376,15 @@ void CDirectXGraphics::TurnOffAlphaBlending()
 	return;
 }
 
+void CDirectXGraphics::SetWireFrame() {
+	m_lpImmediateContext->RSSetState(m_rasterState2);
+
+}
+
+void CDirectXGraphics::SetFilSolid() {
+	m_lpImmediateContext->RSSetState(m_rasterState);
+
+}
 /*-------------------------------------------------------------------------------
 	DirectX Grpaphics の終了処理
 ---------------------------------------------------------------------------------*/

@@ -7,6 +7,8 @@
 #include "dx11mathutil.h"
 #include "DX11Settransform.h"
 
+#include "Shader.h"
+
 #include "game.h"
 
 //void EditTransform(const float *cameraView, float *cameraProjection, float* matrix);
@@ -38,6 +40,8 @@ void ParticleEditor::Init(unsigned int Width, unsigned int Height, ID3D11Device*
 	//m_TargetBillBoard.SetUV(u, v);
 	//m_TargetBillBoard.LoadTexTure("assets/ParticleTexture/en.png");
 
+	//CreatetSRVfromWICFile("assets/whiteblack.png", CDirectXGraphics::GetInstance()->GetDXDevice(), CDirectXGraphics::GetInstance()->GetImmediateContext(), &m_test);
+
 	//スカイボックス初期化
 	DX11MtxIdentity(m_SkyboxMatrix);//行列初期化
 	DX11MtxIdentity(m_CubeMat);
@@ -48,7 +52,7 @@ void ParticleEditor::Init(unsigned int Width, unsigned int Height, ID3D11Device*
 		m_SkyBoxes[Keyname]->Init(Filename, VertexFilename, PixelFilename);//初期化
 	};
 	m_Cube = new CModel();
-	m_Cube->Init("assets/skydome.x.dat", "shader/vs.fx", "shader/psskydome.fx");
+	m_Cube->Init("assets/stage1.x.dat", "shader/vs.fx", "shader/psskydome.fx");
 
 	//スカイボックス初期化
 	SkyboxInit("Skydome", "assets/skydome.x.dat", "shader/vs.fx", "shader/psskydome.fx");
@@ -108,8 +112,12 @@ void ParticleEditor::Draw() {
 
 		DX11SetTransform::GetInstance()->SetTransform(DX11SetTransform::TYPE::WORLD, m_CubeMat);
 		DX11MtxScale(0.01f, 0.01f, 0.01f, m_CubeMat);
+
+		//CDirectXGraphics::GetInstance()->SetWireFrame();
 		m_Cube->Draw();
+		//CDirectXGraphics::GetInstance()->SetFilSolid();
 	}
+	//CDirectXGraphics::GetInstance()->GetImmediateContext()->PSSetShaderResources(1, 1, &m_test);
 
 	m_ParticleSystems.Draw();
 

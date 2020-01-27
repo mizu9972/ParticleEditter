@@ -28,23 +28,24 @@ float4 main(VS_OUTPUT input) : SV_Target
     float4 texcol = g_Tex.Sample(g_SamplerLinear, input.Tex);
     float4 col;
     
-    float2 uv = input.Pos.xy / input.Pos.w * 0.5f + 0.5f;
-    uv.y *= -1.0f;
+    float2 uv = input.Pos.xy / input.Pos.w;
+    uv.x = input.Pos.x / 1600.0f;
+    uv.y = input.Pos.y / 900.0f;
     
     float2 DepthCoord;
-    DepthCoord.x = (input.Pos.x + 1) * 0.5f;
+    DepthCoord.x = (input.Pos.x - 1);
     DepthCoord.y = (1 - input.Pos.y) * 0.5f;
-    float2 depth = g_DepthMap.Sample(g_SamplerLinear, uv).xy;
+    float4 depth = g_DepthMap.Sample(g_SamplerLinear, uv);
     
     
     col.xyz = texcol.xyz * input.Color.xyz;
     col.w = texcol.w * input.Color.w;
     
-    float l = depth.x / 100.0f - (input.Pos.z / 100.0f - col.a * 0.03f);
+    //float l = depth.x / 100.0f - (input.Pos.z / 100.0f - col.a * 0.03f);
     
     float a = 1.0f;
     
-    if (depth.x == 1.0f )
+    if (depth.x != 0.0f )
     {
         a = 0.0f;
     }
