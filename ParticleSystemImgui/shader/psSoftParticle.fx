@@ -35,22 +35,39 @@ float4 main(VS_OUTPUT input) : SV_Target
     float2 DepthCoord;
     DepthCoord.x = (input.Pos.x - 1);
     DepthCoord.y = (1 - input.Pos.y) * 0.5f;
-    float4 depth = g_DepthMap.Sample(g_SamplerLinear, uv);
+    float2 depth = g_DepthMap.Sample(g_SamplerLinear, uv).xy;
     
     
     col.xyz = texcol.xyz * input.Color.xyz;
     col.w = texcol.w * input.Color.w;
     
-    //float l = depth.x / 100.0f - (input.Pos.z / 100.0f - col.a * 0.03f);
-    
     float a = 1.0f;
     
-    if (depth.x != 0.0f )
+    if (depth.x > input.Pos.z)
     {
-        a = 0.0f;
+        a = 0;
+    }
+    else
+    {
+        a = 1.0f;
     }
     
-    return float4(1.0f, 1.0f, a, 1.0f);
+    float Zfar;//フェード開始距離
+    float Volume;//フェードの強さ
+    
+    
+    
+    return float4(1.0f, 1.0f, 1.0f, a);
+    //float l = depth.x / 100.0f - (input.Pos.z / 100.0f - col.a * 0.03f);
+    
+
+    
+    //if (depth.x != 0.0f)
+    //{
+    //    a = 0.0f;
+    //}
+    
+    //return float4(1.0f, 1.0f, a, 1.0f);
     //if (l <= 0)
     //{
     //    discard;

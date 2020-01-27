@@ -109,7 +109,7 @@ void ParticleSystemParent::Draw() {
 		RTV[0] = m_BackRTV;
 		RTV[1] = NULL;
 
-		m_Devicecontext->OMSetRenderTargets(2, RTV, m_DepthstencilView);
+		m_Devicecontext->OMSetRenderTargets(2, RTV, nullptr);
 		//レンダーターゲットビューからシェーダーリソースビュー取得
 		ID3D11ShaderResourceView* SRV = getSRVfromRTV(m_RenderTargetView);
 		ID3D11ShaderResourceView* ResetSRV = nullptr;
