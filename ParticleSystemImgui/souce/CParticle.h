@@ -60,6 +60,12 @@ typedef struct {
 	int m_NextSystemNumber = -1;//次に発生させるパーティクルの番号
 }t_ParticleSystemState;
 
+//ソフトパーティクル用コンスタントバッファ構造体
+struct ConstantBufferSoftParticle {
+	UINT iViewPort[2] = { 1600,900 };
+	float iZfar = 0.1f;
+	float iZVolume = 15.0f;
+};
 
 class ParticleSystem:public Subject {
 private:
@@ -126,6 +132,7 @@ private:
 protected:
 	t_ParticleSystemState* m_ParticleStateZero = nullptr;//初期値保存用
 	t_ParticleSystemState m_ParticleState;//パーティクルシステム設定
+	ConstantBufferSoftParticle m_CBSoftParticleState;
 	m_Particles* Particles = nullptr;
 
 	std::vector<m_Particles> m_ParticleVec;//生存パーティクル配列
@@ -146,15 +153,16 @@ protected:
 	ID3D11ComputeShader* m_ComputeShader          = nullptr;//コンピュートシェーダー(ParticleSystemParentで初期化されたものを受け取る)
 	ID3D11ComputeShader* m_InitComputeShader      = nullptr;//初期化用コンピュートシェーダー(ParticleSystemParentで初期化されたものを受け取る)
 	ID3D11Buffer* m_pResult                       = nullptr;//出力バッファ
-	ID3D11Buffer* m_ConstantBuffer                = nullptr;//コンスタントバッファ
+	ID3D11Buffer* m_ConstantBufferSoftParticle    = nullptr;//ソフトパーティクル用コンスタントバッファ
 	ID3D11Buffer* getbuf                          = nullptr;//バッファコピー用
 	ID3D11Buffer* m_pbuf                          = nullptr;//シェーダーリソースビュー用バッファ
 	ID3D11ShaderResourceView* m_pSRV              = nullptr;//シェーダーリソースビュー
 	ID3D11UnorderedAccessView* m_pUAV             = nullptr;//アンオーダードアクセスビュー
 	D3D11_MAPPED_SUBRESOURCE m_MappedSubResource;//コンピュートシェーダーから返ってくる数値
+
 	//comポインタ宣言
 	ComPtr<ID3D11Buffer> m_CpResult               = nullptr;//出力バッファ
-	ComPtr<ID3D11Buffer> m_CpConstantBuffer       = nullptr;//コンスタントバッファ
+	ComPtr<ID3D11Buffer> m_CpCBufferSoftParticle  = nullptr;//コンスタントバッファ
 	ComPtr<ID3D11Buffer> m_CpGetBuf               = nullptr;//バッファコピー用
 	ComPtr<ID3D11Buffer> m_CpBuf                  = nullptr;//シェーダーリソースビュー用バッファ
 	ComPtr<ID3D11ShaderResourceView> m_CpSRV      = nullptr;//シェーダーリソースビュー
@@ -222,6 +230,8 @@ public:
 	void SetTargetPos(float x, float y, float z);//ターゲット座標
 	void SetParticleSystemState(t_ParticleSystemState* SetState_);//構造体情報全体
 	void SetNextParticleSystem(int NextNumber);//次のパーティクルシステム番号
+	void SetSoftPConstantBuffer(ConstantBufferSoftParticle* setState = nullptr);
+	ParticleSystem& SetViewPort(UINT* viewport);
 	ParticleSystem& SetComputeShader(ID3D11ComputeShader* setShader, eComputeShaderType type);//コンピュートシェーダー
 	ParticleSystem& setSystemNumber(int setNumber);//自身のパーティクルシステム番号
 	//getter
@@ -234,4 +244,5 @@ public:
 	bool* getisUpdateActive();
 	bool* getisDrawActive();
 	float getLifeTime();
+	ConstantBufferSoftParticle getCBSoftParticleState();
 };

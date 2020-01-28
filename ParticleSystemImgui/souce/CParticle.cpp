@@ -6,6 +6,7 @@
 #include "CParticle.h"
 #include "dx11mathutil.h"
 #include "CCamera.h"
+#include "ParticleSystemUtility.h"
 //デバッグ用
 #include "CTimer.h"
 
@@ -17,6 +18,9 @@
 #ifndef     ALIGN16
 #define     ALIGN16 _declspec(align(16))
 #endif
+
+#define STS_ifERROR_FUNCTION(x) if (x != true) MessageBox(NULL, "AnyFunction is Error", "Error", MB_OK)
+
 
 constexpr auto PARTICLE_TEXTURE = "assets/ParticleTexture/particle.png";
 constexpr auto PARTICLE_PS_SHADER = "shader/psParticle.fx";
@@ -93,12 +97,10 @@ ParticleSystem& ParticleSystem::Init(ID3D11Device* device, ID3D11DeviceContext* 
 
 	//ビルボード初期化---------------------------------------------------------------------------------------------------------------
 	ChangeSoftParticleMode(newState.isSoftParticle);
-	
-	/*m_BillBoard.Init(0, 0, 0,
-		newState.m_Size, newState.m_Size,
-		XMFLOAT4(newState.m_Color[0], newState.m_Color[1], newState.m_Color[2], newState.m_Color[3]),
-		PARTICLE_PS_SHADER,
-		PARTICLE_VS_SHADER);*/
+
+	bool sts = ParticleSystemUtility::CreateConstantBuffer(m_Device, sizeof(ConstantBufferSoftParticle), m_CpCBufferSoftParticle.GetAddressOf());
+	STS_ifERROR_FUNCTION(sts);
+	SetSoftPConstantBuffer();
 
 	float u[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 	float v[4] = { 1.0f, 0.0f, 1.0f, 0.0f };
@@ -130,7 +132,7 @@ void ParticleSystem::InitComputeShader() {
 	m_CpSRV.Attach(m_pSRV);
 	m_CpUAV.Attach(m_pUAV);
 	m_CpResult.Attach(m_pResult);
-	m_CpConstantBuffer.Attach(m_ConstantBuffer);
+	m_CpCBufferSoftParticle.Attach(m_ConstantBufferSoftParticle);
 	m_CpGetBuf.Attach(getbuf);
 	m_CpBuf.Attach(m_pbuf);
 }
@@ -704,6 +706,27 @@ ParticleSystem& ParticleSystem::setSystemNumber(int setNumber) {
 	return *this;
 }
 
+void ParticleSystem::SetSoftPConstantBuffer(ConstantBufferSoftParticle* setState) {
+	if (setState != nullptr) {
+		memcpy_s(&m_CBSoftParticleState, sizeof(ConstantBufferSoftParticle), setState, sizeof(ConstantBufferSoftParticle));
+	}
+	
+	m_DeviceContext->UpdateSubresource(m_CpCBufferSoftParticle.Get(), 0, nullptr, &m_CBSoftParticleState, 0, 0);
+
+	m_DeviceContext->PSSetConstantBuffers(5, 1, m_CpCBufferSoftParticle.GetAddressOf());
+}
+
+ParticleSystem& ParticleSystem::SetViewPort(UINT* viewport) {
+	m_CBSoftParticleState.iViewPort[0] = viewport[0];
+	m_CBSoftParticleState.iViewPort[1] = viewport[1];
+
+	m_DeviceContext->UpdateSubresource(m_CpCBufferSoftParticle.Get(), 0, nullptr, &m_CBSoftParticleState, 0, 0);
+
+	m_DeviceContext->PSSetConstantBuffers(5, 1, m_CpCBufferSoftParticle.GetAddressOf());
+
+	return *this;
+}
+
 float* ParticleSystem::getMatrixf16() {
 	//TODO 回転移動の反映
 	float retMat[16] = {
@@ -746,6 +769,10 @@ bool* ParticleSystem::getisDrawActive() {
 
 float ParticleSystem::getLifeTime() {
 	return m_SystemLifeTime;
+}
+
+ConstantBufferSoftParticle ParticleSystem::getCBSoftParticleState() {
+	return m_CBSoftParticleState;
 }
 
 void ParticleSystem::ChangeGPUParticleMode(bool isGPUMode) {

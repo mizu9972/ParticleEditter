@@ -19,6 +19,5 @@ PS_OUTPUT main(VS_OUTPUT input)
     
     output.target0 = col;
     output.target1 = input.Pos.zw;
-    //output.target1 = 1.0f;
     return output;
 }

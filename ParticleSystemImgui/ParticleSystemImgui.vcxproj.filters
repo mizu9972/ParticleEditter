@@ -138,6 +138,9 @@
     <ClCompile Include="souce\ImGui\ImGuizmoUtil.cpp">
       <Filter>ソース ファイル\ImGuizmo</Filter>
     </ClCompile>
+    <ClCompile Include="souce\ParticleSystemUtility.cpp">
+      <Filter>ソース ファイル\Particle</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="souce\NonCopyable.h">
@@ -250,6 +253,9 @@
     </ClInclude>
     <ClInclude Include="souce\ImGui\ImGuizmoUtil.h">
       <Filter>ヘッダー ファイル\ImGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ParticleSystemUtility.h">
+      <Filter>ヘッダー ファイル\particle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

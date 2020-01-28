@@ -22,7 +22,7 @@ private:
 	ID3D11DepthStencilView* m_DepthstencilView = nullptr;
 	ID3D11DepthStencilView* m_DepthstencilViewRTV = nullptr;
 	ID3D11ShaderResourceView* m_DepthSRV = nullptr;
-
+	IDXGISwapChain* m_SwapChain = nullptr;
 	//レンダーターゲットビュー
 	ID3D11RenderTargetView* m_RenderTargetView = nullptr;
 	ID3D11RenderTargetView* m_BackRTV = nullptr;
@@ -33,7 +33,7 @@ private:
 
 	//レンダーターゲットビューからシェーダーリソースビューを取得
 	ID3D11ShaderResourceView* getSRVfromRTV(ID3D11RenderTargetView* ResourceView);
-	HRESULT CreateRTV(ID3D11RenderTargetView** outRTV, DXGI_FORMAT format, IDXGISwapChain* SwapChain);
+	HRESULT CreateRTV(ID3D11RenderTargetView** outRTV, DXGI_FORMAT format);
 public:
 	ParticleSystemParent() {
 	}

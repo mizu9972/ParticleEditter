@@ -158,6 +158,7 @@
     <ClCompile Include="souce\main.cpp" />
     <ClCompile Include="souce\Observer.cpp" />
     <ClCompile Include="souce\ParticleSystemParent.cpp" />
+    <ClCompile Include="souce\ParticleSystemUtility.cpp" />
     <ClCompile Include="souce\Shader.cpp" />
     <ClCompile Include="souce\WICTextureLoader.cpp" />
   </ItemGroup>
@@ -198,6 +199,7 @@
     <ClInclude Include="souce\NonCopyable.h" />
     <ClInclude Include="souce\Observer.h" />
     <ClInclude Include="souce\ParticleSystemParent.h" />
+    <ClInclude Include="souce\ParticleSystemUtility.h" />
     <ClInclude Include="souce\Shader.h" />
   </ItemGroup>
   <ItemGroup>

@@ -52,7 +52,7 @@ void ParticleEditor::Init(unsigned int Width, unsigned int Height, ID3D11Device*
 		m_SkyBoxes[Keyname]->Init(Filename, VertexFilename, PixelFilename);//初期化
 	};
 	m_Cube = new CModel();
-	m_Cube->Init("assets/stage1.x.dat", "shader/vs.fx", "shader/psskydome.fx");
+	m_Cube->Init("assets/skydome.x.dat", "shader/vs.fx", "shader/psskydome.fx");
 
 	//スカイボックス初期化
 	SkyboxInit("Skydome", "assets/skydome.x.dat", "shader/vs.fx", "shader/psskydome.fx");
@@ -442,6 +442,15 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 
 	if (ImGui::Checkbox("isSoftParticle", &ViewState.isSoftParticle)) {
 		pParticleSystem_->ChangeSoftParticleMode(ViewState.isSoftParticle);
+	}
+	if (ViewState.isSoftParticle) {
+		int ChangeCBSPFlag = 0;
+		ConstantBufferSoftParticle setCb = pParticleSystem_->getCBSoftParticleState();
+		ChangeCBSPFlag += ImGui::DragFloat("FeedFar", &setCb.iZfar, 0.01, 0, 1);
+		ChangeCBSPFlag += ImGui::DragFloat("FeedVolume", &setCb.iZVolume, 0.1, 0, 100);
+		if (ChangeCBSPFlag > 0) {
+			pParticleSystem_->SetSoftPConstantBuffer(&setCb);
+		}
 	}
 
 	//監視したい設定項目はここより上の行に書く

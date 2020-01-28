@@ -5,71 +5,18 @@ void ParticleSystemParent::Init(ID3D11Device* device, ID3D11DeviceContext* devic
 	//初期化
 	m_Device = device;
 	m_Devicecontext = devicecontext;
+	m_SwapChain = SwapChain;
 
 	if (SwapChain != nullptr) {
 		//専用のレンダーターゲットビュー作成(ソフトパーティクル処理で必要)
-		CreateRTV(&m_RenderTargetView, DXGI_FORMAT_R32_FLOAT, SwapChain);
+		CreateRTV(&m_RenderTargetView, DXGI_FORMAT_R32_FLOAT);
 	}
 	m_BackRTV = RenderTargetView;
 	m_DepthstencilView = depthstencilView;
-	//InitDepthBuffer(Width, Height, depthstencilView);//Zバッファ初期化
 
 	//コンピュートシェーダーを作成
 	//CreateComputeShader(m_Device, "Shader/csParticle.hlsl", "main", "cs_5_0", &m_ComputeShader);
 	CreateComputeShader(m_Device, "Shader/csInitParticle.hlsl", "main", "cs_5_0", &m_InitComputeShader);
-}
-
-bool ParticleSystemParent::InitDepthBuffer(unsigned int Width, unsigned int Height, ID3D11DepthStencilView* DepthstencilView) {
-	if (DepthstencilView == nullptr) {
-		return false;
-	}
-
-	////Zバッファ作成
-	//D3D11_TEXTURE2D_DESC ShadowMapDesc;
-	//ID3D11Texture2D* ShadowMap;//Zバッファ用のテクスチャ
-	//ZeroMemory(&ShadowMapDesc, sizeof(D3D11_TEXTURE2D_DESC));
-	//ShadowMapDesc.Format = DXGI_FORMAT_R24G8_TYPELESS;
-	//ShadowMapDesc.MipLevels = 1;
-	//ShadowMapDesc.ArraySize = 1;
-	//ShadowMapDesc.SampleDesc.Count = 1;
-	//ShadowMapDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL;
-	//ShadowMapDesc.Height = Height;
-	//ShadowMapDesc.Width = Width;
-
-	////Zバッファ用のテクスチャ作成
-	//m_Device->CreateTexture2D(
-	//	&ShadowMapDesc,
-	//	nullptr,
-	//	&ShadowMap
-	//);
-
-	////リソースビュー作成
-	//D3D11_DEPTH_STENCIL_VIEW_DESC DepthStencilViewDesc;
-	//ZeroMemory(&DepthStencilViewDesc, sizeof(D3D11_DEPTH_STENCIL_VIEW_DESC));
-	//DepthStencilViewDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	//DepthStencilViewDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-	//DepthStencilViewDesc.Texture2D.MipSlice = 0;
-
-	//D3D11_SHADER_RESOURCE_VIEW_DESC SRVDesc;
-	//ZeroMemory(&SRVDesc, sizeof(D3D11_SHADER_RESOURCE_VIEW_DESC));
-	//SRVDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	//SRVDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-	//SRVDesc.Texture2D.MipLevels = 1;
-
-	////m_Device->CreateDepthStencilView(
-	////	ShadowMap,
-	////	&DepthStencilViewDesc,
-	////	Shadow
-	////)
-	//m_Device->CreateShaderResourceView(
-	//	ShadowMap,
-	//	&SRVDesc,
-	//	&m_DepthSRV
-	//);
-
-	//m_Device->CreateRenderTargetView(&m_RenderTargetView, nullptr, DXGI_FORMAT_R16G16_FLOAT);
-
-	return true;
 }
 
 void ParticleSystemParent::UnInit() {
@@ -101,7 +48,7 @@ void ParticleSystemParent::Update() {
 }
 
 void ParticleSystemParent::Draw() {
-	float ClearColor[4] = { 0.0f,0.0f,0.0f,0.0f };
+	float ClearColor[4] = { 1.0f,1.0f,1.0f,1.0f };
 	//描画
 	if (m_RenderTargetView != nullptr && m_DepthstencilView != nullptr && m_BackRTV != nullptr) {
 		//レンダーターゲットサーフェイスを設定
@@ -183,13 +130,19 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem() {
 	//パーティクルシステム追加
 	//初期設定で追加用
 
-	ParticleSystem* newParticleSystem = new ParticleSystem;
+	ParticleSystem* newParticleSystem = new ParticleSystem;	
+	
+	//スワップチェーンの情報取得
+	DXGI_SWAP_CHAIN_DESC ScDesc;
+	m_SwapChain->GetDesc(&ScDesc);
+	UINT Viewport[2] = { ScDesc.BufferDesc.Width,ScDesc.BufferDesc.Height };
 
 	//初期化
 	newParticleSystem->
 		SetComputeShader(m_InitComputeShader, ParticleSystem::eComputeShaderType::INIT)
 		.SetComputeShader(m_ComputeShader, ParticleSystem::eComputeShaderType::UPDATE)
 		.Init(m_Device, m_Devicecontext)
+		.SetViewPort(Viewport)
 		.setSystemNumber(m_ParticleCounter);
 		
 	newParticleSystem->AddObsever(this);//パーティクルシステム終了通知対象へ追加
@@ -206,12 +159,18 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 
 	ParticleSystem* newParticleSystem = new ParticleSystem;
 
+	//スワップチェーンの情報取得
+	DXGI_SWAP_CHAIN_DESC ScDesc;
+	m_SwapChain->GetDesc(&ScDesc);
+	UINT Viewport[2] = { ScDesc.BufferDesc.Height,ScDesc.BufferDesc.Width };
+
 	//初期化
 	newParticleSystem->
 		SetComputeShader(m_InitComputeShader, ParticleSystem::eComputeShaderType::INIT)
 		.SetComputeShader(m_ComputeShader, ParticleSystem::eComputeShaderType::UPDATE)
 		.SetEmitte(setState->isEmitting)
 		.Init(m_Device, m_Devicecontext)
+		.SetViewPort(Viewport)
 		.setSystemNumber(m_ParticleCounter);
 		
 	newParticleSystem->AddObsever(this);//パーティクルシステム終了通知対象へ追加
@@ -228,12 +187,18 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 
 	ParticleSystem* newParticleSystem = new ParticleSystem;
 
+	//スワップチェーンの情報取得
+	DXGI_SWAP_CHAIN_DESC ScDesc;
+	m_SwapChain->GetDesc(&ScDesc);
+	UINT Viewport[2] = { ScDesc.BufferDesc.Height,ScDesc.BufferDesc.Width };
+
 	//初期化
 	newParticleSystem->
 		SetComputeShader(m_InitComputeShader, ParticleSystem::eComputeShaderType::INIT)
 		.SetComputeShader(m_ComputeShader, ParticleSystem::eComputeShaderType::UPDATE)
 		.SetEmitte(setState->isEmitting)
-		.Init(m_Device, m_Devicecontext);
+		.Init(m_Device, m_Devicecontext)
+		.SetViewPort(Viewport);
 		//.setSystemNumber(m_ParticleCounter);
 	
 	//システム番号設定
@@ -311,14 +276,14 @@ ID3D11ShaderResourceView* ParticleSystemParent::getSRVfromRTV(ID3D11RenderTarget
 }
 
 //レンダーターゲットビュー作成
-HRESULT ParticleSystemParent::CreateRTV(ID3D11RenderTargetView** outRTV, DXGI_FORMAT format, IDXGISwapChain* SwapChain) {
+HRESULT ParticleSystemParent::CreateRTV(ID3D11RenderTargetView** outRTV, DXGI_FORMAT format) {
 	HRESULT hr = E_FAIL;
 
 	ID3D11Texture2D* Texture2D = nullptr;
 
 	//スワップチェーンの情報取得
 	DXGI_SWAP_CHAIN_DESC ScDesc;
-	SwapChain->GetDesc(&ScDesc);
+	m_SwapChain->GetDesc(&ScDesc);
 
 	UINT Width, Height;
 	Width = ScDesc.BufferDesc.Width;
