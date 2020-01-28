@@ -15,7 +15,7 @@ void ParticleSystemParent::Init(ID3D11Device* device, ID3D11DeviceContext* devic
 	m_DepthstencilView = depthstencilView;
 
 	//コンピュートシェーダーを作成
-	//CreateComputeShader(m_Device, "Shader/csParticle.hlsl", "main", "cs_5_0", &m_ComputeShader);
+	CreateComputeShader(m_Device, "Shader/csParticle.hlsl", "main", "cs_5_0", &m_ComputeShader);
 	CreateComputeShader(m_Device, "Shader/csInitParticle.hlsl", "main", "cs_5_0", &m_InitComputeShader);
 }
 

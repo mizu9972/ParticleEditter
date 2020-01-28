@@ -16,7 +16,61 @@ std::string ExtractExtension(std::string fullpath) {
 	std::string extname = fullpath.substr(ext_i + 1, fullpath.size() - ext_i);
 	return extname;
 }
+//--------------------------------------------------------------------------------------
+// コンパイル済みシェーダーファイルを読み込む
+//--------------------------------------------------------------------------------------
+bool readShader(const char* csoName, std::vector<unsigned char>& byteArray)
+{
+	FILE* fp;
+	int ret = fopen_s(&fp, csoName, "rb");
+	if (ret != 0) {
+		return false;
+	}
+	fseek(fp, 0, SEEK_END);
+	int size = ftell(fp);
+	byteArray.resize(size);
+	fseek(fp, 0, SEEK_SET);
 
+	fread(byteArray.data(), byteArray.size(), 1, fp);
+	fclose(fp);
+
+	return true;
+}
+
+//--------------------------------------------------------------------------------------
+// シェーダーをファイル拡張子に合わせてコンパイル
+//--------------------------------------------------------------------------------------
+HRESULT CompileShader(const char* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, void** ShaderObject, size_t& ShaderObjectSize, ID3DBlob** ppBlobOut) {
+
+	HRESULT hr;
+	static std::vector<unsigned char> byteArray;
+	*ppBlobOut = nullptr;
+
+	std::string extname = ExtractExtension(szFileName);
+	if (extname == "cso") {
+		bool sts = readShader(szFileName, byteArray);
+		if (!sts) {
+			FILE* fp;
+			fopen_s(&fp, "debug.txt", "a");
+			fprintf(fp, "file open error \n");
+			fclose(fp);
+			return E_FAIL;
+		}
+		*ShaderObject = byteArray.data();
+		ShaderObjectSize = byteArray.size();
+	}
+	else {
+		hr = CompileShaderFromFile(szFileName, szEntryPoint, szShaderModel, ppBlobOut);
+		if (FAILED(hr)) {
+			if (*ppBlobOut)(*ppBlobOut)->Release();
+			return E_FAIL;
+		}
+		*ShaderObject = (*ppBlobOut)->GetBufferPointer();
+		ShaderObjectSize = (*ppBlobOut)->GetBufferSize();
+	}
+
+	return S_OK;
+}
 //--------------------------------------------------------------------------------------
 // シェーダーをコンパイル
 //--------------------------------------------------------------------------------------
@@ -80,18 +134,26 @@ bool CreateVertexShader(ID3D11Device* device,
 						ID3D11VertexShader** ppVertexShader,
 						ID3D11InputLayout**  ppVertexLayout){
 
-	ID3DBlob* pBlob=nullptr;
+	HRESULT hr;
 
-	HRESULT hr = CompileShaderFromFile(szFileName, szEntryPoint, szShaderModel, &pBlob);
-	if (FAILED(hr)){
+	ID3DBlob* pBlob = nullptr;
+
+	void* ShaderObject;
+	size_t	ShaderObjectSize;
+
+	// ファイルの拡張子に合わせてコンパイル
+	hr = CompileShader(szFileName, szEntryPoint, szShaderModel, &ShaderObject, ShaderObjectSize, &pBlob);
+	if (FAILED(hr))
+	{
+		if (pBlob)pBlob->Release();
 		return false;
 	}
 
 	// 頂点シェーダーを生成
-	hr = device->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, ppVertexShader);
+	hr = device->CreateVertexShader(ShaderObject, ShaderObjectSize, nullptr, ppVertexShader);
 	if (FAILED(hr))
 	{
-		pBlob->Release();
+		if (pBlob)pBlob->Release();
 		return false;
 	}
 
@@ -99,11 +161,10 @@ bool CreateVertexShader(ID3D11Device* device,
 	hr = device->CreateInputLayout(
 		layout,
 		numElements,
-		pBlob->GetBufferPointer(),
-		pBlob->GetBufferSize(),
+		ShaderObject,
+		ShaderObjectSize,
 		ppVertexLayout);
-
-	if (FAILED(hr)){
+	if (FAILED(hr)) {
 		MessageBox(nullptr, "CreateInputLayout error", "error", MB_OK);
 		pBlob->Release();
 		return false;
@@ -121,19 +182,25 @@ bool CreatePixelShader(ID3D11Device* device,
 	LPCSTR szShaderModel,
 	ID3D11PixelShader** ppPixelShader){
 
+	HRESULT hr;
+
 	ID3DBlob* pBlob = nullptr;
 
-	// コンパイル
-	HRESULT hr = CompileShaderFromFile(szFileName, szEntryPoint, szShaderModel, &pBlob);
-	if (FAILED(hr)){
+	void* ShaderObject;
+	size_t	ShaderObjectSize;
+
+	// ファイルの拡張子に合わせてコンパイル
+	hr = CompileShader(szFileName, szEntryPoint, szShaderModel, &ShaderObject, ShaderObjectSize, &pBlob);
+	if (FAILED(hr))
+	{
 		return false;
 	}
 
-	// 頂点シェーダーを生成
-	hr = device->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, ppPixelShader);
+	// ピクセルシェーダーを生成
+	hr = device->CreatePixelShader(ShaderObject, ShaderObjectSize, nullptr, ppPixelShader);
 	if (FAILED(hr))
 	{
-		pBlob->Release();
+		if (pBlob)pBlob->Release();
 		return false;
 	}
 
@@ -144,50 +211,30 @@ bool CreatePixelShader(ID3D11Device* device,
 //--------------------------------------------------------------------------------------
 bool CreateComputeShader(ID3D11Device* device,
 	const char* szFileName,
-	LPCSTR szEmtryPoint,
+	LPCSTR szEntryPoint,
 	LPCSTR szShaderModel,
 	ID3D11ComputeShader** ppComputeShader) {
 
 	ID3DBlob* pBlob = nullptr;
 
+	void* ShaderObject;
+	size_t	ShaderObjectSize;
 	//コンパイル
-	HRESULT hr = CompileShaderFromFile(szFileName, szEmtryPoint, szShaderModel, &pBlob);
+	HRESULT hr = CompileShader(szFileName, szEntryPoint, szShaderModel, &ShaderObject, ShaderObjectSize, &pBlob);
 	if (FAILED(hr)) {
-		pBlob->Release();
+		if (pBlob)pBlob->Release();
 		return false;
 	}
 	//コンピュートシェーダーを作成
-	hr = device->CreateComputeShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), NULL, ppComputeShader);
+	hr = device->CreateComputeShader(ShaderObject, ShaderObjectSize, nullptr, ppComputeShader);
 	if (FAILED(hr)) {
-		pBlob->Release();
+		if (pBlob)pBlob->Release();
 		return false;
 	}
 
 	return true;
 }
-//--------------------------------------------------------------------------------------
-//コンピュートシェーダーオブジェクトを作成(編集中)
-//--------------------------------------------------------------------------------------
-//template <typename TComputeStruct>
-//void CreateComputeShader(ID3D11Device* device,TComputeStruct* TStruct,int Size,bool isUseStruccturedBuffer,ID3D11Buffer** pVertexBuffer) {
-//	
-//	D3D11_BUFFER_DESC BufferDesc;
-//	ZeroMemory(&BufferDesc, sizeof(BufferDesc));
-//	BufferDesc.ByteWidth = sizeof(TStruct) * Size;
-//	
-//	//BufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
-//	BufferDesc.Usage = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_UNORDERED_ACCESS;
-//	
-//	BufferDesc.CPUAccessFlags = 0;
-//	if (isUseStruccturedBuffer) {
-//		BufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
-//		BufferDesc.StructureByteStride = sizeof(TStruct);
-//	}
-//	else {
-//		BufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
-//	}
-//	device->CreateBuffer(&BufferDesc, NULL, pVertexBuffer);
-//}
+
 //--------------------------------------------------------------------------------------
 //コンピュートシェーダーを実行
 //--------------------------------------------------------------------------------------
