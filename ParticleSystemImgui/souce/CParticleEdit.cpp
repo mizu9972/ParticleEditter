@@ -11,8 +11,6 @@
 
 #include "game.h"
 
-//void EditTransform(const float *cameraView, float *cameraProjection, float* matrix);
-
 #define CHECK(x) (CheckDataChange += x) //数値変更を感知
 #define CHECK_RESULT (CheckDataChange > 0) //変更されたかどうか判定
 static int CheckDataChange = 0;//ImGuiで数値が変更されたらtrueが返ってくるメソッドの仕様を利用して、数値変更を管理する変数
@@ -36,11 +34,6 @@ void ParticleEditor::Init(unsigned int Width, unsigned int Height, ID3D11Device*
 
 	float u[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 	float v[4] = { 1.0f, 0.0f, 1.0f, 0.0f };
-
-	//m_TargetBillBoard.SetUV(u, v);
-	//m_TargetBillBoard.LoadTexTure("assets/ParticleTexture/en.png");
-
-	//CreatetSRVfromWICFile("assets/whiteblack.png", CDirectXGraphics::GetInstance()->GetDXDevice(), CDirectXGraphics::GetInstance()->GetImmediateContext(), &m_test);
 
 	//スカイボックス初期化
 	DX11MtxIdentity(m_SkyboxMatrix);//行列初期化
@@ -82,7 +75,6 @@ void ParticleEditor::UnInit() {
 //更新
 void ParticleEditor::Update() {
 
-	//m_TargetBillBoard.SetPosition(m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2]);//ターゲット
 	m_CubeMat._41 = m_TargetPosf[0];
 	m_CubeMat._42 = m_TargetPosf[1];
 	m_CubeMat._43 = m_TargetPosf[2];
@@ -108,16 +100,12 @@ void ParticleEditor::Draw() {
 	m_ViewSkybox->Draw();
 
 	if (isDrawTargetObj) {
-		//m_TargetBillBoard.DrawBillBoardAdd(CCamera::GetInstance()->GetCameraMatrix());//ターゲット
 
 		DX11SetTransform::GetInstance()->SetTransform(DX11SetTransform::TYPE::WORLD, m_CubeMat);
 		DX11MtxScale(2.0f, 2.0f, 2.0f, m_CubeMat);
 
-		//CDirectXGraphics::GetInstance()->SetWireFrame();
 		m_Cube->Draw();
-		//CDirectXGraphics::GetInstance()->SetFilSolid();
 	}
-	//CDirectXGraphics::GetInstance()->GetImmediateContext()->PSSetShaderResources(1, 1, &m_test);
 
 	m_ParticleSystems.Draw();
 
@@ -273,10 +261,7 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	t_ParticleSystemState ViewState = pParticleSystem_->GetState();
 
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	//ImGuiIO& io = ImGui::GetIO();
-	//float fov = 27.0f;
 
-	//CCamera::GetInstance()->Perspective(fov, io.DisplaySize.x / io.DisplaySize.y, 0.1f, 100.f, cameraProjection);
 	//ImGuizmo
 	ImGuizmo::BeginFrame();
 	//Imguiウィンドウ設定
@@ -291,44 +276,8 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 
 	CheckDataChange = 0;//数値変更監視変数初期化
 
-	//CCamera::GetInstance()->CreateView(cameraView);
 	EditTransform(&ViewState);
 
-	//float objectMatrix[16] =
-	//{ 1.f, 0.f, 0.f, 0.f,
-	//  0.f, 1.f, 0.f, 0.f,
-	//  0.f, 0.f, 1.f, 0.f,
-	//  ViewState.m_Position[0], ViewState.m_Position[1], ViewState.m_Position[2], 1.f };
-	//ImGuizmo::Enable(true);
-
-	//static ImGuizmo::OPERATION m_CurrentGizmoOperation(ImGuizmo::TRANSLATE);
-	//static ImGuizmo::MODE m_CurrentGizmoMode(ImGuizmo::LOCAL);
-	//static bool useSnap = false;
-	//static float snap[3] = { 1.f, 1.f, 1.f };
-
-	//if (ImGui::IsKeyPressed(83)) {
-	//	useSnap = !useSnap;
-	//}
-	//switch (m_CurrentGizmoOperation)
-	//{
-	//case ImGuizmo::TRANSLATE:
-	//	ImGui::InputFloat3("Snap", &snap[0]);
-	//	break;
-	//case ImGuizmo::ROTATE:
-	//	ImGui::InputFloat("Angle Snap", &snap[0]);
-	//	break;
-	//case ImGuizmo::SCALE:
-	//	ImGui::InputFloat("Scale Snap", &snap[0]);
-	//	break;
-	//}
-	//float* a = pParticleSystem_->getMatrixf16();
-	////ImGuiIO& io = ImGui::GetIO();
-	//ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-	//ImGuizmo::Manipulate(cameraView, cameraProjection, m_CurrentGizmoOperation, m_CurrentGizmoMode, objectMatrix/*, NULL, useSnap ? &snap[0] : NULL, false, false*/);
-
-	//EditTransform(cameraView, cameraProjection, objectMatrix);
-	//ImGuizmo::DrawGrid(cameraView, cameraProjection, objectMatrix, 10.0f);
-	//ImGuizmo::DrawCube(cameraView, cameraProjection, objectMatrix);
 	//パーティクルシステム制御
 	{
 		static bool DeleteFlag = false;
@@ -638,12 +587,14 @@ bool ParticleEditor::InputData(const char* FileName_) {
 		}
 
 		int ParticleCount = 0;
-		fread(&ParticleCount, sizeof(int), 1, Fp);//read1
+		fread(&ParticleCount, sizeof(int), 1, Fp);//read1 //パーティクルシステム個数
 		std::vector<int> nextNumbers;
 		int NumbersSize;
 		for (int Count = 0; Count < ParticleCount; Count++) {
+			//--------------------------------------------------------------------------------------------------------------
+			//パーティクルシステム一つ分
 			//データを読み込んで追加
-			fread(&GetState, sizeof(t_ParticleSystemState), 1, Fp);//read2
+			fread(&GetState, sizeof(t_ParticleSystemState), 1, Fp);//read2 //構造体データ
 			
 			fread(&NumbersSize, sizeof(int), 1, Fp);//read3 要素数読み込み
 
@@ -656,7 +607,7 @@ bool ParticleEditor::InputData(const char* FileName_) {
 
 			m_ParticleSystems.AddParticleSystem(&GetState,nextNumbers);
 
-
+			//--------------------------------------------------------------------------------------------------------------
 		}
 		m_ParticleSystems.setParticleCounter(ParticleCount);
 
@@ -695,7 +646,9 @@ void ParticleEditor::OutputData(char* FileName_) {
 	std::vector<int> nextNumbers;
 	int NumbersSize;
 	for (auto iParticleSystem : m_ParticleSystems.getParticleSystem()) {
-		fwrite(&iParticleSystem.second->GetState(), sizeof(t_ParticleSystemState), 1, Fp);//write2
+		//--------------------------------------------------------------------------------------------------------------
+		//パーティクルシステム一つ分
+		fwrite(&iParticleSystem.second->GetState(), sizeof(t_ParticleSystemState), 1, Fp);//write2 //構造体データ書き出し
 
 		//パーティクル番号リスト出力
 		nextNumbers = iParticleSystem.second->getNextSystemNumbers();
@@ -705,6 +658,7 @@ void ParticleEditor::OutputData(char* FileName_) {
 			fwrite(&nextNumbers[num], sizeof(int), 1, Fp);//write4 //要素を配列で書き出し
 		}
 
+		//--------------------------------------------------------------------------------------------------------------
 	}
 	
 	fclose(Fp);
@@ -780,85 +734,4 @@ void ParticleEditor::EditTransform(t_ParticleSystemState* ViewState) {
 		ViewState->m_Position[2] = matrixTranslation[0] * 2.0f;
 		CheckDataChange += 1;
 	}
-
-	ViewState->m_Angle[0] = static_cast<int>(180 - matrixRotation[0]);
-	ViewState->m_Angle[1] = static_cast<int>(180 - matrixRotation[1]);
-	ViewState->m_Angle[2] = static_cast<int>(180 - matrixRotation[2]);
-
-
-}
-
-void EditTransform(const float *cameraView, float *cameraProjection, float* matrix)
-{
-	static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
-	static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::LOCAL);
-	static bool useSnap = false;
-	static float snap[3] = { 1.f, 1.f, 1.f };
-	static float bounds[] = { -0.5f, -0.5f, -0.5f, 0.5f, 0.5f, 0.5f };
-	static float boundsSnap[] = { 0.1f, 0.1f, 0.1f };
-	static bool boundSizing = false;
-	static bool boundSizingSnap = false;
-
-	if (ImGui::IsKeyPressed(90))
-		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-	if (ImGui::IsKeyPressed(69))
-		mCurrentGizmoOperation = ImGuizmo::ROTATE;
-	if (ImGui::IsKeyPressed(82)) // r Key
-		mCurrentGizmoOperation = ImGuizmo::SCALE;
-	if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
-		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-	ImGui::SameLine();
-	if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
-		mCurrentGizmoOperation = ImGuizmo::ROTATE;
-	ImGui::SameLine();
-	if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
-		mCurrentGizmoOperation = ImGuizmo::SCALE;
-	float f[3] = { 1.0f,1.0f,1.0f };
-	float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-	ImGuizmo::DecomposeMatrixToComponents(matrix, matrixTranslation, matrixRotation, matrixScale);
-	ImGui::InputFloat3("Tr", matrixTranslation, 3);
-	ImGui::InputFloat3("Rt", matrixRotation, 3);
-	ImGui::InputFloat3("Sc", matrixScale, 3);
-	ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, matrix);
-
-	//ImGuizmo::RecomposeMatrixFromComponents(f, f, f, matrix);
-
-	if (mCurrentGizmoOperation != ImGuizmo::SCALE)
-	{
-		if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
-			mCurrentGizmoMode = ImGuizmo::LOCAL;
-		ImGui::SameLine();
-		if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
-			mCurrentGizmoMode = ImGuizmo::WORLD;
-	}
-	if (ImGui::IsKeyPressed(83))
-		useSnap = !useSnap;
-	ImGui::Checkbox("", &useSnap);
-	ImGui::SameLine();
-	 
-	switch (mCurrentGizmoOperation)
-	{
-	case ImGuizmo::TRANSLATE:
-		ImGui::InputFloat3("Snap", &snap[0]);
-		break;
-	case ImGuizmo::ROTATE:
-		ImGui::InputFloat("Angle Snap", &snap[0]);
-		break;
-	case ImGuizmo::SCALE:
-		ImGui::InputFloat("Scale Snap", &snap[0]);
-		break;
-	}
-	ImGui::Checkbox("Bound Sizing", &boundSizing);
-	if (boundSizing)
-	{
-		ImGui::PushID(3);
-		ImGui::Checkbox("", &boundSizingSnap);
-		ImGui::SameLine();
-		ImGui::InputFloat3("Snap", boundsSnap);
-		ImGui::PopID();
-	}
-
-	ImGuiIO& io = ImGui::GetIO();
-	ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-	ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
 }

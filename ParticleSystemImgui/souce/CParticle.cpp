@@ -7,8 +7,6 @@
 #include "dx11mathutil.h"
 #include "CCamera.h"
 #include "ParticleSystemUtility.h"
-//デバッグ用
-#include "CTimer.h"
 
 #define		SCREEN_X		1200
 #define		SCREEN_Y		600
@@ -95,19 +93,19 @@ ParticleSystem& ParticleSystem::Init(ID3D11Device* device, ID3D11DeviceContext* 
 		strcpy_s(m_ParticleState.m_TextureName, filename);
 	}
 
-	//ビルボード初期化---------------------------------------------------------------------------------------------------------------
 	ChangeSoftParticleMode(newState.isSoftParticle);
 
 	bool sts = ParticleSystemUtility::CreateConstantBuffer(m_Device, sizeof(ConstantBufferSoftParticle), m_CpCBufferSoftParticle.GetAddressOf());
 	STS_ifERROR_FUNCTION(sts);
 	SetSoftPConstantBuffer();
-
+	
+	
+	//ビルボード初期化---------------------------------------------------------------------------------------------------------------
 	float u[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
 	float v[4] = { 1.0f, 0.0f, 1.0f, 0.0f };
 	m_BillBoard.SetUV(u, v);
 	m_BillBoard.LoadTexTure(m_ParticleState.m_TextureName);
 	//----------------------------------------------------------------------------------------------------------------------------
-	//(this->*fpStartFunc)();
 
 	Start();
 	return *this;
@@ -650,6 +648,7 @@ void ParticleSystem::SetParticleSystemState(t_ParticleSystemState* SetParticleSy
 	memcpy(&m_ParticleState, SetParticleSystemState_, sizeof(t_ParticleSystemState));
 	ChangeGPUParticleMode(SetParticleSystemState_->isGPUParticle);
 }
+//名前設定
 void ParticleSystem::SetName(const char* setName) {
 	strcpy_s(m_ParticleState.m_Name, setName);
 }
@@ -664,6 +663,7 @@ ParticleSystem& ParticleSystem::SetEmitte(bool set) {
 	return *this;
 }
 
+//パーティクル終了時に呼び出す別パーティクルシステム設定
 void ParticleSystem::SetNextParticleSystem(int NextNumber) {
 	//m_ParticleState.m_NextSystemNumber = NextNumber;
 	if (NextNumber == -1) {
@@ -678,6 +678,7 @@ void ParticleSystem::SetNextParticleSystem(int NextNumber) {
 	m_NextParticleNumberVector.erase(std::unique(m_NextParticleNumberVector.begin(), m_NextParticleNumberVector.end()), m_NextParticleNumberVector.end());
 }
 
+//コンピュートシェーダー設定
 ParticleSystem& ParticleSystem::SetComputeShader(ID3D11ComputeShader* setShader, eComputeShaderType type) {
 	switch (type)
 	{
@@ -695,38 +696,43 @@ ParticleSystem& ParticleSystem::SetComputeShader(ID3D11ComputeShader* setShader,
 	return *this;
 }
 
+//目標座標を設定
 void ParticleSystem::SetTargetPos(float x, float y, float z) {
 	m_TargetPos.x = x;
 	m_TargetPos.y = y;
 	m_TargetPos.z = z;
 }
 
+//識別番号を設定
 ParticleSystem& ParticleSystem::setSystemNumber(int setNumber) {
 	m_ParticleState.m_SystemNumber = setNumber;
 	return *this;
 }
 
+//ソフトパーティクル用定数バッファを設定
 void ParticleSystem::SetSoftPConstantBuffer(ConstantBufferSoftParticle* setState) {
 	if (setState != nullptr) {
-		memcpy_s(&m_CBSoftParticleState, sizeof(ConstantBufferSoftParticle), setState, sizeof(ConstantBufferSoftParticle));
+		memcpy_s(&m_ParticleState.m_CBSoftParticleState, sizeof(ConstantBufferSoftParticle), setState, sizeof(ConstantBufferSoftParticle));
 	}
 	
-	m_DeviceContext->UpdateSubresource(m_CpCBufferSoftParticle.Get(), 0, nullptr, &m_CBSoftParticleState, 0, 0);
+	m_DeviceContext->UpdateSubresource(m_CpCBufferSoftParticle.Get(), 0, nullptr, &m_ParticleState.m_CBSoftParticleState, 0, 0);
 
 	m_DeviceContext->PSSetConstantBuffers(5, 1, m_CpCBufferSoftParticle.GetAddressOf());
 }
 
+//ビューポート用定数バッファを設定
 ParticleSystem& ParticleSystem::SetViewPort(UINT* viewport) {
-	m_CBSoftParticleState.iViewPort[0] = viewport[0];
-	m_CBSoftParticleState.iViewPort[1] = viewport[1];
+	m_ParticleState.m_CBSoftParticleState.iViewPort[0] = viewport[0];
+	m_ParticleState.m_CBSoftParticleState.iViewPort[1] = viewport[1];
 
-	m_DeviceContext->UpdateSubresource(m_CpCBufferSoftParticle.Get(), 0, nullptr, &m_CBSoftParticleState, 0, 0);
+	m_DeviceContext->UpdateSubresource(m_CpCBufferSoftParticle.Get(), 0, nullptr, &m_ParticleState.m_CBSoftParticleState, 0, 0);
 
 	m_DeviceContext->PSSetConstantBuffers(5, 1, m_CpCBufferSoftParticle.GetAddressOf());
 
 	return *this;
 }
 
+//getter
 float* ParticleSystem::getMatrixf16() {
 	//TODO 回転移動の反映
 	float retMat[16] = {
@@ -772,7 +778,7 @@ float ParticleSystem::getLifeTime() {
 }
 
 ConstantBufferSoftParticle ParticleSystem::getCBSoftParticleState() {
-	return m_CBSoftParticleState;
+	return m_ParticleState.m_CBSoftParticleState;
 }
 
 void ParticleSystem::ChangeGPUParticleMode(bool isGPUMode) {

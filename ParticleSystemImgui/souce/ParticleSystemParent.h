@@ -1,14 +1,13 @@
 #pragma once
 
 #include <map>
-#include "Shader.h"
 #include "CParticle.h"
 #include "Observer.h"
 
 //パーティクルシステムの親オブジェクト
 //ファイル入出力するのはこのクラスから
 //複数作成し得るパーティクルシステムをまとめて管理する
-class ParticleSystemParent :public Observer{
+class ParticleSystemParent :public Observer {
 private:
 	std::map<int, ParticleSystem*> m_ParticleSystemDictionary;//パーティクルシステム群
 
@@ -29,8 +28,6 @@ private:
 
 	int m_ParticleCounter = 0;//パーティクルシステムそれぞれに持たせる固有の番号
 
-	bool InitDepthBuffer(unsigned int Width, unsigned int Height, ID3D11DepthStencilView* DepthstencilView);
-
 	//レンダーターゲットビューからシェーダーリソースビューを取得
 	ID3D11ShaderResourceView* getSRVfromRTV(ID3D11RenderTargetView* ResourceView);
 	HRESULT CreateRTV(ID3D11RenderTargetView** outRTV, DXGI_FORMAT format);
@@ -39,7 +36,7 @@ public:
 	}
 
 	//基本処理
-	void Init(ID3D11Device* device,ID3D11DeviceContext* devicecontext, ID3D11DepthStencilView* depthstencilView = nullptr, ID3D11RenderTargetView* RenderTargetView = nullptr, IDXGISwapChain* SwapChain = nullptr /*ID3D11DepthStencilView* depthstencilView = nullptr, ID3D11RenderTargetView* RenderTargetView = nullptr*/);
+	void Init(ID3D11Device* device, ID3D11DeviceContext* devicecontext, ID3D11DepthStencilView* depthstencilView = nullptr, ID3D11RenderTargetView* RenderTargetView = nullptr, IDXGISwapChain* SwapChain = nullptr /*ID3D11DepthStencilView* depthstencilView = nullptr, ID3D11RenderTargetView* RenderTargetView = nullptr*/);
 	void UnInit();
 	void Start();
 	void Update();
@@ -49,9 +46,9 @@ public:
 	void InputParticleSystem(const char* filename);
 
 	//パーティクルシステム追加
-	ParticleSystem* AddParticleSystem();
-	ParticleSystem* AddParticleSystem(t_ParticleSystemState* setState);
-	ParticleSystem* AddParticleSystem(t_ParticleSystemState* setState, std::vector<int>& setNumbers);
+	ParticleSystem* AddParticleSystem();//初期値で追加
+	ParticleSystem* AddParticleSystem(t_ParticleSystemState* setState);//元データを参照して追加
+	ParticleSystem* AddParticleSystem(t_ParticleSystemState* setState, std::vector<int>& setNumbers);//元データを参照し、次に実行するシステム情報を持って初期化
 
 	//パーティクルシステム削除
 	void RemoveParticleSystem(int removeKey);

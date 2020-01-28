@@ -171,7 +171,8 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 		.SetEmitte(setState->isEmitting)
 		.Init(m_Device, m_Devicecontext)
 		.SetViewPort(Viewport)
-		.setSystemNumber(m_ParticleCounter);
+		.setSystemNumber(m_ParticleCounter).
+		SetParticleSystemState(setState);
 		
 	newParticleSystem->AddObsever(this);//パーティクルシステム終了通知対象へ追加
 
@@ -198,7 +199,8 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 		.SetComputeShader(m_ComputeShader, ParticleSystem::eComputeShaderType::UPDATE)
 		.SetEmitte(setState->isEmitting)
 		.Init(m_Device, m_Devicecontext)
-		.SetViewPort(Viewport);
+		.SetViewPort(Viewport).
+		SetParticleSystemState(setState);
 		//.setSystemNumber(m_ParticleCounter);
 	
 	//システム番号設定
@@ -329,37 +331,6 @@ HRESULT ParticleSystemParent::CreateRTV(ID3D11RenderTargetView** outRTV, DXGI_FO
 		Texture2D->Release();
 		Texture2D = nullptr;
 	}
-
-	////深度マップテクスチャをレンダーターゲットにする際のデプスステンシルビュー用のテクスチャーを作成
-	//D3D11_TEXTURE2D_DESC DepthDesc;
-	//DepthDesc.Width = Width;
-	//DepthDesc.Height = Height;
-	//DepthDesc.MipLevels = 1;
-	//DepthDesc.ArraySize = 1;
-	//DepthDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	//DepthDesc.SampleDesc.Count = 1;
-	//DepthDesc.SampleDesc.Quality = 0;
-	//DepthDesc.Usage = D3D11_USAGE_DEFAULT;
-	//DepthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-	//DepthDesc.CPUAccessFlags = 0;
-	//DepthDesc.MiscFlags = 0;
-
-	//hr = m_Device->CreateTexture2D(&DepthDesc, nullptr, &Texture2D);
-	//if (FAILED(hr)) {
-	//	return hr;
-	//}
-
-	//hr = m_Device->CreateDepthStencilView(Texture2D, nullptr, &m_DepthstencilViewRTV);
-	//if (FAILED(hr)) {
-	//	return hr;
-	//}
-
-
-	//if (Texture2D) {
-	//	Texture2D->Release();
-	//	Texture2D = nullptr;
-	//}
-
 	return S_OK;
 }
 //パーティクルシステム終了通知受け取り

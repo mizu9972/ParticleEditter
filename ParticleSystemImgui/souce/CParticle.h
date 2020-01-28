@@ -4,7 +4,7 @@
 #include    <vector>
 
 #include "CBillBoard.h"
-#include "Shader.h"
+//#include "Shader.h"
 #include "Observer.h"
 #include <wrl.h>
 
@@ -15,6 +15,13 @@ template<typename ComPtrT>
 using ComPtr = Microsoft::WRL::ComPtr<ComPtrT>;
 
 class ParticleSystem;
+
+//ソフトパーティクル用コンスタントバッファ構造体
+struct ConstantBufferSoftParticle {
+	UINT iViewPort[2] = { 1600,900 };
+	float iZfar = 0.1f;
+	float iZVolume = 110.0f;
+};
 
 //パーティクルシステム設定構造体
 //手動で設定して割り当てる
@@ -49,6 +56,7 @@ typedef struct {
 	bool isGPUParticle      = false;//GPUパーティクルONOFF
 	bool UseGravity         = false;//重力有効
 	bool isSoftParticle = false;//ソフトパーティクルにするかどうか
+	ConstantBufferSoftParticle m_CBSoftParticleState;
 
 	float m_Gravity[3] = { 0,0,0 };
 
@@ -59,13 +67,6 @@ typedef struct {
 	int m_SystemNumber;//自身の番号(mapで管理するkeyになる)
 	int m_NextSystemNumber = -1;//次に発生させるパーティクルの番号
 }t_ParticleSystemState;
-
-//ソフトパーティクル用コンスタントバッファ構造体
-struct ConstantBufferSoftParticle {
-	UINT iViewPort[2] = { 1600,900 };
-	float iZfar = 0.1f;
-	float iZVolume = 110.0f;
-};
 
 class ParticleSystem:public Subject {
 private:
@@ -132,7 +133,6 @@ private:
 protected:
 	t_ParticleSystemState* m_ParticleStateZero = nullptr;//初期値保存用
 	t_ParticleSystemState m_ParticleState;//パーティクルシステム設定
-	ConstantBufferSoftParticle m_CBSoftParticleState;
 	m_Particles* Particles = nullptr;
 
 	std::vector<m_Particles> m_ParticleVec;//生存パーティクル配列

@@ -191,9 +191,6 @@
     <ClInclude Include="souce\CDirectxGraphics.h">
       <Filter>ヘッダー ファイル\class</Filter>
     </ClInclude>
-    <ClInclude Include="souce\CTimer.h">
-      <Filter>ヘッダー ファイル\class</Filter>
-    </ClInclude>
     <ClInclude Include="souce\dx11mathutil.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
