@@ -46,11 +46,11 @@ float4 main(VS_OUTPUT input) : SV_Target
 
     }
     
-    float Zsub = (depth.x - input.Pos.z) * 100.0f; //深度値の差
+    float Zsub = (depth.x - input.Pos.z); //深度値の差
     
-    if (Zsub < iZfar / input.Pos.z * 10.0f)
+    if (Zsub < iZfar * 0.1f * input.Pos.z)
     {
-        a = Zsub * iZVolume * (input.Pos.z);
+        a = Zsub * iZVolume;
     }
     
     return float4(col.r, col.g, col.b, col.a * a);

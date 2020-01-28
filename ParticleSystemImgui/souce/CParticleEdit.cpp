@@ -52,7 +52,7 @@ void ParticleEditor::Init(unsigned int Width, unsigned int Height, ID3D11Device*
 		m_SkyBoxes[Keyname]->Init(Filename, VertexFilename, PixelFilename);//初期化
 	};
 	m_Cube = new CModel();
-	m_Cube->Init("assets/skydome.x.dat", "shader/vs.fx", "shader/psskydome.fx");
+	m_Cube->Init("assets/f1.x.dat", "shader/vs.fx", "shader/ps.fx");
 
 	//スカイボックス初期化
 	SkyboxInit("Skydome", "assets/skydome.x.dat", "shader/vs.fx", "shader/psskydome.fx");
@@ -105,13 +105,13 @@ void ParticleEditor::Draw() {
 
 	// ワールド変換行列
 	DX11SetTransform::GetInstance()->SetTransform(DX11SetTransform::TYPE::WORLD, m_SkyboxMatrix);
-	//m_ViewSkybox->Draw();
+	m_ViewSkybox->Draw();
 
 	if (isDrawTargetObj) {
 		//m_TargetBillBoard.DrawBillBoardAdd(CCamera::GetInstance()->GetCameraMatrix());//ターゲット
 
 		DX11SetTransform::GetInstance()->SetTransform(DX11SetTransform::TYPE::WORLD, m_CubeMat);
-		DX11MtxScale(0.01f, 0.01f, 0.01f, m_CubeMat);
+		DX11MtxScale(2.0f, 2.0f, 2.0f, m_CubeMat);
 
 		//CDirectXGraphics::GetInstance()->SetWireFrame();
 		m_Cube->Draw();
@@ -390,6 +390,7 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 		CHECK(ImGui::DragInt("AngleRange", &ViewState.m_AngleRange, 1, 1, 360));         //放出角度範囲
 		CHECK(ImGui::InputInt("ParticleNum", &ViewState.m_ParticleNum, 5, 1000));        //パーティクルの個数
 		CHECK(ImGui::InputFloat("Size", &ViewState.m_Size, 1.0f, 100.0f));               //粒子の大きさ
+		CHECK(ImGui::Checkbox("Looping", &ViewState.isLooping));                    //ループさせるかどうか
 	}
 
 	if (ImGui::CollapsingHeader("Time")) {
@@ -407,51 +408,116 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 		}
 		CHECK(ImGui::InputInt("RotateSpeed", &ViewState.m_RotateSpeed, 1, 100));         //回転速度
 	}
-	//GPUパーティクルOnOffチェックボックス
-	if (ImGui::Checkbox("GPUParticle", &ViewState.isGPUParticle)){
-		pParticleSystem_->ChangeGPUParticleMode(ViewState.isGPUParticle);
-		pParticleSystem_->Start();
-		CheckDataChange += 1;
+
+	
+	if (ImGui::CollapsingHeader("TargetChase")) {
+		CHECK(ImGui::Checkbox("UseChaser", &ViewState.isChaser));                    //オブジェクトを追いかけるか
+
+		if (ViewState.isChaser) {
+			//#TODO 効果がわかりづらい
+			CHECK(ImGui::SliderInt("minAngle", &ViewState.m_MinChaseAngle, 0, 360));//最小角度
+			CHECK(ImGui::SliderInt("maxAngle", &ViewState.m_MaxChaseAngle, 0, 360));//最大角度
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Gravity")) {
+		CHECK(ImGui::Checkbox("useGravity", &ViewState.UseGravity));                //重力利用
+		if (ViewState.UseGravity) {
+			CHECK(ImGui::InputFloat3("Gravity", ViewState.m_Gravity));              //重力加速度設定
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Option")) {
+		//GPUパーティクルOnOffチェックボックス
+		if (ImGui::Checkbox("GPUParticle", &ViewState.isGPUParticle)) {
+			pParticleSystem_->ChangeGPUParticleMode(ViewState.isGPUParticle);
+			pParticleSystem_->Start();
+			CheckDataChange += 1;
+		}
+		if (ImGui::Checkbox("isEmitter", &ViewState.isEmitting)) {                  //他のパーティクルからの発生に限らせるか
+			pParticleSystem_->SetEmitte(ViewState.isEmitting);
+			CheckDataChange += 1;
+		}
+		if (ImGui::Checkbox("isActive", &ViewState.isActive)) {                     //有効無効
+			pParticleSystem_->SetActive(ViewState.isActive);
+			pParticleSystem_->Start();
+		}
+	}
+
+	if (ImGui::CollapsingHeader("SoftParticle")) {
+
+		if (ImGui::Checkbox("UseSoftParticle", &ViewState.isSoftParticle)) {
+			pParticleSystem_->ChangeSoftParticleMode(ViewState.isSoftParticle);
+		}
+		if (ViewState.isSoftParticle) {
+			int ChangeCBSPFlag = 0;
+			ConstantBufferSoftParticle setCb = pParticleSystem_->getCBSoftParticleState();
+			ChangeCBSPFlag += ImGui::DragFloat("FeedFar", &setCb.iZfar, 0.01, 0, 10);
+			ChangeCBSPFlag += ImGui::DragFloat("FeedVolume", &setCb.iZVolume, 0.1, 0, 150);
+			if (ChangeCBSPFlag > 0) {
+				pParticleSystem_->SetSoftPConstantBuffer(&setCb);
+			}
+		}
+	}
+	//エミッター
+
+	//連続して発生させるパーティクルシステムの設定
+	//すべてのパーティクルシステムのリストをボタンとして表示する
+	if (ImGui::CollapsingHeader("NextParticle")) {
+
+		//エミッター対象パーティクルシステム名表示
+		std::vector<int> NextSystemNumbers = pParticleSystem_->getNextSystemNumbers();
+		if (NextSystemNumbers.size() < 1) {
+			ImGui::Text("null");
+		}
+		else {
+			for (int num = 0; num < NextSystemNumbers.size(); num++) {
+				ImGui::Text(m_ParticleSystems.getParticleSystem()[NextSystemNumbers[num]]->getName());
+			}
+		}
+
+		for (auto iParticleSystem : m_ParticleSystems.getParticleSystem()) {
+			if (ImGui::Button(iParticleSystem.second->getName())) {//ボタンが押されたら対象をエミッターに追加
+				pParticleSystem_->SetNextParticleSystem(iParticleSystem.second->getSystemNumber());
+			}
+		}
+		if (ImGui::Button("Null")) {
+			pParticleSystem_->SetNextParticleSystem(-1);//-1を入れるとリスト初期化
+		}
+		
 	}
 	
-	CHECK(ImGui::Checkbox("isChaser", &ViewState.isChaser));                    //オブジェクトを追いかけるか
+	//ファイルアクセス関連-----------------------------------------------------------------------
+	//テクスチャ関連
+	{
 
-	if (ViewState.isChaser) {
-		//#TODO 効果がわかりづらい
-		CHECK(ImGui::SliderInt("minAngle", &ViewState.m_MinChaseAngle, 0, 360));//最小角度
-		CHECK(ImGui::SliderInt("maxAngle", &ViewState.m_MaxChaseAngle, 0, 360));//最大角度
-	}
+		
+		WIN32_FIND_DATA win32fd;
+		HANDLE hFind;                                              //ファイル操作ハンドル
 
-	CHECK(ImGui::Checkbox("useGravity", &ViewState.UseGravity));                //重力利用
-	if (ViewState.UseGravity) {
-		CHECK(ImGui::InputFloat3("Gravity", ViewState.m_Gravity));              //重力加速度設定
-	}
+		std::string DirectoryName = ".\\InPutData\\*.png";
+		if (ImGui::CollapsingHeader("Texture")) {
+			ImGui::Text("-");
+			ImGui::SameLine();
+			ImGui::Text(ViewState.m_TextureName);                      //テクスチャパス表示
+			hFind = FindFirstFile(DirectoryName.c_str(), &win32fd);//ファイルが存在するか確認
+			if (hFind != INVALID_HANDLE_VALUE) {
+				do {
+					if (ImGui::Button(win32fd.cFileName)) {        //発見したファイルをボタンとして表示
+						                                           //ボタンが押されたらそのファイルを読み込み反映
+						pParticleSystem_->FInTex(win32fd.cFileName);
+					}
+				} while (FindNextFile(hFind, &win32fd));           //次のファイルを捜索
+			}
+			FindClose(hFind);
 
-	CHECK(ImGui::Checkbox("Looping", &ViewState.isLooping));                    //ループさせるかどうか
+		}
+	}
+	//---------------------------------------------------------------------------------------
 
-	if (ImGui::Checkbox("isEmitter", &ViewState.isEmitting)) {                  //他のパーティクルからの発生に限らせるか
-		pParticleSystem_->SetEmitte(ViewState.isEmitting);
-		CheckDataChange += 1;
-	}
-	if (ImGui::Checkbox("isActive", &ViewState.isActive)) {                     //有効無効
-		pParticleSystem_->SetActive(ViewState.isActive);
-		pParticleSystem_->Start();
-	}
 
 	CHECK(ImGui::ColorEdit4("Color", ViewState.m_Color, 0));//色
 
-	if (ImGui::Checkbox("isSoftParticle", &ViewState.isSoftParticle)) {
-		pParticleSystem_->ChangeSoftParticleMode(ViewState.isSoftParticle);
-	}
-	if (ViewState.isSoftParticle) {
-		int ChangeCBSPFlag = 0;
-		ConstantBufferSoftParticle setCb = pParticleSystem_->getCBSoftParticleState();
-		ChangeCBSPFlag += ImGui::DragFloat("FeedFar", &setCb.iZfar, 0.01, 0, 1);
-		ChangeCBSPFlag += ImGui::DragFloat("FeedVolume", &setCb.iZVolume, 0.1, 0, 100);
-		if (ChangeCBSPFlag > 0) {
-			pParticleSystem_->SetSoftPConstantBuffer(&setCb);
-		}
-	}
 
 	//監視したい設定項目はここより上の行に書く
 	//監視結果-----------------------------------------------------------------------------
@@ -464,60 +530,6 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	//-----------------------------------------------------------------------------------
 
 
-	//エミッター
-
-	//エミッター対象パーティクルシステム名表示
-	std::vector<int> NextSystemNumbers = pParticleSystem_->getNextSystemNumbers();
-	if (NextSystemNumbers.size() < 1) {
-		ImGui::Text("null");
-	}
-	else {
-		for (int num = 0; num < NextSystemNumbers.size(); num++) {
-			ImGui::Text(m_ParticleSystems.getParticleSystem()[NextSystemNumbers[num]]->getName());
-		}
-	}
-
-	//エミッターの設定
-	//すべてのパーティクルシステムのリストをボタンとして表示する
-	if (ImGui::TreeNode("Emitter")) {
-
-		for (auto iParticleSystem : m_ParticleSystems.getParticleSystem()) {
-			if (ImGui::Button(iParticleSystem.second->getName())) {//ボタンが押されたら対象をエミッターに追加
-				pParticleSystem_->SetNextParticleSystem(iParticleSystem.second->getSystemNumber());
-			}
-		}
-		if (ImGui::Button("Null")) {
-			pParticleSystem_->SetNextParticleSystem(-1);//-1を入れるとリスト初期化
-		}
-		ImGui::TreePop();
-	}
-	
-	//ファイルアクセス関連-----------------------------------------------------------------------
-	//テクスチャ関連
-	{
-
-		ImGui::Text(ViewState.m_TextureName);                      //テクスチャパス表示
-		
-		WIN32_FIND_DATA win32fd;
-		HANDLE hFind;                                              //ファイル操作ハンドル
-
-		std::string DirectoryName = ".\\InPutData\\*.png";
-		if (ImGui::TreeNode("inputTexture")) {                     //Imguiのツリーが開かれたら
-			hFind = FindFirstFile(DirectoryName.c_str(), &win32fd);//ファイルが存在するか確認
-			if (hFind != INVALID_HANDLE_VALUE) {
-				do {
-					if (ImGui::Button(win32fd.cFileName)) {        //発見したファイルをボタンとして表示
-						                                           //ボタンが押されたらそのファイルを読み込み反映
-						pParticleSystem_->FInTex(win32fd.cFileName);
-					}
-				} while (FindNextFile(hFind, &win32fd));           //次のファイルを捜索
-			}
-			ImGui::TreePop();
-			FindClose(hFind);
-
-		}
-	}
-	//---------------------------------------------------------------------------------------
 	ImGui::End();
 
 	ImGuizmo::ViewManipulate(cameraView, 8.0f, ImVec2(200, 0), ImVec2(128, 128), 0x101010);
@@ -728,21 +740,6 @@ void ParticleEditor::EditTransform(t_ParticleSystemState* ViewState) {
 	static bool boundSizing = false;
 	static bool boundSizingSnap = false;
 
-	//切り替え操作
-	if (ImGui::IsKeyPressed(90)) {
-		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-	}
-	if (ImGui::IsKeyPressed(69)) {//Eキー
-		mCurrentGizmoOperation = ImGuizmo::ROTATE;
-	}
-
-	if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE)) {
-		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
-	}
-	ImGui::SameLine();
-	if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE)) {
-		mCurrentGizmoOperation = ImGuizmo::ROTATE;
-	}
 	float matrixTranslation[3];
 	float matrixRotation[3];
 	float matrixScale[3] = { 1.0f,1.0f,1.0f };

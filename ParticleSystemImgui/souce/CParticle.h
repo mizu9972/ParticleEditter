@@ -64,7 +64,7 @@ typedef struct {
 struct ConstantBufferSoftParticle {
 	UINT iViewPort[2] = { 1600,900 };
 	float iZfar = 0.1f;
-	float iZVolume = 15.0f;
+	float iZVolume = 110.0f;
 };
 
 class ParticleSystem:public Subject {
