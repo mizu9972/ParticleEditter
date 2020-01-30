@@ -1,40 +1,24 @@
 #pragma once
 #include	<directxmath.h>
 #include	<d3d11.h>
-#include	"DX11util.h"
-#include	"Shader.h"
+#include <DirectXMath.h>
+#include "ParticleSystemUtility.h"
 
+using namespace DirectX;
 /*----------------------------------------------------------------------
 
 	ビルボードクラス	
 
 -----------------------------------------------------------------------*/
 
-typedef struct {
-	XMFLOAT4X4 Matrix;//行列
-	int ZAngle;
-	float CountTime;
-
-	int RandNum;
-	int RotateSpeed;//回転速度
-	float Speed;//速度
-	float Color[4];//パーティクルの色
-	//100byte
-
-	int Padding1;
-	int Padding2;
-	int Padding3;
-	//112byte
-}ConstantBufferParticle;
-
-class CBillBoard{
-	DirectX::XMFLOAT4X4			m_mat;			// ビルボード用の行列
+class CBillBoard {
+	XMFLOAT4X4					m_mat;			// ビルボード用の行列
 	float						m_x;			// ビルボードの位置座標
-	float						m_y;			
+	float						m_y;
 	float						m_z;
 	float						m_XSize;		// ビルボードのＸサイズ
 	float						m_YSize;		// ビルボードのＹサイズ
-	DirectX::XMFLOAT4			m_Color;		// 頂点カラー値
+	XMFLOAT4					m_Color;		// 頂点カラー値
 	ID3D11Device*				m_dev                 = nullptr;			// デバイス
 	ID3D11DeviceContext*		m_devcontext          = nullptr;		// デバイスコンテキスト
 	ID3D11ShaderResourceView* 	m_srv                 = nullptr;			// Shader Resourceviewテクスチャ
@@ -42,17 +26,17 @@ class CBillBoard{
 	ID3D11BlendState*			m_pBlendStateSrcAlpha = nullptr;
 	ID3D11BlendState*			m_pBlendStateOne      = nullptr;
 	ID3D11BlendState*			m_pBlendStateDefault  = nullptr;
-	ID3D11BlendState*			m_pBlendStateInv	  = nullptr;
+	ID3D11BlendState*			m_pBlendStateInv      = nullptr;
 	ID3D11VertexShader*			m_pVertexShader       = nullptr;	// 頂点シェーダー入れ物
 	ID3D11PixelShader*			m_pPixelShader        = nullptr;	// ピクセルシェーダー入れ物
 	ID3D11InputLayout*			m_pVertexLayout       = nullptr;	// 頂点フォーマット定義
 
 	ID3D11Buffer*				m_cb5 = nullptr;//コンスタントバッファ
 	// 頂点フォーマット
-	struct MyVertex{
-		float				x,y,z;
+	struct MyVertex {
+		float				x, y, z;
 		DirectX::XMFLOAT4	color;
-		float				tu,tv;
+		float				tu, tv;
 	};
 
 	MyVertex				m_Vertex[4];			// ビルボードの頂点座標
@@ -61,8 +45,6 @@ private:
 	void CalcVertex();
 	// ビルボード用の行列を生成
 	void CalcBillBoardMatrix(const DirectX::XMFLOAT4X4& cameramat);
-
-	void ParticleDraw(ConstantBufferParticle* cb);
 	// ソースアルファを設定する
 	void SetBlendStateSrcAlpha();
 	// ブレンドステートを生成する
@@ -80,10 +62,10 @@ private:
 	// 線形合成のブレンドステートを生成する
 	void CreateBlendStateInv();
 public:
-	CBillBoard():m_x(0),m_y(0),m_z(0),m_srv(nullptr),m_dev(nullptr), m_devcontext(nullptr){
+	CBillBoard() :m_x(0), m_y(0), m_z(0), m_srv(nullptr), m_dev(nullptr), m_devcontext(nullptr) {
 	};
 
-	bool Init(float x, float y, float z, float xsize, float ysize, DirectX::XMFLOAT4 color,const char *psFilename,const char *vsFilename){
+	bool Init(ID3D11Device* device,ID3D11DeviceContext* devicecontext, float x, float y, float z, float xsize, float ysize, DirectX::XMFLOAT4 color, const char *psFilename, const char *vsFilename) {
 		m_x = x;
 		m_y = y;
 		m_z = z;
@@ -92,9 +74,9 @@ public:
 		m_Color = color;
 
 		// デバイス取得
-		m_dev = GetDX11Device();
+		m_dev = device;
 		// デバイスコンテキスト取得
-		m_devcontext = GetDX11DeviceContext();
+		m_devcontext = devicecontext;
 
 		// 頂点データの定義
 		D3D11_INPUT_ELEMENT_DESC layout[] =
@@ -106,7 +88,7 @@ public:
 
 		unsigned int numElements = ARRAYSIZE(layout);
 		// 頂点シェーダーオブジェクトを生成、同時に頂点レイアウトも生成
-		bool sts = CreateVertexShader(m_dev,
+		bool sts = ParticleSystemUtility::CreateVertexShader(m_dev,
 			vsFilename,
 			"main",
 			"vs_4_0",
@@ -121,7 +103,7 @@ public:
 		}
 
 		// ピクセルシェーダーを生成
-		sts = CreatePixelShader(			// ピクセルシェーダーオブジェクトを生成
+		sts = ParticleSystemUtility::CreatePixelShader(			// ピクセルシェーダーオブジェクトを生成
 			m_dev,							// デバイスオブジェクト
 			psFilename,
 			"main", 
@@ -228,7 +210,6 @@ public:
 	// ビルボードをZ軸を中心にして回転させて描画
 	void DrawRotateBillBoard(const DirectX::XMFLOAT4X4 &cameramat, float radian);
 	void DrawRotateBillBoardAlpha(const DirectX::XMFLOAT4X4 &cameramat, float angle);
-	void DrawRotateParticle(const DirectX::XMFLOAT4X4 &cameramat, float angle, ConstantBufferParticle* cb);
 	// サイズをセット
 	void SetSize(float x, float y);
 

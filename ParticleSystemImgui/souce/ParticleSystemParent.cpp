@@ -15,8 +15,8 @@ void ParticleSystemParent::Init(ID3D11Device* device, ID3D11DeviceContext* devic
 	m_DepthstencilView = depthstencilView;
 
 	//コンピュートシェーダーを作成
-	CreateComputeShader(m_Device, "Shader/csParticle.cso", "main", "cs_5_0", &m_ComputeShader);
-	CreateComputeShader(m_Device, "Shader/csInitParticle.cso", "main", "cs_5_0", &m_InitComputeShader);
+	ParticleSystemUtility::CreateComputeShader(m_Device, "Shader/csParticle.cso", "main", "cs_5_0", &m_ComputeShader);
+	ParticleSystemUtility::CreateComputeShader(m_Device, "Shader/csInitParticle.cso", "main", "cs_5_0", &m_InitComputeShader);
 }
 
 void ParticleSystemParent::UnInit() {
@@ -47,7 +47,7 @@ void ParticleSystemParent::Update() {
 	}
 }
 
-void ParticleSystemParent::Draw() {
+void ParticleSystemParent::Draw(const XMFLOAT4X4& CameraMatrix) {
 	float ClearColor[4] = { 1.0f,1.0f,1.0f,1.0f };
 	//描画
 	if (m_RenderTargetView != nullptr && m_DepthstencilView != nullptr && m_BackRTV != nullptr) {
@@ -64,7 +64,7 @@ void ParticleSystemParent::Draw() {
 		m_Devicecontext->PSSetShaderResources(1, 1, &SRV);//シェーダーリソースビュー設定
 		//パーティクル描画
 		for (auto iParticleSystem : m_ParticleSystemDictionary) {
-			iParticleSystem.second->Draw();//シェーダーリソースビューを利用して描画
+			iParticleSystem.second->Draw(CameraMatrix);//シェーダーリソースビューを利用して描画
 		}
 
 		m_Devicecontext->PSSetShaderResources(1, 1, &ResetSRV);//シェーダーリソースビュー無効化
@@ -84,7 +84,7 @@ void ParticleSystemParent::Draw() {
 		//専用のレンダーターゲットビューを利用しない描画
 		TurnOffZbuffer();//Zバッファオフ
 		for (auto iParticleSystem : m_ParticleSystemDictionary) {
-			iParticleSystem.second->Draw();
+			iParticleSystem.second->Draw(CameraMatrix);
 		}
 		TurnOnZbuffer();//Zバッファオン
 	}

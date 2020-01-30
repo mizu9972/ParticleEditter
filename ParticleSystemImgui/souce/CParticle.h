@@ -4,7 +4,6 @@
 #include    <vector>
 
 #include "CBillBoard.h"
-//#include "Shader.h"
 #include "Observer.h"
 #include <wrl.h>
 
@@ -13,8 +12,6 @@
 using namespace DirectX;
 template<typename ComPtrT>
 using ComPtr = Microsoft::WRL::ComPtr<ComPtrT>;
-
-class ParticleSystem;
 
 //ソフトパーティクル用コンスタントバッファ構造体
 struct ConstantBufferSoftParticle {
@@ -29,12 +26,9 @@ struct ConstantBufferSoftParticle {
 typedef struct {
 	char m_Name[64]         = "";//名前
 	char m_TextureName[512] = "assets/ParticleTexture/particle.png";//テクスチャの名前
-
-	//座標
-	float m_Position[3] = { 0,0,0 };
-	//角度
-	int m_Angle[3] = { 0,0,0 };
-
+	
+	float m_Position[3]     = { 0,0,0 };//座標
+	int m_Angle[3]          = { 0,0,0 };//角度
 	int m_AngleRange        = 360;//発生させる角度の範囲
 
 	float m_StartDelayTime  = 0;//開始遅延時間
@@ -58,14 +52,14 @@ typedef struct {
 	bool isSoftParticle		= false;//ソフトパーティクルにするかどうか
 	ConstantBufferSoftParticle m_CBSoftParticleState;//コンスタントバッファに利用する構造体
 
-	float m_Gravity[3] = { 0,0,0 };//重力
+	float m_Gravity[3]      = { 0,0,0 };//重力
 
 	//ホーミング角度制限
-	int m_MinChaseAngle = 0;
-	int m_MaxChaseAngle = 5;
+	int m_MinChaseAngle     = 0;
+	int m_MaxChaseAngle     = 5;
 
 	int m_SystemNumber;//自身の番号(mapで管理するkeyになる)
-	int m_NextSystemNumber = -1;//次に発生させるパーティクルの番号
+	int m_NextSystemNumber  = -1;//次に発生させるパーティクルの番号
 }t_ParticleSystemState;
 
 class ParticleSystem:public Subject {
@@ -85,28 +79,28 @@ private:
 
 	//コンピュートシェーダーに送る値
 	struct m_ParticleSRVState {
-		XMFLOAT4 iPosition;//全体の位置
-		XMINT4 iAngle;//角度
-		int iAngleRange;//発射範囲
-		float iDuaringTime;//継続時間
-		float iDelayTime;      //遅延時間
-		float iMaxLifeTime;//最大生存時間
-		float iSpeed;//速度
-		float iAccel;
-		float iMinSpeed;
-		float iMaxSpeed;
-		int iRotateSpeed;//回転速度
-		int isActive;//有効かどうか
-		int isLooping;//ループするかどうか
-		int iParticleNum;//パーティクルの個数
-		float iTime;//経過時間
+		XMFLOAT4 iPosition;      //全体の位置
+		XMINT4 iAngle;           //角度
+		int iAngleRange;         //発射範囲
+		float iDuaringTime;      //継続時間
+		float iDelayTime;        //遅延時間
+		float iMaxLifeTime;      //最大生存時間
+		float iSpeed;            //速度
+		float iAccel;            //加速度
+		float iMinSpeed;         //最小速度
+		float iMaxSpeed;         //最大速度
+		int iRotateSpeed;        //回転速度
+		int isActive;            //有効かどうか
+		int isLooping;           //ループするかどうか
+		int iParticleNum;        //パーティクルの個数
+		float iTime;             //経過時間
 		XMFLOAT3 iTargetPosition;//追いかけるターゲットの座標
-		int isChaser;
-		int iMinChaseAngle;
-		int iMaxChaseAngle;
+		int isChaser;            //ターゲットを追いかけるか
+		int iMinChaseAngle;      //追いかける最小角度
+		int iMaxChaseAngle;      //追いかける最大角度
 
-		int UseGravity;
-		XMFLOAT3 iGravity;
+		int UseGravity;          //重力を利用するか
+		XMFLOAT3 iGravity;       //重力
 	};
 	m_ParticleSRVState InState;
 
@@ -148,8 +142,8 @@ protected:
 	bool isDrawActive = true;
 	
 	//コンピュートシェーダー関連
-	ID3D11Device* m_Device = nullptr;
-	ID3D11DeviceContext* m_DeviceContext = nullptr;
+	ID3D11Device* m_Device                        = nullptr;
+	ID3D11DeviceContext* m_DeviceContext          = nullptr;
 	ID3D11ComputeShader* m_ComputeShader          = nullptr;//コンピュートシェーダー(ParticleSystemParentで初期化されたものを受け取る)
 	ID3D11ComputeShader* m_InitComputeShader      = nullptr;//初期化用コンピュートシェーダー(ParticleSystemParentで初期化されたものを受け取る)
 	ID3D11Buffer* m_pResult                       = nullptr;//出力バッファ
@@ -204,10 +198,10 @@ public:
 	void StartGPUParticle();
 	
 	//描画
-	void Draw();
-	void (ParticleSystem::*fpDrawFunc)() = &ParticleSystem::DrawNomal;//関数ポインタ
-	void DrawNomal();
-	void GPUDraw();
+	void Draw(const XMFLOAT4X4& CameraMatrix);
+	void (ParticleSystem::*fpDrawFunc)(const XMFLOAT4X4& CameraMatrix) = &ParticleSystem::DrawNomal;//関数ポインタ
+	void DrawNomal(const XMFLOAT4X4& CameraMatrix);
+	void GPUDraw(const XMFLOAT4X4& CameraMatrix);
 
 	//終了処理
 	void UnInit();
@@ -231,6 +225,8 @@ public:
 	void SetParticleSystemState(t_ParticleSystemState* SetState_);//構造体情報全体
 	void SetNextParticleSystem(int NextNumber);//次のパーティクルシステム番号
 	void SetSoftPConstantBuffer(ConstantBufferSoftParticle* setState = nullptr);
+	void SetisUpdateActive(bool active);
+	void SetisDrawActive(bool active);
 	ParticleSystem& SetViewPort(UINT* viewport);
 	ParticleSystem& SetComputeShader(ID3D11ComputeShader* setShader, eComputeShaderType type);//コンピュートシェーダー
 	ParticleSystem& setSystemNumber(int setNumber);//自身のパーティクルシステム番号
@@ -241,8 +237,8 @@ public:
 	int getSystemNumber();//自身のパーティクルシステム番号
 	int getNextSystemNumber();//次のパーティクルシステム番号
 	std::vector<int> getNextSystemNumbers();
-	bool* getisUpdateActive();
-	bool* getisDrawActive();
+	bool getisUpdateActive()const;
+	bool getisDrawActive()const;
 	float getLifeTime();
 	ConstantBufferSoftParticle getCBSoftParticleState();
 };

@@ -40,7 +40,7 @@ public:
 	void UnInit();
 	void Start();
 	void Update();
-	void Draw();
+	void Draw(const XMFLOAT4X4& CameraMatrix);
 
 	//ƒtƒ@ƒCƒ‹“ü—Í
 	void InputParticleSystem(const char* filename);

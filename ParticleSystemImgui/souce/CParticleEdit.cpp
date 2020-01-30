@@ -21,7 +21,7 @@ extern int g_nCountFPS;
 void ParticleEditor::Init(unsigned int Width, unsigned int Height, ID3D11Device* device, ID3D11DeviceContext* devicecontext) {
 	
 	//ホーミングターゲット初期化
-	m_TargetBillBoard.Init(
+	m_TargetBillBoard.Init(CDirectXGraphics::GetInstance()->GetDXDevice(), CDirectXGraphics::GetInstance()->GetImmediateContext(),
 		m_TargetPosf[0], m_TargetPosf[1], m_TargetPosf[2],
 		30, 30,
 		XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),
@@ -107,7 +107,7 @@ void ParticleEditor::Draw() {
 		m_Cube->Draw();
 	}
 
-	m_ParticleSystems.Draw();
+	m_ParticleSystems.Draw(CCamera::GetInstance()->GetCameraMatrix());
 
 
 	ImGuiDrawMain();//総合UI
@@ -401,8 +401,8 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 		if (ViewState.isSoftParticle) {
 			int ChangeCBSPFlag = 0;
 			ConstantBufferSoftParticle setCb = pParticleSystem_->getCBSoftParticleState();
-			ChangeCBSPFlag += ImGui::DragFloat("FeedFar", &setCb.iZfar, 0.01, 0, 10);
-			ChangeCBSPFlag += ImGui::DragFloat("FeedVolume", &setCb.iZVolume, 0.1, 0, 150);
+			ChangeCBSPFlag += ImGui::DragFloat("FeedFar", &setCb.iZfar, 0.01f, 0.0f, 10.0f);
+			ChangeCBSPFlag += ImGui::DragFloat("FeedVolume", &setCb.iZVolume, 0.1f, 0.0f, 150.0f);
 			if (ChangeCBSPFlag > 0) {
 				pParticleSystem_->SetSoftPConstantBuffer(&setCb);
 			}
@@ -493,14 +493,22 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	ImGui::SetNextWindowSize(ImVec2(200, 100), ImGuiSetCond_Once);
 
 	ImGui::Begin("ParticleOparate");
+	{
+		bool isMesodActice;
+		isMesodActice = pParticleSystem_->getisUpdateActive();
+		//それぞれの処理を有効無効させる操作ウィンドウ
+		if (ImGui::Checkbox("Update", &isMesodActice)) {
+			pParticleSystem_->SetisUpdateActive(isMesodActice);
+		}
+		isMesodActice = pParticleSystem_->getisDrawActive();
+		if (ImGui::Checkbox("Draw", &isMesodActice)) {
+			pParticleSystem_->SetisDrawActive(isMesodActice);
+		}
 
-	//それぞれの処理を有効無効させる操作ウィンドウ
-	ImGui::Checkbox("Update", pParticleSystem_->getisUpdateActive());
-	ImGui::Checkbox("Draw", pParticleSystem_->getisDrawActive());
-	if (ImGui::Button("ReStart")) {
-		pParticleSystem_->Start();//再スタート(単体)
+		if (ImGui::Button("ReStart")) {
+			pParticleSystem_->Start();//再スタート(単体)
+		}
 	}
-
 	ImGui::End();
 
 	ImGui::PopStyleColor();

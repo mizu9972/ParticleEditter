@@ -5,7 +5,6 @@
 #include <algorithm>
 #include "CParticle.h"
 #include "dx11mathutil.h"
-#include "CCamera.h"
 #include "ParticleSystemUtility.h"
 
 #define		SCREEN_X		1200
@@ -59,12 +58,12 @@ void ParticleSystem::Update() {
 }
 
 //描画処理
-void ParticleSystem::Draw() {
+void ParticleSystem::Draw(const XMFLOAT4X4& CameraMatrix) {
 	if (isDrawActive == false) {
 		return;
 	}
 
-	(this->*fpDrawFunc)();
+	(this->*fpDrawFunc)(CameraMatrix);
 
 }
 //--------------------------------------------------------------------
@@ -159,7 +158,7 @@ void ParticleSystem::UpdateComputeShader() {
 
 	//コンピュートシェーダーを実行
 	const UINT dispatchX = UINT(ceil(float(m_ParticleNum) / float(THREAD_NUM * PARTICLE_NUM_PER_THREAD)));
-	RunComputeShader(m_DeviceContext, m_ComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(), dispatchX, 1, 1);
+	ParticleSystemUtility::RunComputeShader(m_DeviceContext, m_ComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(), dispatchX, 1, 1);
 
 	//データ受け取り
 	m_DeviceContext->CopyResource(m_CpGetBuf.Get() , m_CpResult.Get());//バッファコピー
@@ -348,8 +347,8 @@ void ParticleSystem::UpdateSRV(){
 	if (m_CpBuf != nullptr) {
 		m_CpBuf.Reset();
 	}
-	CreateStructuredBuffer(m_Device, sizeof(m_ParticleSRVState), 1, &InState, m_CpBuf.GetAddressOf());
-	CreateShaderResourceView(m_Device, m_CpBuf.Get(), m_CpSRV.GetAddressOf());
+	ParticleSystemUtility::CreateStructuredBuffer(m_Device, sizeof(m_ParticleSRVState), 1, &InState, m_CpBuf.GetAddressOf());
+	ParticleSystemUtility::CreateShaderResourceView(m_Device, m_CpBuf.Get(), m_CpSRV.GetAddressOf());
 }
 
 XMFLOAT4 ParticleSystem::RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d) {
@@ -432,13 +431,13 @@ void ParticleSystem::StartGPUParticle(){
 	//入力用バッファを更新
 	UpdateSRV();
 	//出力用バッファを更新
-	CreateStructuredBuffer(m_Device, sizeof(m_ParticleUAVState), m_ParticleNum, nullptr, m_CpResult.GetAddressOf());
-	CreateUnOrderAccessView(m_Device, m_CpResult.Get(), m_CpUAV.GetAddressOf());
+	ParticleSystemUtility::CreateStructuredBuffer(m_Device, sizeof(m_ParticleUAVState), m_ParticleNum, nullptr, m_CpResult.GetAddressOf());
+	ParticleSystemUtility::CreateUnOrderAccessView(m_Device, m_CpResult.Get(), m_CpUAV.GetAddressOf());
 
 	//初期化用コンピュートシェーダー実行
-	RunComputeShader(m_DeviceContext, m_InitComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(), m_ParticleNum, 1, 1);
+	ParticleSystemUtility::RunComputeShader(m_DeviceContext, m_InitComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(), m_ParticleNum, 1, 1);
 
-	m_CpGetBuf = CreateAndCopyToBuffer(m_Device, m_DeviceContext, m_CpResult.Get());
+	m_CpGetBuf = ParticleSystemUtility::CreateAndCopyToBuffer(m_Device, m_DeviceContext, m_CpResult.Get());
 
 	m_DeviceContext->Map(m_CpGetBuf.Get(), 0, D3D11_MAP_READ, 0, &m_MappedSubResource);
 	m_DeviceContext->Unmap(m_CpGetBuf.Get(), 0);
@@ -454,7 +453,7 @@ void ParticleSystem::StartGPUParticle(){
 
 
 //描画メソッド
-void ParticleSystem::DrawNomal() {
+void ParticleSystem::DrawNomal(const XMFLOAT4X4& CameraMatrix) {
 
 	m_BillBoard.SetDrawUtility();
 	for (int ParticleNum = 0; ParticleNum < m_ParticleVec.size(); ParticleNum++) {
@@ -466,12 +465,12 @@ void ParticleSystem::DrawNomal() {
 		m_BillBoard.SetPosition(m_ParticleVec[ParticleNum].Matrix._41, m_ParticleVec[ParticleNum].Matrix._42, m_ParticleVec[ParticleNum].Matrix._43);
 		m_BillBoard.SetSize(m_ParticleState.m_Size, m_ParticleState.m_Size);
 		m_BillBoard.SetColor(XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]));
-		m_BillBoard.DrawOnly(CCamera::GetInstance()->GetCameraMatrix(), (float)m_ParticleVec[ParticleNum].ZAngle);
+		m_BillBoard.DrawOnly(CameraMatrix, (float)m_ParticleVec[ParticleNum].ZAngle);
 	}
 }
 
 //GPUパーティクル用の描画メソッド
-void ParticleSystem::GPUDraw() {
+void ParticleSystem::GPUDraw(const XMFLOAT4X4& CameraMatrix) {
 
 	m_BillBoard.SetDrawUtility();
 	for (int Count = 0; Count < m_ParticleNum; Count++) {
@@ -483,7 +482,7 @@ void ParticleSystem::GPUDraw() {
 		m_BillBoard.SetPosition(OutState[Count].Matrix._41, OutState[Count].Matrix._42, OutState[Count].Matrix._43);
 		m_BillBoard.SetSize(m_ParticleState.m_Size, m_ParticleState.m_Size);
 		m_BillBoard.SetColor(XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]));
-		m_BillBoard.DrawOnly(CCamera::GetInstance()->GetCameraMatrix(), (float)OutState[Count].ZAngle);
+		m_BillBoard.DrawOnly(CameraMatrix, (float)OutState[Count].ZAngle);
 	}
 }
 
@@ -510,8 +509,6 @@ void ParticleSystem::AddParticle(m_Particles* AddParticle) {
 	XMFLOAT4 tempqt1, tempqt2, tempqt3;//一時保存クォータニオン
 
 	DX11MatrixIdentity_subDefiner(newParticle.Matrix);
-
-
 
 	//角度を取り出し-------------------------------
 	axisX.x = newParticle.Matrix._11;
@@ -551,12 +548,9 @@ void ParticleSystem::AddParticle(m_Particles* AddParticle) {
 
 	DX11MtxFromQt(newParticle.Matrix, tempqt3);
 
-
 	newParticle.Matrix._41 = -1 * m_ParticleState.m_Position[0];
 	newParticle.Matrix._42 = m_ParticleState.m_Position[1];
 	newParticle.Matrix._43 = m_ParticleState.m_Position[2];
-
-
 
 	//発生までの待機時間設定
 	//パーティクルの発生時間をパーティクル数で等分し、それぞれ割り当てる
@@ -675,6 +669,14 @@ void ParticleSystem::SetNextParticleSystem(int NextNumber) {
 	m_NextParticleNumberVector.erase(std::unique(m_NextParticleNumberVector.begin(), m_NextParticleNumberVector.end()), m_NextParticleNumberVector.end());
 }
 
+//メソッドでの処理そのものの有効化無効化
+void ParticleSystem::SetisUpdateActive(bool active) {
+	isUpdateActive = active;
+}
+void ParticleSystem::SetisDrawActive(bool active) {
+	isDrawActive = active;
+}
+
 //コンピュートシェーダー設定
 ParticleSystem& ParticleSystem::SetComputeShader(ID3D11ComputeShader* setShader, eComputeShaderType type) {
 	switch (type)
@@ -762,13 +764,14 @@ std::vector<int> ParticleSystem::getNextSystemNumbers() {
 	return m_NextParticleNumberVector;
 }
 
-bool* ParticleSystem::getisUpdateActive() {
-	return &isUpdateActive;
+//メソッドでの処理そのものの有効化無効化
+bool ParticleSystem::getisUpdateActive() const {
+	return isUpdateActive;
+}
+bool ParticleSystem::getisDrawActive() const {
+	return isDrawActive;
 }
 
-bool* ParticleSystem::getisDrawActive() {
-	return &isDrawActive;
-}
 
 float ParticleSystem::getLifeTime() {
 	return m_SystemLifeTime;
@@ -796,14 +799,14 @@ void ParticleSystem::ChangeSoftParticleMode(bool isSoftParticle) {
 	//ソフトパーティクルかどうかによって利用するシェーダーを切り替え、ビルボードを初期化する
 	m_ParticleState.isSoftParticle = isSoftParticle;
 	if (isSoftParticle) {
-		m_BillBoard.Init(0, 0, 0,
+		m_BillBoard.Init(m_Device, m_DeviceContext, 0, 0, 0,
 			m_ParticleState.m_Size, m_ParticleState.m_Size,
 			XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]),
 			SOFTPARTICLE_PS_SHADER,
 			SOFTPARTICLE_VS_SHADER);
 	}
 	else {
-		m_BillBoard.Init(0, 0, 0,
+		m_BillBoard.Init(m_Device, m_DeviceContext, 0, 0, 0,
 			m_ParticleState.m_Size, m_ParticleState.m_Size,
 			XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]),
 			PARTICLE_PS_SHADER,
