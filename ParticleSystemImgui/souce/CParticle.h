@@ -51,14 +51,14 @@ typedef struct {
 	int m_RotateSpeed       = 1;//回転速度
 	bool isChaser           = false;//ターゲットへ向かっていくパーティクルモード
 	bool isActive           = true;//Startメソッドと同時に起動するかどうか(他のパーティクルシステムの後から発生させる場合はfalse)
-	bool isEmitting         = false;//他パーティクルから発生させられているかどうか
+	bool isEmitting         = false;//他パーティクルから発生させられるかどうか
 	bool isLooping          = true;//ループするかどうか
 	bool isGPUParticle      = false;//GPUパーティクルONOFF
 	bool UseGravity         = false;//重力有効
-	bool isSoftParticle = false;//ソフトパーティクルにするかどうか
-	ConstantBufferSoftParticle m_CBSoftParticleState;
+	bool isSoftParticle		= false;//ソフトパーティクルにするかどうか
+	ConstantBufferSoftParticle m_CBSoftParticleState;//コンスタントバッファに利用する構造体
 
-	float m_Gravity[3] = { 0,0,0 };
+	float m_Gravity[3] = { 0,0,0 };//重力
 
 	//ホーミング角度制限
 	int m_MinChaseAngle = 0;
@@ -142,7 +142,7 @@ protected:
 	int m_MaxParticleNum;//パーティクル最大生成個数
 	int ParticlesDeathCount;//死亡パーティクルカウント
 	float m_SystemLifeTime;//パーティクルシステム残り時間
-	bool isEmitting = false;
+	bool isEmitting = true;
 	bool isSystemActive = false;
 	bool isUpdateActive = true;
 	bool isDrawActive = true;

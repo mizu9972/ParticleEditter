@@ -46,8 +46,8 @@ public:
 	void InputParticleSystem(const char* filename);
 
 	//パーティクルシステム追加
-	ParticleSystem* AddParticleSystem();//初期値で追加
-	ParticleSystem* AddParticleSystem(t_ParticleSystemState* setState);//元データを参照して追加
+	//ParticleSystem* AddParticleSystem();//初期値で追加
+	ParticleSystem* AddParticleSystem(t_ParticleSystemState* setState = nullptr);//元データを参照して追加
 	ParticleSystem* AddParticleSystem(t_ParticleSystemState* setState, std::vector<int>& setNumbers);//元データを参照し、次に実行するシステム情報を持って初期化
 
 	//パーティクルシステム削除

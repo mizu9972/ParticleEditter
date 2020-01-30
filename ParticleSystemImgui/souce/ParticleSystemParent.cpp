@@ -126,33 +126,6 @@ void ParticleSystemParent::InputParticleSystem(const char* filename) {
 }
 
 //リスト操作処理
-ParticleSystem* ParticleSystemParent::AddParticleSystem() {
-	//パーティクルシステム追加
-	//初期設定で追加用
-
-	ParticleSystem* newParticleSystem = new ParticleSystem;	
-	
-	//スワップチェーンの情報取得
-	DXGI_SWAP_CHAIN_DESC ScDesc;
-	m_SwapChain->GetDesc(&ScDesc);
-	UINT Viewport[2] = { ScDesc.BufferDesc.Width,ScDesc.BufferDesc.Height };
-
-	//初期化
-	newParticleSystem->
-		SetComputeShader(m_InitComputeShader, ParticleSystem::eComputeShaderType::INIT)
-		.SetComputeShader(m_ComputeShader, ParticleSystem::eComputeShaderType::UPDATE)
-		.Init(m_Device, m_Devicecontext)
-		.SetViewPort(Viewport)
-		.setSystemNumber(m_ParticleCounter);
-		
-	newParticleSystem->AddObsever(this);//パーティクルシステム終了通知対象へ追加
-
-	//辞書登録
-	m_ParticleSystemDictionary[m_ParticleCounter] = newParticleSystem;
-	m_ParticleCounter++;
-
-	return newParticleSystem;
-}
 ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* setState) {
 	//パーティクルシステム追加
 	//コピー等編集された設定で初期化用
@@ -168,11 +141,9 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 	newParticleSystem->
 		SetComputeShader(m_InitComputeShader, ParticleSystem::eComputeShaderType::INIT)
 		.SetComputeShader(m_ComputeShader, ParticleSystem::eComputeShaderType::UPDATE)
-		.SetEmitte(setState->isEmitting)
-		.Init(m_Device, m_Devicecontext)
+		.Init(m_Device, m_Devicecontext, setState)
 		.SetViewPort(Viewport)
-		.setSystemNumber(m_ParticleCounter).
-		SetParticleSystemState(setState);
+		.setSystemNumber(m_ParticleCounter);
 		
 	newParticleSystem->AddObsever(this);//パーティクルシステム終了通知対象へ追加
 
@@ -197,11 +168,8 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 	newParticleSystem->
 		SetComputeShader(m_InitComputeShader, ParticleSystem::eComputeShaderType::INIT)
 		.SetComputeShader(m_ComputeShader, ParticleSystem::eComputeShaderType::UPDATE)
-		.SetEmitte(setState->isEmitting)
-		.Init(m_Device, m_Devicecontext)
-		.SetViewPort(Viewport).
-		SetParticleSystemState(setState);
-		//.setSystemNumber(m_ParticleCounter);
+		.Init(m_Device, m_Devicecontext,setState)
+		.SetViewPort(Viewport);
 	
 	//システム番号設定
 	for (int num = 0; num < setNumbers.size(); num++) {
@@ -340,6 +308,6 @@ void ParticleSystemParent::OnNotify(Subject* subject_) {
 
 	//次に起動するパーティクルシステムをパーティクルシステム群から呼び出して起動
 	for (int num = 0; num < nextNumbers.size(); num++) {
-		m_ParticleSystemDictionary[nextNumbers[num]]->SetActive(true).SetEmitte(false).Start();
+		m_ParticleSystemDictionary[nextNumbers[num]]->SetEmitte(false).Start();
 	}
 }

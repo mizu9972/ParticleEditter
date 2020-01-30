@@ -282,7 +282,11 @@ void ParticleSystem::UpdateNomal() {
 		}
 
 		if (m_ParticleState.isLooping == true) {//ループ
-			Start();
+
+			if (m_ParticleState.isActive == true) {
+				Start();
+			}
+
 		}
 
 	}
@@ -379,9 +383,6 @@ XMFLOAT4 ParticleSystem::RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d) {
 
 void ParticleSystem::StartNomalParticle() {
 	//パーティクル生成
-	if (m_ParticleState.isActive == false) {
-		return;
-	}
 	if (Particles != NULL) {
 		delete[] Particles;
 	}
@@ -419,10 +420,6 @@ void ParticleSystem::StartNomalParticle() {
 
 void ParticleSystem::StartGPUParticle(){
 	////GPUパーティクル設定---------------------------------
-
-	if (m_ParticleState.isActive == false) {
-		return;
-	}
 
 	m_ParticleNum = m_ParticleState.m_ParticleNum;
 	if (m_CpUAV != nullptr) {
