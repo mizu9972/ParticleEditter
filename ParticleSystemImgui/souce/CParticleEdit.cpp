@@ -15,7 +15,7 @@
 #define CHECK_RESULT (CheckDataChange > 0) //変更されたかどうか判定
 static int CheckDataChange = 0;//ImGuiで数値が変更されたらtrueが返ってくるメソッドの仕様を利用して、数値変更を管理する変数
 
-extern int g_nCountFPS;
+extern int g_nCountFPS;//FPSカウンター
 
 //初期化
 void ParticleEditor::Init(unsigned int Width, unsigned int Height, ID3D11Device* device, ID3D11DeviceContext* devicecontext) {
@@ -61,10 +61,14 @@ void ParticleEditor::UnInit() {
 		m_ViewParticleSystem->UnInit();
 		m_ViewParticleSystem = nullptr;
 	}
+
 	m_ParticleSystems.UnInit();
+
+	//ターゲット終了
 	m_Cube->Uninit();
 	delete m_Cube;
 	m_Cube = nullptr;
+
 	for (auto iSkyboxes : m_SkyBoxes) {
 		iSkyboxes.second->Uninit();
 		delete iSkyboxes.second;
@@ -75,6 +79,7 @@ void ParticleEditor::UnInit() {
 //更新
 void ParticleEditor::Update() {
 
+	//ターゲット座標反映
 	m_CubeMat._41 = m_TargetPosf[0];
 	m_CubeMat._42 = m_TargetPosf[1];
 	m_CubeMat._43 = m_TargetPosf[2];
@@ -85,9 +90,10 @@ void ParticleEditor::Update() {
 	ImGui::NewFrame();
 
 	if (isActive == true) {
-	m_ParticleSystems.Update();//パーティクルシステム
+	m_ParticleSystems.Update();//パーティクルシステム更新
 	}
 
+	//パーティクルシステムが存在しないなら表示用データリセット
 	if (m_ParticleSystems.getParticleSystemCount() <= 0) {
 		m_ViewParticleSystem = nullptr;
 	}

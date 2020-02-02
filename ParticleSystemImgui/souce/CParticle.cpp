@@ -193,10 +193,10 @@ void ParticleSystem::UpdateNomal() {
 			TargetVector.x = m_TargetPos.x - m_ParticleVec[ParticleNum].Matrix._41;
 			TargetVector.y = m_TargetPos.y - m_ParticleVec[ParticleNum].Matrix._42;
 			TargetVector.z = m_TargetPos.z - m_ParticleVec[ParticleNum].Matrix._43;
-			//DX11GetQtfromMatrix(m_ParticleVec[ParticleNum].Matrix, Quaternion);
-
-			XMFLOAT3 ZDir = XMFLOAT3(m_ParticleVec[ParticleNum].Matrix._31, m_ParticleVec[ParticleNum].Matrix._32, m_ParticleVec[ParticleNum].Matrix._33);//ミサイルの方向ベクトル(Z方向)
-
+			
+			//ミサイルの方向ベクトル(Z方向)
+			XMFLOAT3 ZDir = XMFLOAT3(m_ParticleVec[ParticleNum].Matrix._31, m_ParticleVec[ParticleNum].Matrix._32, m_ParticleVec[ParticleNum].Matrix._33);
+			
 			//正規化
 			DX11Vec3Normalize(TargetVector, TargetVector);
 			DX11Vec3Normalize(ZDir, ZDir);
@@ -639,6 +639,7 @@ void ParticleSystem::SetParticleSystemState(t_ParticleSystemState* SetParticleSy
 	memcpy(&m_ParticleState, SetParticleSystemState_, sizeof(t_ParticleSystemState));
 	ChangeGPUParticleMode(SetParticleSystemState_->isGPUParticle);
 }
+
 //名前設定
 void ParticleSystem::SetName(const char* setName) {
 	strcpy_s(m_ParticleState.m_Name, setName);
