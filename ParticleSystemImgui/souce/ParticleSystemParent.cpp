@@ -135,7 +135,7 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 	//スワップチェーンの情報取得
 	DXGI_SWAP_CHAIN_DESC ScDesc;
 	m_SwapChain->GetDesc(&ScDesc);
-	UINT Viewport[2] = { ScDesc.BufferDesc.Height,ScDesc.BufferDesc.Width };
+	float Viewport[2] = { static_cast<float>(ScDesc.BufferDesc.Width), static_cast<float>(ScDesc.BufferDesc.Height) };
 
 	//初期化
 	newParticleSystem->
@@ -162,7 +162,7 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 	//スワップチェーンの情報取得
 	DXGI_SWAP_CHAIN_DESC ScDesc;
 	m_SwapChain->GetDesc(&ScDesc);
-	UINT Viewport[2] = { ScDesc.BufferDesc.Height,ScDesc.BufferDesc.Width };
+	float Viewport[2] = { static_cast<float>(ScDesc.BufferDesc.Width), static_cast<float>(ScDesc.BufferDesc.Height) };
 
 	//初期化
 	newParticleSystem->

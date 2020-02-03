@@ -7,7 +7,7 @@ Texture2D g_DepthMap : register(t1);//深度マップ
 
 cbuffer ConstantBufferParticle : register(b5)
 {
-    int2 iViewPort;
+    float2 iViewPort;
     float iZfar;
     float iZVolume;
 

@@ -15,7 +15,7 @@ using ComPtr = Microsoft::WRL::ComPtr<ComPtrT>;
 
 //ソフトパーティクル用コンスタントバッファ構造体
 struct ConstantBufferSoftParticle {
-	UINT iViewPort[2] = { 1600,900 };
+	float iViewPort[2] = { 1600,900 };
 	float iZfar = 0.1f;
 	float iZVolume = 110.0f;
 };
@@ -227,7 +227,7 @@ public:
 	void SetSoftPConstantBuffer(ConstantBufferSoftParticle* setState = nullptr);
 	void SetisUpdateActive(bool active);
 	void SetisDrawActive(bool active);
-	ParticleSystem& SetViewPort(UINT* viewport);
+	ParticleSystem& SetViewPort(float* viewport);
 	ParticleSystem& SetComputeShader(ID3D11ComputeShader* setShader, eComputeShaderType type);//コンピュートシェーダー
 	ParticleSystem& setSystemNumber(int setNumber);//自身のパーティクルシステム番号
 	//getter

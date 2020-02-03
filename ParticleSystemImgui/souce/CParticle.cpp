@@ -721,7 +721,7 @@ void ParticleSystem::SetSoftPConstantBuffer(ConstantBufferSoftParticle* setState
 }
 
 //ビューポート用定数バッファを設定
-ParticleSystem& ParticleSystem::SetViewPort(UINT* viewport) {
+ParticleSystem& ParticleSystem::SetViewPort(float* viewport) {
 	m_ParticleState.m_CBSoftParticleState.iViewPort[0] = viewport[0];
 	m_ParticleState.m_CBSoftParticleState.iViewPort[1] = viewport[1];
 
