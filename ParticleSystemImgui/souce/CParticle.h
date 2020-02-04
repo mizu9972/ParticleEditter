@@ -25,7 +25,7 @@ struct ConstantBufferSoftParticle {
 //一部の数値は動的に変更しても即時反映されず、パーティクル生成が一周終わってから反映される
 typedef struct {
 	char m_Name[64]         = "";//名前
-	char m_TextureName[512] = "assets/ParticleTexture/particle.png";//テクスチャの名前
+	char m_TextureName[512] = "InPutData/particle.png";//テクスチャの名前
 	
 	float m_Position[3]     = { 0,0,0 };//座標
 	int m_Angle[3]          = { 0,0,0 };//角度
@@ -215,6 +215,9 @@ public:
 	bool FInState(const char* FileName_);
 	void FOutState();
 	bool FInTex(const char* FileName_);
+
+	//次に起動するパーティクルシステム対象から解除
+	void RemoveNextParticle(int SystemNumber);
 
 	//アクセスメソッド
 	//setter

@@ -63,9 +63,6 @@
     <ClCompile Include="souce\dx11util.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="souce\dx11mathutil.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="souce\CDirectXGraphics.cpp">
       <Filter>ソース ファイル\class</Filter>
     </ClCompile>
@@ -74,9 +71,6 @@
     </ClCompile>
     <ClCompile Include="souce\CSphere.cpp">
       <Filter>ソース ファイル\class</Filter>
-    </ClCompile>
-    <ClCompile Include="souce\CXFileParticleSystem.cpp">
-      <Filter>ソース ファイル\Particle</Filter>
     </ClCompile>
     <ClCompile Include="souce\CParticle.cpp">
       <Filter>ソース ファイル\Particle</Filter>
@@ -95,9 +89,6 @@
     </ClCompile>
     <ClCompile Include="souce\WICTextureLoader.cpp">
       <Filter>ソース ファイル\File</Filter>
-    </ClCompile>
-    <ClCompile Include="souce\ComputeShader.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="souce\Observer.cpp">
       <Filter>ソース ファイル</Filter>
@@ -141,6 +132,9 @@
     <ClCompile Include="souce\ParticleSystemUtility.cpp">
       <Filter>ソース ファイル\Particle</Filter>
     </ClCompile>
+    <ClCompile Include="souce\ParticleMathUtil.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="souce\NonCopyable.h">
@@ -179,9 +173,6 @@
     <ClInclude Include="souce\CSphere.h">
       <Filter>ヘッダー ファイル\class</Filter>
     </ClInclude>
-    <ClInclude Include="souce\CXFileParticleSystem.h">
-      <Filter>ヘッダー ファイル\particle</Filter>
-    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -190,9 +181,6 @@
     </ClInclude>
     <ClInclude Include="souce\CDirectxGraphics.h">
       <Filter>ヘッダー ファイル\class</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\dx11mathutil.h">
-      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="souce\Shader.h">
       <Filter>ヘッダー ファイル</Filter>
@@ -253,6 +241,12 @@
     </ClInclude>
     <ClInclude Include="souce\ParticleSystemUtility.h">
       <Filter>ヘッダー ファイル\particle</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ParticleSystemTransform.h">
+      <Filter>ヘッダー ファイル\particle</Filter>
+    </ClInclude>
+    <ClInclude Include="souce\ParticleMathUtil.h">
+      <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,5 @@
 #include "ParticleSystemParent.h"
+#include "ParticleSystemTransform.h"
 
 //基本処理
 void ParticleSystemParent::Init(ID3D11Device* device, ID3D11DeviceContext* devicecontext, ID3D11DepthStencilView* depthstencilView, ID3D11RenderTargetView* RenderTargetView, IDXGISwapChain* SwapChain) {
@@ -6,6 +7,8 @@ void ParticleSystemParent::Init(ID3D11Device* device, ID3D11DeviceContext* devic
 	m_Device = device;
 	m_Devicecontext = devicecontext;
 	m_SwapChain = SwapChain;
+
+	ParticleSystemSetTransform::GetInstance()->Init(device, devicecontext);
 
 	if (SwapChain != nullptr) {
 		//専用のレンダーターゲットビュー作成(ソフトパーティクル処理で必要)
@@ -48,7 +51,7 @@ void ParticleSystemParent::Update() {
 }
 
 void ParticleSystemParent::Draw(const XMFLOAT4X4& CameraMatrix) {
-	float ClearColor[4] = { 1.0f,1.0f,1.0f,1.0f };
+	float ClearColor[4] = { 1.0f,1.0f,0.0f,1.0f };
 	//描画
 	if (m_RenderTargetView != nullptr && m_DepthstencilView != nullptr && m_BackRTV != nullptr) {
 		//レンダーターゲットサーフェイスを設定
@@ -187,6 +190,11 @@ ParticleSystem* ParticleSystemParent::AddParticleSystem(t_ParticleSystemState* s
 
 //パーティクルシステム削除
 void ParticleSystemParent::RemoveParticleSystem(int removeKey) {
+
+	//他のパーティクルからの指定を解除する
+	for (auto iParticleSystem : m_ParticleSystemDictionary) {
+		iParticleSystem.second->RemoveNextParticle(removeKey);
+	}
 
 	m_ParticleSystemDictionary[removeKey]->RemoveObserver(this);//通知対象から外す
 	m_ParticleSystemDictionary.erase(removeKey);//削除

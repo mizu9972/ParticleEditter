@@ -12,7 +12,7 @@ cbuffer ConstantBufferWorld : register(b0)
 
 cbuffer ConstantBufferView : register(b1)
 {
-	matrix View;
+	matrix View;//カメラビュー
 }
 
 cbuffer ConstantBufferProjection : register(b2)
@@ -32,6 +32,9 @@ cbuffer ConstantBufferLight : register(b4)
 	float4 LightDirection;			// 光の方向
 	float4 EyePos;					// 視点位置
 }
+
+
+
 //--------------------------------------------------------------------------------------
 // 構造体定義
 //--------------------------------------------------------------------------------------

@@ -4,9 +4,9 @@
 #include "ImGui/ImGuizmoUtil.h"
 #include "CParticleEdit.h"
 #include "CCamera.h"
-#include "dx11mathutil.h"
+#include "ParticleMathUtil.h"
 #include "DX11Settransform.h"
-
+#include "CDirectxGraphics.h"
 #include "Shader.h"
 
 #include "game.h"
@@ -36,8 +36,8 @@ void ParticleEditor::Init(unsigned int Width, unsigned int Height, ID3D11Device*
 	float v[4] = { 1.0f, 0.0f, 1.0f, 0.0f };
 
 	//スカイボックス初期化
-	DX11MtxIdentity(m_SkyboxMatrix);//行列初期化
-	DX11MtxIdentity(m_CubeMat);
+	ParticleSystemMathUtil::DX11MtxIdentity(m_SkyboxMatrix);//行列初期化
+	ParticleSystemMathUtil::DX11MtxIdentity(m_CubeMat);
 
 	//スカイボックスを初期化してmapに登録する処理
 	auto SkyboxInit = [this](const char* Keyname,const char* Filename,const char* VertexFilename,const char* PixelFilename) {
@@ -108,7 +108,7 @@ void ParticleEditor::Draw() {
 	if (isDrawTargetObj) {
 
 		DX11SetTransform::GetInstance()->SetTransform(DX11SetTransform::TYPE::WORLD, m_CubeMat);
-		DX11MtxScale(2.0f, 2.0f, 2.0f, m_CubeMat);
+		ParticleSystemMathUtil::DX11MtxScale(2.0f, 2.0f, 2.0f, m_CubeMat);
 
 		m_Cube->Draw();
 	}

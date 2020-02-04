@@ -4,7 +4,7 @@
 #include <random>
 #include <algorithm>
 #include "CParticle.h"
-#include "dx11mathutil.h"
+#include "ParticleMathUtil.h"
 #include "ParticleSystemUtility.h"
 
 #define		SCREEN_X		1200
@@ -198,9 +198,9 @@ void ParticleSystem::UpdateNomal() {
 			XMFLOAT3 ZDir = XMFLOAT3(m_ParticleVec[ParticleNum].Matrix._31, m_ParticleVec[ParticleNum].Matrix._32, m_ParticleVec[ParticleNum].Matrix._33);
 			
 			//正規化
-			DX11Vec3Normalize(TargetVector, TargetVector);
-			DX11Vec3Normalize(ZDir, ZDir);
-			DX11GetQtfromMatrix(m_ParticleVec[ParticleNum].Matrix, m_Quaternion);
+			ParticleSystemMathUtil::DX11Vec3Normalize(TargetVector, TargetVector);
+			ParticleSystemMathUtil::DX11Vec3Normalize(ZDir, ZDir);
+			ParticleSystemMathUtil::DX11GetQtfromMatrix(m_ParticleVec[ParticleNum].Matrix, m_Quaternion);
 
 			float Dot;//２本のベクトルの内積値
 			TargetQt = RotationArc(ZDir, TargetVector, Dot);//２本のベクトルから為す角度とクォータニオンを求める
@@ -212,19 +212,19 @@ void ParticleSystem::UpdateNomal() {
 
 			}else if (AngleMax >= AngleDiff) {
 				//角度の差が更新できる角度より大きいか小さいか
-				DX11QtMul(m_Quaternion, m_Quaternion, TargetQt);
+				ParticleSystemMathUtil::DX11QtMul(m_Quaternion, m_Quaternion, TargetQt);
 			}
 			else {
 				float t = AngleMax / AngleDiff;
 
 				XMFLOAT4 toqt;
-				DX11QtMul(toqt, m_Quaternion, TargetQt);
-				DX11QtSlerp(m_Quaternion, toqt, t, m_Quaternion);
+				ParticleSystemMathUtil::DX11QtMul(toqt, m_Quaternion, TargetQt);
+				ParticleSystemMathUtil::DX11QtSlerp(m_Quaternion, toqt, t, m_Quaternion);
 			}
 
 			//クォータニオンを行列にする
 			//現在の姿勢をクォータニオンにする
-			DX11MtxFromQt(m_ParticleVec[ParticleNum].Matrix, m_Quaternion);
+			ParticleSystemMathUtil::DX11MtxFromQt(m_ParticleVec[ParticleNum].Matrix, m_Quaternion);
 
 			m_ParticleVec[ParticleNum].Matrix._41 = ParticlePosition.x;
 			m_ParticleVec[ParticleNum].Matrix._42 = ParticlePosition.y;
@@ -355,9 +355,9 @@ XMFLOAT4 ParticleSystem::RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d) {
 	XMFLOAT3 Axis;//軸
 	XMFLOAT4 q; //クォータニオン
 
-	DX11Vec3Cross(Axis, v0, v1);
+	ParticleSystemMathUtil::DX11Vec3Cross(Axis, v0, v1);
 
-	DX11Vec3Dot(d, v0, v1);
+	ParticleSystemMathUtil::DX11Vec3Dot(d, v0, v1);
 	//ターゲットの方向と自機がほとんど一致したとき、内積の値が１を超える(-1を下回る)時があるので補正する
 	if (d > 1.0) {
 		d = 1.0;
@@ -368,7 +368,7 @@ XMFLOAT4 ParticleSystem::RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d) {
 
 	float s = (float)sqrtf((1 + d) * 2);
 	if (s == 0.0f) {
-		DX11QtIdentity(q);//ターゲットを追い越した
+		ParticleSystemMathUtil::DX11QtIdentity(q);//ターゲットを追い越した
 	}
 	else {
 		q.x = Axis.x / s;
@@ -525,28 +525,28 @@ void ParticleSystem::AddParticle(m_Particles* AddParticle) {
 	//-------------------------------------------
 		
 	//行列からクォータニオンを生成
-	DX11GetQtfromMatrix(newParticle.Matrix, qt);
+	ParticleSystemMathUtil::DX11GetQtfromMatrix(newParticle.Matrix, qt);
 
 	//ランダムな角度をそれぞれ設定
 	//指定軸回転のクォータニオンを生成
-	DX11QtRotationAxis(qtx, axisX, (float)(rand() % m_ParticleState.m_AngleRange) + m_ParticleState.m_Angle[0]);
-	DX11QtRotationAxis(qty, axisY, (float)(rand() % m_ParticleState.m_AngleRange) + m_ParticleState.m_Angle[1]);
-	DX11QtRotationAxis(qtz, axisZ, (float)(rand() % m_ParticleState.m_AngleRange) + m_ParticleState.m_Angle[2]);
+	ParticleSystemMathUtil::DX11QtRotationAxis(qtx, axisX, (float)(rand() % m_ParticleState.m_AngleRange) + m_ParticleState.m_Angle[0]);
+	ParticleSystemMathUtil::DX11QtRotationAxis(qty, axisY, (float)(rand() % m_ParticleState.m_AngleRange) + m_ParticleState.m_Angle[1]);
+	ParticleSystemMathUtil::DX11QtRotationAxis(qtz, axisZ, (float)(rand() % m_ParticleState.m_AngleRange) + m_ParticleState.m_Angle[2]);
 
 	//クォータニオンを正規化
 
 	//クォータニオンを合成
 
-	DX11QtMul(tempqt1, qt, qtx);
+	ParticleSystemMathUtil::DX11QtMul(tempqt1, qt, qtx);
 
-	DX11QtMul(tempqt2, qty, qtz);
+	ParticleSystemMathUtil::DX11QtMul(tempqt2, qty, qtz);
 
-	DX11QtMul(tempqt3, tempqt1, tempqt2);
+	ParticleSystemMathUtil::DX11QtMul(tempqt3, tempqt1, tempqt2);
 
 	//クォータニオンをノーマライズ
-	DX11QtNormalize(tempqt3, tempqt3);
+	ParticleSystemMathUtil::DX11QtNormalize(tempqt3, tempqt3);
 
-	DX11MtxFromQt(newParticle.Matrix, tempqt3);
+	ParticleSystemMathUtil::DX11MtxFromQt(newParticle.Matrix, tempqt3);
 
 	newParticle.Matrix._41 = -1 * m_ParticleState.m_Position[0];
 	newParticle.Matrix._42 = m_ParticleState.m_Position[1];
@@ -628,6 +628,19 @@ void ParticleSystem::FOutState() {
 	fclose(Fp);
 
 	SetCurrentDirectory(crDir);//カレントディレクトリを元に戻す
+}
+
+void ParticleSystem::RemoveNextParticle(int SystemNumber) {
+
+	//次に起動するパーティクルシステムの番号リストから削除
+	for (auto iNumber = m_NextParticleNumberVector.begin(); iNumber != m_NextParticleNumberVector.end();) {
+		if (*iNumber == SystemNumber) {
+			iNumber = m_NextParticleNumberVector.erase(iNumber);
+		}
+		else {
+			iNumber++;
+		}
+	}
 }
 
 //アクセサ
