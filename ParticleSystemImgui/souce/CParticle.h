@@ -15,7 +15,7 @@ using ComPtr = Microsoft::WRL::ComPtr<ComPtrT>;
 
 //ソフトパーティクル用コンスタントバッファ構造体
 struct ConstantBufferSoftParticle {
-	float iViewPort[2] = { 1600,900 };
+	float iViewPort[2] = { 1600.0f,900.0f };
 	float iZfar = 0.1f;
 	float iZVolume = 110.0f;
 };
