@@ -19,12 +19,10 @@
 #include "CCamera.h"
 #include "CDirectInput.h"
 #include "DX11Settransform.h"
-#include "dx11mathutil.h"
+#include "ParticleMathUtil.h"
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"
-
-#include "CXFileParticleSystem.h"
 
 #include "CParticleEdit.h"
 //パーティクルで使用するテクスチャの名前

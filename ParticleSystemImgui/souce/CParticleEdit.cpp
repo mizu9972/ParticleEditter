@@ -113,8 +113,11 @@ void ParticleEditor::Draw() {
 		m_Cube->Draw();
 	}
 
+	CDirectXGraphics::GetInstance()->TurnOnAlphaBlending();
+
 	m_ParticleSystems.Draw(CCamera::GetInstance()->GetCameraMatrix());
 
+	CDirectXGraphics::GetInstance()->TurnOffAlphaBlending();
 
 	ImGuiDrawMain();//総合UI
 
@@ -155,7 +158,6 @@ void ParticleEditor::ImGuiDrawMain() {
 	WIN32_FIND_DATA win32fd;
 	HANDLE hFind;                                              //ファイル操作ハンドル
 	std::string DirectoryName = ".\\ParticleData\\*.ptc";         //読み込むフォルダのディレクトリと拡張子指定
-	
 	if (ImGui::TreeNode("Import")) {                           //Imguiのツリーが開かれたら
 		hFind = FindFirstFile(DirectoryName.c_str(), &win32fd);//ファイルが存在するか確認
 		if (hFind != INVALID_HANDLE_VALUE) {

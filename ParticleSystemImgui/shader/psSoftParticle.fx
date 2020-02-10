@@ -24,11 +24,12 @@ float4 main(VS_OUTPUT input) : SV_Target
     col.xyz = texcol.xyz * input.Color.xyz;
     col.w = texcol.w * input.Color.w;
     
+    //画面内の描画する位置を0.0~1.0に計算する
     float2 uv;
     uv.x = input.Pos.x / iViewPort.x;
     uv.y = input.Pos.y / iViewPort.y;
-    uv.xy = uv.xy;
     
+    //深度バッファの情報取り出し
     float2 depth = g_DepthMap.Sample(g_SamplerLinear, uv).xy;
 
     float a = 1.0f;
@@ -48,6 +49,7 @@ float4 main(VS_OUTPUT input) : SV_Target
     
     float Zsub = (depth.x - input.Pos.z); //深度値の差
     
+    //フェード範囲内のピクセルをフェードさせる
     if (Zsub < iZfar * 0.1f * input.Pos.z)
     {
         a = Zsub * iZVolume;

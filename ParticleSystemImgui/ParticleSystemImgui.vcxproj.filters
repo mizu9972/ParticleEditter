@@ -246,7 +246,7 @@
       <Filter>ヘッダー ファイル\particle</Filter>
     </ClInclude>
     <ClInclude Include="souce\ParticleMathUtil.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\particle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

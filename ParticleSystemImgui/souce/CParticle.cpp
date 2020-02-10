@@ -158,7 +158,10 @@ void ParticleSystem::UpdateComputeShader() {
 
 	//コンピュートシェーダーを実行
 	const UINT dispatchX = UINT(ceil(float(m_ParticleNum) / float(THREAD_NUM * PARTICLE_NUM_PER_THREAD)));
-	ParticleSystemUtility::RunComputeShader(m_DeviceContext, m_ComputeShader, 1, m_CpSRV.GetAddressOf(), m_CpUAV.Get(), dispatchX, 1, 1);
+	ParticleSystemUtility::RunComputeShader(m_DeviceContext,
+		m_ComputeShader, 1, 
+		m_CpSRV.GetAddressOf(), m_CpUAV.Get(),
+		dispatchX, 1, 1);
 
 	//データ受け取り
 	m_DeviceContext->CopyResource(m_CpGetBuf.Get() , m_CpResult.Get());//バッファコピー

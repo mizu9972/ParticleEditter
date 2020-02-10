@@ -2,7 +2,9 @@
 #include	<DirectXMath.h>
 #include	"Shader.h"
 #include	"DX11util.h"
-#include	"Memory.h"
+
+// 16バイトにアラインメントする。
+#define ALIGN16 _declspec(align(16))
 
 class DX11SetTransform {
 	DX11SetTransform() {}

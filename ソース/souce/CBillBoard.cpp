@@ -1,6 +1,6 @@
 #include	"CBillBoard.h"
-#include	"dx11mathutil.h"
-#include	"DX11Settransform.h"
+#include	"ParticleMathUtil.h"
+#include	"ParticleSystemTransform.h"
 
 // ビルボードの頂点座標を計算
 void CBillBoard::CalcVertex(){
@@ -26,7 +26,7 @@ void CBillBoard::CalcVertex(){
 
 		if (m_vbuffer==nullptr) {
 			// 頂点バッファ作成（後で変更可能な）
-			bool sts = CreateVertexBufferWrite(m_dev, sizeof(MyVertex), 4, m_Vertex, &m_vbuffer);
+			bool sts = ParticleSystemUtility::CreateVertexBufferWrite(m_dev, sizeof(MyVertex), 4, m_Vertex, &m_vbuffer);
 			if (!sts) {
 				MessageBox(nullptr, "create vertex buffer erro(CBillBoard)", "error", MB_OK);
 			}
@@ -98,7 +98,7 @@ void CBillBoard::Draw() {
 	m_devcontext->PSSetShaderResources(0, 1, &m_srv);
 
 	// ワールド変換行列
-	DX11SetTransform::GetInstance()->SetTransform(DX11SetTransform::TYPE::WORLD, m_mat);
+	ParticleSystemSetTransform::GetInstance()->SetTransform(ParticleSystemSetTransform::TYPE::WORLD, m_mat);
 
 	// 頂点バッファをセット
 	unsigned int stride = sizeof(MyVertex);
@@ -268,10 +268,10 @@ void CBillBoard::DrawRotateBillBoard(const DirectX::XMFLOAT4X4 &cameramat, float
 	DirectX::XMFLOAT3 axisZ = { cameramat._13, cameramat._23, cameramat._33 };
 
 	// 指定軸回転の行列を作成する
-	DX11MtxRotationAxis(axisZ, angle, matRotZ);
+	ParticleSystemMathUtil::DX11MtxRotationAxis(axisZ, angle, matRotZ);
 
 	// 行列を合成し、位置をセット
-	DX11MtxMultiply(m_mat, m_mat, matRotZ);
+	ParticleSystemMathUtil::DX11MtxMultiply(m_mat, m_mat, matRotZ);
 	m_mat._41 = m_x;
 	m_mat._42 = m_y;
 	m_mat._43 = m_z;
@@ -297,9 +297,9 @@ void CBillBoard::DrawOnly(const DirectX::XMFLOAT4X4 &cameramat,float angle) {
 	DirectX::XMFLOAT3 axisZ = { cameramat._13, cameramat._23, cameramat._33 };
 
 	// 指定軸回転の行列を作成する
-	DX11MtxRotationAxis(axisZ, angle, matRotZ);
+	ParticleSystemMathUtil::DX11MtxRotationAxis(axisZ, angle, matRotZ);
 	// 行列を合成し、位置をセット
-	DX11MtxMultiply(m_mat, m_mat, matRotZ);
+	ParticleSystemMathUtil::DX11MtxMultiply(m_mat, m_mat, matRotZ);
 	m_mat._41 = m_x;
 	m_mat._42 = m_y;
 	m_mat._43 = m_z;
@@ -308,7 +308,7 @@ void CBillBoard::DrawOnly(const DirectX::XMFLOAT4X4 &cameramat,float angle) {
 	SetBlendStateInv();
 
 	// ワールド変換行列
-	DX11SetTransform::GetInstance()->SetTransform(DX11SetTransform::TYPE::WORLD, m_mat);
+	ParticleSystemSetTransform::GetInstance()->SetTransform(ParticleSystemSetTransform::TYPE::WORLD, m_mat);
 
 	// 描画
 	//Draw();
@@ -357,9 +357,9 @@ void CBillBoard::DrawRotateBillBoardAlpha(const DirectX::XMFLOAT4X4 &cameramat, 
 	DirectX::XMFLOAT3 axisZ = { cameramat._13, cameramat._23, cameramat._33 };
 
 	// 指定軸回転の行列を作成する
-	DX11MtxRotationAxis(axisZ, angle, matRotZ);
+	ParticleSystemMathUtil::DX11MtxRotationAxis(axisZ, angle, matRotZ);
 	// 行列を合成し、位置をセット
-	DX11MtxMultiply(m_mat, m_mat, matRotZ);
+	ParticleSystemMathUtil::DX11MtxMultiply(m_mat, m_mat, matRotZ);
 	m_mat._41 = m_x;
 	m_mat._42 = m_y;
 	m_mat._43 = m_z;
@@ -384,11 +384,11 @@ bool CBillBoard::LoadTexTure(const char* filename){
 		}
 
 		// まずはＷＩＣファイルと考えて読み込む
-		bool sts = CreatetSRVfromWICFile(filename,
+		bool sts = ParticleSystemUtility::CreatetSRVfromWICFile(filename,
 			m_dev, m_devcontext, &m_srv);
 		if (sts == false) {
 			// TGAファイルを試してみる
-			sts = CreatetSRVfromTGAFile(filename,
+			sts = ParticleSystemUtility::CreatetSRVfromTGAFile(filename,
 				m_dev, &m_srv);
 			if (sts == false) {
 				MessageBox(nullptr, "textureload error(CBillBoard LoadTexture)", "error", MB_OK);

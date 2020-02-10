@@ -40,6 +40,6 @@ PS_OUTPUT main(VS_OUTPUT input)
 	col.target0 = specular + diffuse * texcol;
     col.target0.a = 1.0f;
     
-    col.target1 = input.Pos.zw;
+    col.target1.xy = input.Pos.zw;
 	return col;
 }

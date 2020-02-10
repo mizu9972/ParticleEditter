@@ -15,7 +15,7 @@ using ComPtr = Microsoft::WRL::ComPtr<ComPtrT>;
 
 //ソフトパーティクル用コンスタントバッファ構造体
 struct ConstantBufferSoftParticle {
-	float iViewPort[2] = { 1600,900 };
+	float iViewPort[2] = { 1600.0f,900.0f };
 	float iZfar = 0.1f;
 	float iZVolume = 110.0f;
 };
@@ -25,7 +25,7 @@ struct ConstantBufferSoftParticle {
 //一部の数値は動的に変更しても即時反映されず、パーティクル生成が一周終わってから反映される
 typedef struct {
 	char m_Name[64]         = "";//名前
-	char m_TextureName[512] = "assets/ParticleTexture/particle.png";//テクスチャの名前
+	char m_TextureName[512] = "InPutData/particle.png";//テクスチャの名前
 	
 	float m_Position[3]     = { 0,0,0 };//座標
 	int m_Angle[3]          = { 0,0,0 };//角度
