@@ -91,6 +91,9 @@
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>C:\Users\oisii\Desktop\ParticleSystemEditter\ParticleSystemImgui\souce\Lib\ParticleSystemLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -100,6 +103,9 @@
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
+    <Link>
+      <AdditionalDependencies>C:\Users\oisii\Desktop\ParticleSystemEditter\ParticleSystemImgui\souce\Lib\ParticleSystemLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -131,16 +137,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="souce\CBillBoard.cpp" />
     <ClCompile Include="souce\CDirectXGraphics.cpp" />
     <ClCompile Include="souce\CModel.cpp" />
-    <ClCompile Include="souce\CParticle.cpp" />
     <ClCompile Include="souce\CParticleEdit.cpp" />
     <ClCompile Include="souce\CSphere.cpp" />
     <ClCompile Include="souce\DatFile.cpp" />
     <ClCompile Include="souce\DatFileLoader.cpp" />
     <ClCompile Include="souce\DDSTextureLoader.cpp" />
-    <ClCompile Include="souce\ParticleMathUtil.cpp" />
     <ClCompile Include="souce\dx11util.cpp" />
     <ClCompile Include="souce\game.cpp" />
     <ClCompile Include="souce\ImGui\ImCurveEdit.cpp" />
@@ -154,26 +157,20 @@
     <ClCompile Include="souce\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="souce\ImGui\ImSequencer.cpp" />
     <ClCompile Include="souce\main.cpp" />
-    <ClCompile Include="souce\Observer.cpp" />
-    <ClCompile Include="souce\ParticleSystemParent.cpp" />
-    <ClCompile Include="souce\ParticleSystemUtility.cpp" />
     <ClCompile Include="souce\Shader.cpp" />
     <ClCompile Include="souce\WICTextureLoader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h" />
-    <ClInclude Include="souce\CBillBoard.h" />
     <ClInclude Include="souce\CCamera.h" />
     <ClInclude Include="souce\CDirectInput.h" />
     <ClInclude Include="souce\CDirectxGraphics.h" />
     <ClInclude Include="souce\CLight.h" />
     <ClInclude Include="souce\CModel.h" />
-    <ClInclude Include="souce\CParticle.h" />
     <ClInclude Include="souce\CParticleEdit.h" />
     <ClInclude Include="souce\CSphere.h" />
     <ClInclude Include="souce\DatFile.h" />
     <ClInclude Include="souce\DatFileLoader.h" />
-    <ClInclude Include="souce\ParticleMathUtil.h" />
     <ClInclude Include="souce\DX11Settransform.h" />
     <ClInclude Include="souce\DX11util.h" />
     <ClInclude Include="souce\Exception.h" />
@@ -193,10 +190,6 @@
     <ClInclude Include="souce\ImGui\imstb_truetype.h" />
     <ClInclude Include="souce\Memory.h" />
     <ClInclude Include="souce\NonCopyable.h" />
-    <ClInclude Include="souce\Observer.h" />
-    <ClInclude Include="souce\ParticleSystemParent.h" />
-    <ClInclude Include="souce\ParticleSystemTransform.h" />
-    <ClInclude Include="souce\ParticleSystemUtility.h" />
     <ClInclude Include="souce\Shader.h" />
   </ItemGroup>
   <ItemGroup>
@@ -249,6 +242,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="shader\psInstancing.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="shader\psParticle.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -300,6 +296,9 @@
     <FxCompile Include="shader\vsbillboardtriangle.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="shader\vsInstancing.fx">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="shader\vsPrticle.fx">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

@@ -1,131 +1,8 @@
+#include "stdafx.h"
 #include	"CBillBoard.h"
 #include	"ParticleMathUtil.h"
 #include	"ParticleSystemTransform.h"
 
-bool CBillBoard::Init(ID3D11Device* device, ID3D11DeviceContext* devicecontext, float x, float y, float z, float xsize, float ysize, DirectX::XMFLOAT4 color, const char *psFilename, const char *vsFilename) {
-	m_x = x;
-	m_y = y;
-	m_z = z;
-	m_XSize = xsize;
-	m_YSize = ysize;
-	m_Color = color;
-
-	// デバイス取得
-	m_dev = device;
-	// デバイスコンテキスト取得
-	m_devcontext = devicecontext;
-
-	// 頂点データの定義
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
-	};
-
-	unsigned int numElements = ARRAYSIZE(layout);
-	// 頂点シェーダーオブジェクトを生成、同時に頂点レイアウトも生成
-	bool sts = ParticleSystemUtility::CreateVertexShader(m_dev,
-		vsFilename,
-		"main",
-		"vs_4_0",
-		layout,
-		numElements,
-		&m_pVertexShader,
-		&m_pVertexLayout);
-
-	if (!sts) {
-		MessageBox(nullptr, "CreateVertexShader error", "error", MB_OK);
-		return false;
-	}
-
-	// ピクセルシェーダーを生成
-	sts = ParticleSystemUtility::CreatePixelShader(			// ピクセルシェーダーオブジェクトを生成
-		m_dev,							// デバイスオブジェクト
-		psFilename,
-		"main",
-		"ps_4_0",
-		&m_pPixelShader);
-
-	if (!sts) {
-		MessageBox(nullptr, "CreatePixelShader error", "error", MB_OK);
-		return false;
-	}
-
-
-	CalcVertex();						// ビルボード用の頂点データ作成	
-
-	CreateBlendStateSrcAlpha();			// アルファブレンディング用ブレンドステート生成
-	CreateBlendStateOne();				// 加算合成用のブレンドステート生成
-	CreateBlendStateDefault();			// デフォルトのブレンドステート生成
-	CreateBlendStateInv();
-	return true;
-}
-
-bool CBillBoard::InitInstancing(ID3D11Device* device, ID3D11DeviceContext* devicecontext, float x, float y, float z, float xsize, float ysize, DirectX::XMFLOAT4 color, const char *psFilename, const char *vsFilename) {
-	m_x = x;
-	m_y = y;
-	m_z = z;
-	m_XSize = xsize;
-	m_YSize = ysize;
-	m_Color = color;
-
-	// デバイス取得
-	m_dev = device;
-	// デバイスコンテキスト取得
-	m_devcontext = devicecontext;
-
-	// 頂点データの定義
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{"POSITION",0,DXGI_FORMAT_R32G32B32A32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0	},
-		{ "NORMAL",   0, DXGI_FORMAT_R32G32B32_FLOAT,    0, 12, D3D11_INPUT_PER_VERTEX_DATA,   0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,       0, 24, D3D11_INPUT_PER_VERTEX_DATA,   0 },
-		// 入力アセンブラにジオメトリ処理用の行列を追加設定する
-		{ "MATRIX",   0, DXGI_FORMAT_R32G32B32A32_FLOAT, 1,  0, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-		{ "MATRIX",   1, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 16, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-		{ "MATRIX",   2, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 32, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-		{ "MATRIX",   3, DXGI_FORMAT_R32G32B32A32_FLOAT, 1, 48, D3D11_INPUT_PER_INSTANCE_DATA, 1 },
-	};
-
-	unsigned int numElements = ARRAYSIZE(layout);
-	// 頂点シェーダーオブジェクトを生成、同時に頂点レイアウトも生成
-	bool sts = ParticleSystemUtility::CreateVertexShader(m_dev,
-		vsFilename,
-		"main",
-		"vs_4_0",
-		layout,
-		numElements,
-		&m_pVertexShader,
-		&m_pVertexLayout);
-
-	if (!sts) {
-		MessageBox(nullptr, "CreateVertexShader error", "error", MB_OK);
-		return false;
-	}
-
-	// ピクセルシェーダーを生成
-	sts = ParticleSystemUtility::CreatePixelShader(			// ピクセルシェーダーオブジェクトを生成
-		m_dev,							// デバイスオブジェクト
-		psFilename,
-		"main",
-		"ps_4_0",
-		&m_pPixelShader);
-
-	if (!sts) {
-		MessageBox(nullptr, "CreatePixelShader error", "error", MB_OK);
-		return false;
-	}
-
-
-	CalcVertex();						// ビルボード用の頂点データ作成	
-
-	CreateBlendStateSrcAlpha();			// アルファブレンディング用ブレンドステート生成
-	CreateBlendStateOne();				// 加算合成用のブレンドステート生成
-	CreateBlendStateDefault();			// デフォルトのブレンドステート生成
-	CreateBlendStateInv();
-	return true;
-}
 // ビルボードの頂点座標を計算
 void CBillBoard::CalcVertex(){
 		m_Vertex[0].x = -m_XSize/2;
@@ -186,10 +63,6 @@ void CBillBoard::SetPosition(float x,float y,float z){
 	m_x=x;
 	m_y=y;
 	m_z=z;
-}
-
-void CBillBoard::SetInstanceNum(int Num) {
-	//TODO インスタンス数に合わせた頂点バッファの確保
 }
 
 // ビルボード用の行列を生成

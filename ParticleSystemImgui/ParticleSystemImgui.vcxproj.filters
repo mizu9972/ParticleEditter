@@ -72,12 +72,6 @@
     <ClCompile Include="souce\CSphere.cpp">
       <Filter>ソース ファイル\class</Filter>
     </ClCompile>
-    <ClCompile Include="souce\CParticle.cpp">
-      <Filter>ソース ファイル\Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="souce\CBillBoard.cpp">
-      <Filter>ソース ファイル\class</Filter>
-    </ClCompile>
     <ClCompile Include="souce\DatFile.cpp">
       <Filter>ソース ファイル\File</Filter>
     </ClCompile>
@@ -89,12 +83,6 @@
     </ClCompile>
     <ClCompile Include="souce\WICTextureLoader.cpp">
       <Filter>ソース ファイル\File</Filter>
-    </ClCompile>
-    <ClCompile Include="souce\Observer.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="souce\ParticleSystemParent.cpp">
-      <Filter>ソース ファイル\Particle</Filter>
     </ClCompile>
     <ClCompile Include="souce\CParticleEdit.cpp">
       <Filter>ソース ファイル\Particle</Filter>
@@ -128,12 +116,6 @@
     </ClCompile>
     <ClCompile Include="souce\ImGui\ImGuizmoUtil.cpp">
       <Filter>ソース ファイル\ImGuizmo</Filter>
-    </ClCompile>
-    <ClCompile Include="souce\ParticleSystemUtility.cpp">
-      <Filter>ソース ファイル\Particle</Filter>
-    </ClCompile>
-    <ClCompile Include="souce\ParticleMathUtil.cpp">
-      <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -185,18 +167,6 @@
     <ClInclude Include="souce\Shader.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="souce\CParticle.h">
-      <Filter>ヘッダー ファイル\particle</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\CBillBoard.h">
-      <Filter>ヘッダー ファイル\class</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\Observer.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\ParticleSystemParent.h">
-      <Filter>ヘッダー ファイル\particle</Filter>
-    </ClInclude>
     <ClInclude Include="souce\CParticleEdit.h">
       <Filter>ヘッダー ファイル\particle</Filter>
     </ClInclude>
@@ -238,15 +208,6 @@
     </ClInclude>
     <ClInclude Include="souce\ImGui\ImGuizmoUtil.h">
       <Filter>ヘッダー ファイル\ImGuizmo</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\ParticleSystemUtility.h">
-      <Filter>ヘッダー ファイル\particle</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\ParticleSystemTransform.h">
-      <Filter>ヘッダー ファイル\particle</Filter>
-    </ClInclude>
-    <ClInclude Include="souce\ParticleMathUtil.h">
-      <Filter>ヘッダー ファイル\particle</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -323,6 +284,12 @@
       <Filter>リソース ファイル\pixel</Filter>
     </FxCompile>
     <FxCompile Include="shader\vsSoftParticle.fx">
+      <Filter>リソース ファイル\vertex</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\psInstancing.fx">
+      <Filter>リソース ファイル\pixel</Filter>
+    </FxCompile>
+    <FxCompile Include="shader\vsInstancing.fx">
       <Filter>リソース ファイル\vertex</Filter>
     </FxCompile>
   </ItemGroup>

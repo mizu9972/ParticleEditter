@@ -10,12 +10,12 @@
 #define     FPS 60
 
 using namespace DirectX;
-template<typename ComPtrT>
-using ComPtr = Microsoft::WRL::ComPtr<ComPtrT>;
+//template<typename ComPtrT>
+//using ComPtr = Microsoft::WRL::ComPtr<ComPtrT>;
 
 //ソフトパーティクル用コンスタントバッファ構造体
 struct ConstantBufferSoftParticle {
-	float iViewPort[2] = { 1600.0f,900.0f };
+	float iViewPort[2] = { 1600,900 };
 	float iZfar = 0.1f;
 	float iZVolume = 110.0f;
 };
@@ -25,7 +25,7 @@ struct ConstantBufferSoftParticle {
 //一部の数値は動的に変更しても即時反映されず、パーティクル生成が一周終わってから反映される
 typedef struct {
 	char m_Name[64]         = "";//名前
-	char m_TextureName[512] = "InPutData/particle.png";//テクスチャの名前
+	char m_TextureName[512] = "assets/ParticleTexture/particle.png";//テクスチャの名前
 	
 	float m_Position[3]     = { 0,0,0 };//座標
 	int m_Angle[3]          = { 0,0,0 };//角度
@@ -118,13 +118,13 @@ private:
 	};
 	m_ParticleUAVState* OutState;
 
-	float NowTime;//時間管理用
-	CBillBoard m_BillBoard;//ビルボード
+	float NowTime;
+	CBillBoard m_BillBoard;
 
 
-	XMFLOAT3 m_TargetPos;//ターゲット座標
+	XMFLOAT3 m_TargetPos;
 	XMFLOAT4 m_Quaternion; //クォータニオン
-
+protected:
 	t_ParticleSystemState* m_ParticleStateZero = nullptr;//初期値保存用
 	t_ParticleSystemState m_ParticleState;//パーティクルシステム設定
 	m_Particles* Particles = nullptr;
@@ -155,12 +155,12 @@ private:
 	D3D11_MAPPED_SUBRESOURCE m_MappedSubResource;//コンピュートシェーダーから返ってくる数値
 
 	//comポインタ宣言
-	ComPtr<ID3D11Buffer> m_CpResult               = nullptr;//出力バッファ
-	ComPtr<ID3D11Buffer> m_CpCBufferSoftParticle  = nullptr;//コンスタントバッファ
-	ComPtr<ID3D11Buffer> m_CpGetBuf               = nullptr;//バッファコピー用
-	ComPtr<ID3D11Buffer> m_CpBuf                  = nullptr;//シェーダーリソースビュー用バッファ
-	ComPtr<ID3D11ShaderResourceView> m_CpSRV      = nullptr;//シェーダーリソースビュー
-	ComPtr<ID3D11UnorderedAccessView> m_CpUAV     = nullptr;//アンオーダードアクセスビュー
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_CpResult               = nullptr;//出力バッファ
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_CpCBufferSoftParticle  = nullptr;//コンスタントバッファ
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_CpGetBuf               = nullptr;//バッファコピー用
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_CpBuf                  = nullptr;//シェーダーリソースビュー用バッファ
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_CpSRV      = nullptr;//シェーダーリソースビュー
+	Microsoft::WRL::ComPtr<ID3D11UnorderedAccessView> m_CpUAV     = nullptr;//アンオーダードアクセスビュー
 public:
 	ParticleSystem() {};
 	ParticleSystem(t_ParticleSystemState ParticleState_) {

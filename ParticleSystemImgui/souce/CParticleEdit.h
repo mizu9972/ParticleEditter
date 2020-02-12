@@ -2,7 +2,7 @@
 
 #include <unordered_map>
 
-#include "ParticleSystemParent.h"
+#include "Lib/stdafx.h"
 #include "CParticle.h"
 #include "CBillBoard.h"
 #include "CModel.h"
