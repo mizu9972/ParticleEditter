@@ -19,7 +19,7 @@
 #include "CCamera.h"
 #include "CDirectInput.h"
 #include "DX11Settransform.h"
-#include "ParticleMathUtil.h"
+#include "Lib/ParticleMathUtil.h"
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_dx11.h"
 #include "ImGui/imgui_impl_win32.h"

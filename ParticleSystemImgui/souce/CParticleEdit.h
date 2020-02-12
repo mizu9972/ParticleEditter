@@ -3,8 +3,7 @@
 #include <unordered_map>
 
 #include "Lib/stdafx.h"
-#include "CParticle.h"
-#include "CBillBoard.h"
+#include "Lib/CBillBoard.h"
 #include "CModel.h"
 
 #include "ImGui/imgui.h"

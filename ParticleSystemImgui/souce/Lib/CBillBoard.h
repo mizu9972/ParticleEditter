@@ -7,7 +7,7 @@
 using namespace DirectX;
 /*----------------------------------------------------------------------
 
-	ビルボード描画クラス	
+	ビルボードクラス	
 
 -----------------------------------------------------------------------*/
 
@@ -65,12 +65,68 @@ public:
 	CBillBoard() :m_x(0), m_y(0), m_z(0), m_srv(nullptr), m_dev(nullptr), m_devcontext(nullptr) {
 	};
 
-	bool Init(ID3D11Device* device, ID3D11DeviceContext* devicecontext, float x, float y, float z, float xsize, float ysize, DirectX::XMFLOAT4 color, const char *psFilename, const char *vsFilename);
-	bool InitInstancing(ID3D11Device* device, ID3D11DeviceContext* devicecontext, float x, float y, float z, float xsize, float ysize, DirectX::XMFLOAT4 color, const char *psFilename, const char *vsFilename);
-	
+	bool Init(ID3D11Device* device,ID3D11DeviceContext* devicecontext, float x, float y, float z, float xsize, float ysize, DirectX::XMFLOAT4 color, const char *psFilename, const char *vsFilename) {
+		m_x = x;
+		m_y = y;
+		m_z = z;
+		m_XSize = xsize;
+		m_YSize = ysize;
+		m_Color = color;
+
+		// デバイス取得
+		m_dev = device;
+		// デバイスコンテキスト取得
+		m_devcontext = devicecontext;
+
+		// 頂点データの定義
+		D3D11_INPUT_ELEMENT_DESC layout[] =
+		{
+			{ "POSITION",	0, DXGI_FORMAT_R32G32B32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "COLOR",		0, DXGI_FORMAT_R32G32B32A32_FLOAT,	0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+			{ "TEXCOORD",	0, DXGI_FORMAT_R32G32_FLOAT,		0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 }
+		};
+
+		unsigned int numElements = ARRAYSIZE(layout);
+		// 頂点シェーダーオブジェクトを生成、同時に頂点レイアウトも生成
+		bool sts = ParticleSystemUtility::CreateVertexShader(m_dev,
+			vsFilename,
+			"main",
+			"vs_4_0",
+			layout,
+			numElements,
+			&m_pVertexShader,
+			&m_pVertexLayout);
+
+		if (!sts) {
+			MessageBox(nullptr, "CreateVertexShader error", "error", MB_OK);
+			return false;
+		}
+
+		// ピクセルシェーダーを生成
+		sts = ParticleSystemUtility::CreatePixelShader(			// ピクセルシェーダーオブジェクトを生成
+			m_dev,							// デバイスオブジェクト
+			psFilename,
+			"main", 
+			"ps_4_0",
+			&m_pPixelShader);
+
+		if (!sts) {
+			MessageBox(nullptr, "CreatePixelShader error", "error", MB_OK);
+			return false;
+		}
+
+
+		CalcVertex();						// ビルボード用の頂点データ作成	
+
+		CreateBlendStateSrcAlpha();			// アルファブレンディング用ブレンドステート生成
+		CreateBlendStateOne();				// 加算合成用のブレンドステート生成
+		CreateBlendStateDefault();			// デフォルトのブレンドステート生成
+		CreateBlendStateInv();
+		return true;
+	}
+
 	// デストラクタ
 	virtual ~CBillBoard(){
-		//#TODO 解放処理 ComオブジェクトをComポインタ化 もしくは SAFE_RELEASE
 		if (m_vbuffer != nullptr) {
 			m_vbuffer->Release();
 			m_vbuffer = nullptr;
@@ -159,9 +215,6 @@ public:
 
 	// カラーをセット
 	void SetColor(DirectX::XMFLOAT4 col);
-
-	//インスタンス数をセット
-	void SetInstanceNum(int Num);
 
 	//	テクスチャ読み込み
 	bool LoadTexTure(const char* filename);

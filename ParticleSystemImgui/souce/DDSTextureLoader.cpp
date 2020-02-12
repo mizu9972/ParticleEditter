@@ -13,7 +13,6 @@
 // http://go.microsoft.com/fwlink/?LinkId=248926
 // http://go.microsoft.com/fwlink/?LinkId=248929
 //--------------------------------------------------------------------------------------
-
 #include "DDSTextureLoader.h"
 
 #include <assert.h>
