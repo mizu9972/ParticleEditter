@@ -502,6 +502,12 @@ void ParticleSystem::GPUDraw(const XMFLOAT4X4& CameraMatrix) {
 		}
 
 		float BillBoardSize = m_ParticleState.m_StartSize +  m_ParticleState.m_SizeSpeed * OutState[Count].CountTime;
+		if (m_ParticleState.m_SizeSpeed > 0) {
+			BillBoardSize = min(BillBoardSize, m_ParticleState.m_EndSize);
+		}
+		else if (m_ParticleState.m_SizeSpeed < 0) {
+			BillBoardSize = max(BillBoardSize, m_ParticleState.m_EndSize);
+		}
 		//•`‰æ
 		m_BillBoard.SetPosition(OutState[Count].Matrix._41, OutState[Count].Matrix._42, OutState[Count].Matrix._43);
 		m_BillBoard.SetSize(BillBoardSize, BillBoardSize);
