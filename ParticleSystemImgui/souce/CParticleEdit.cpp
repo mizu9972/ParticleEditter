@@ -580,7 +580,7 @@ void ParticleEditor::AddParticleSystem(t_ParticleSystemState* setState) {
 	//名前設定
 	std::string Name = "Particle" + std::to_string(m_ParticleSystems.getParticleSystemCount());
 	CreatedParticleSystem->SetName(Name.c_str());
-	
+	CreatedParticleSystem->Start();
 	//編集中にする
 	m_ViewParticleSystem = CreatedParticleSystem;
 }
@@ -634,8 +634,9 @@ bool ParticleEditor::InputData(const char* FileName_) {
 			//--------------------------------------------------------------------------------------------------------------
 		}
 		m_ParticleSystems.setParticleCounter(ParticleCount);
-
 		fclose(Fp);
+
+		m_ParticleSystems.Start();
 	}
 	catch (int i) {//ファイル読み込み失敗したら
 		return i;

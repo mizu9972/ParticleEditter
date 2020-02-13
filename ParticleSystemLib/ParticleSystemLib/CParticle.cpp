@@ -108,7 +108,7 @@ ParticleSystem& ParticleSystem::Init(ID3D11Device* device, ID3D11DeviceContext* 
 	m_BillBoard.LoadTexTure(m_ParticleState.m_TextureName);
 	//----------------------------------------------------------------------------------------------------------------------------
 
-	Start();
+	//Start();
 	return *this;
 }
 
