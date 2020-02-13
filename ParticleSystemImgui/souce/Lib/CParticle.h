@@ -24,43 +24,45 @@ struct ConstantBufferSoftParticle {
 //手動で設定して割り当てる
 //一部の数値は動的に変更しても即時反映されず、パーティクル生成が一周終わってから反映される
 typedef struct {
-	char m_Name[64]         = "";//名前
-	char m_TextureName[512] = "assets/ParticleTexture/particle.png";//テクスチャの名前
+	char m_Name[64]            = "";//名前
+	char m_TextureName[512]    = "assets/ParticleTexture/particle.png";//テクスチャの名前
 	
-	float m_Position[3]     = { 0,0,0 };//座標
-	int m_Angle[3]          = { 0,0,0 };//角度
-	int m_AngleRange        = 360;//発生させる角度の範囲
+	float m_Position[3]        = { 0,0,0 };//座標
+	int m_Angle[3]             = { 0,0,0 };//角度
+	int m_AngleRange           = 360;//発生させる角度の範囲
 
-	float m_StartDelayTime  = 0;//開始遅延時間
-	float m_DuaringTime     = 10;//発生時間
-	float m_Size            = 20;//大きさ
-	float m_MaxLifeTime     = 10;//最長生存時間
-	float m_Speed           = 50;//速度
-	float m_Accel           = 0;//加速度
-	float m_MinSpeed        = 0;//最小速度
-	float m_MaxSpeed        = 100;//最大速度
-	int m_ParticleNum       = 256;//生成するパーティクル個数 //即時反映されない
-	int m_ParticleMax		= 256;//生成するパーティクル最大数
-	float m_ParticleSpownSpeed = m_ParticleMax / m_DuaringTime;//一秒間に発生するパーティクルの数
-	float m_Color[4]        = {1.0f,1.0f,1.0f,1.0f};//パーティクルの色
-	int m_RotateSpeed       = 1;//回転速度
-	bool isChaser           = false;//ターゲットへ向かっていくパーティクルモード
-	bool isActive           = true;//Startメソッドと同時に起動するかどうか(他のパーティクルシステムの後から発生させる場合はfalse)
-	bool isEmitting         = false;//他パーティクルから発生させられるかどうか
-	bool isLooping          = true;//ループするかどうか
-	bool isGPUParticle      = false;//GPUパーティクルONOFF
-	bool UseGravity         = false;//重力有効
-	bool isSoftParticle		= false;//ソフトパーティクルにするかどうか
+	float m_StartDelayTime     = 0;//開始遅延時間
+	float m_DuaringTime        = 10;//発生時間
+	float m_StartSize          = 20;//開始サイズ
+	float m_SizeSpeed          = 0;//サイズ変化量
+	float m_EndSize            = 20;//終了サイズ
+	float m_MaxLifeTime        = 10;//最長生存時間
+	float m_Speed              = 50;//速度
+	float m_Accel              = 0;//加速度
+	float m_MinSpeed           = 0;//最小速度
+	float m_MaxSpeed           = 100;//最大速度
+	int m_ParticleNum          = 256;//生成するパーティクル個数 //即時反映されない
+	int m_ParticleMax		   = 256;//生成するパーティクル最大数
+	float m_ParticleSpownSpeed = 10;//一秒間に発生するパーティクルの数
+	float m_Color[4]           = {1.0f,1.0f,1.0f,1.0f};//パーティクルの色
+	int m_RotateSpeed          = 1;//回転速度
+	bool isChaser              = false;//ターゲットへ向かっていくパーティクルモード
+	bool isActive              = true;//Startメソッドと同時に起動するかどうか(他のパーティクルシステムの後から発生させる場合はfalse)
+	bool isEmitting            = false;//他パーティクルから発生させられるかどうか
+	bool isLooping             = true;//ループするかどうか
+	bool isGPUParticle         = false;//GPUパーティクルONOFF
+	bool UseGravity            = false;//重力有効
+	bool isSoftParticle		   = false;//ソフトパーティクルにするかどうか
 	ConstantBufferSoftParticle m_CBSoftParticleState;//コンスタントバッファに利用する構造体
 
-	float m_Gravity[3]      = { 0,0,0 };//重力
+	float m_Gravity[3]         = { 0,0,0 };//重力
 
 	//ホーミング角度制限
-	int m_MinChaseAngle     = 0;
-	int m_MaxChaseAngle     = 5;
+	int m_MinChaseAngle        = 0;
+	int m_MaxChaseAngle        = 5;
 
 	int m_SystemNumber;//自身の番号(mapで管理するkeyになる)
-	int m_NextSystemNumber  = -1;//次に発生させるパーティクルの番号
+	int m_NextSystemNumber     = -1;//次に発生させるパーティクルの番号
 }t_ParticleSystemState;
 
 class ParticleSystem:public Subject {

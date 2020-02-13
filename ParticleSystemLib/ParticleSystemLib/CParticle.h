@@ -33,7 +33,9 @@ typedef struct {
 
 	float m_StartDelayTime     = 0;//開始遅延時間
 	float m_DuaringTime        = 10;//発生時間
-	float m_Size               = 20;//大きさ
+	float m_StartSize          = 20;//開始サイズ
+	float m_SizeSpeed          = 0;//サイズ変化量
+	float m_EndSize            = 20;//終了サイズ
 	float m_MaxLifeTime        = 10;//最長生存時間
 	float m_Speed              = 50;//速度
 	float m_Accel              = 0;//加速度

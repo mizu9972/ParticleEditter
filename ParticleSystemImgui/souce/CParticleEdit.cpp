@@ -348,7 +348,13 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 		CHECK(ImGui::DragInt("AngleRange", &ViewState.m_AngleRange, 1, 1, 360));            //放出角度範囲
 		CHECK(ImGui::InputInt("ParticleMaxNum", &ViewState.m_ParticleMax, 5, 1000));        //パーティクルの最大個数個数
 		CHECK(ImGui::DragFloat("SpawnSpeed", &ViewState.m_ParticleSpownSpeed, 0.01f));      //パーティクル発生速度
-		CHECK(ImGui::InputFloat("Size", &ViewState.m_Size, 1.0f, 100.0f));                  //粒子の大きさ
+		if (ImGui::TreeNode("Size")) {
+			CHECK(ImGui::DragFloat("StartSize", &ViewState.m_StartSize, 1.0f));                  //粒子の大きさ
+			CHECK(ImGui::DragFloat("EndSize", &ViewState.m_EndSize, 1.0f));//パーティクルの終了サイズ
+			CHECK(ImGui::DragFloat("SizeSpeed", &ViewState.m_SizeSpeed, 0.1f));//サイズ変化速度
+			ImGui::TreePop();
+		}
+
 		CHECK(ImGui::Checkbox("Looping", &ViewState.isLooping));                            //ループさせるかどうか
 	}
 

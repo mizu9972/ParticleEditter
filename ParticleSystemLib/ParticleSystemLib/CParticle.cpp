@@ -475,10 +475,17 @@ void ParticleSystem::DrawNomal(const XMFLOAT4X4& CameraMatrix) {
 			continue;
 		}
 
+		float BillBoardSize = m_ParticleState.m_StartSize + m_ParticleState.m_SizeSpeed * iParticleDetail.CountTime;
+		if (m_ParticleState.m_SizeSpeed > 0) {
+			BillBoardSize = min(BillBoardSize, m_ParticleState.m_EndSize);
+		}
+		else if (m_ParticleState.m_SizeSpeed < 0) {
+			BillBoardSize = max(BillBoardSize, m_ParticleState.m_EndSize);
+		}
 		//•`‰æ
 		{
 			m_BillBoard.SetPosition(iParticleDetail.Matrix._41, iParticleDetail.Matrix._42, iParticleDetail.Matrix._43);
-			m_BillBoard.SetSize(m_ParticleState.m_Size, m_ParticleState.m_Size);
+			m_BillBoard.SetSize(BillBoardSize, BillBoardSize);
 			m_BillBoard.SetColor(XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]));
 			m_BillBoard.DrawOnly(CameraMatrix, (float)iParticleDetail.ZAngle);
 		}
@@ -494,9 +501,10 @@ void ParticleSystem::GPUDraw(const XMFLOAT4X4& CameraMatrix) {
 			continue;
 		}
 
+		float BillBoardSize = m_ParticleState.m_StartSize +  m_ParticleState.m_SizeSpeed * OutState[Count].CountTime;
 		//•`‰æ
 		m_BillBoard.SetPosition(OutState[Count].Matrix._41, OutState[Count].Matrix._42, OutState[Count].Matrix._43);
-		m_BillBoard.SetSize(m_ParticleState.m_Size, m_ParticleState.m_Size);
+		m_BillBoard.SetSize(BillBoardSize, BillBoardSize);
 		m_BillBoard.SetColor(XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]));
 		m_BillBoard.DrawOnly(CameraMatrix, (float)OutState[Count].ZAngle);
 	}
@@ -839,14 +847,14 @@ void ParticleSystem::ChangeSoftParticleMode(bool isSoftParticle) {
 	m_ParticleState.isSoftParticle = isSoftParticle;
 	if (isSoftParticle) {
 		m_BillBoard.Init(m_Device, m_DeviceContext, 0, 0, 0,
-			m_ParticleState.m_Size, m_ParticleState.m_Size,
+			m_ParticleState.m_StartSize, m_ParticleState.m_StartSize,
 			XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]),
 			SOFTPARTICLE_PS_SHADER,
 			SOFTPARTICLE_VS_SHADER);
 	}
 	else {
 		m_BillBoard.Init(m_Device, m_DeviceContext, 0, 0, 0,
-			m_ParticleState.m_Size, m_ParticleState.m_Size,
+			m_ParticleState.m_StartSize, m_ParticleState.m_StartSize,
 			XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]),
 			PARTICLE_PS_SHADER,
 			PARTICLE_VS_SHADER);
