@@ -343,12 +343,13 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 	//パーティクルシステムの設定操作
 	//ImGuiの数値が変更されたらtrueが返ってくる機能を利用しCHECKマクロで監視
 	if (ImGui::CollapsingHeader("Main")) {
-		CHECK(ImGui::DragFloat3("Position", ViewState.m_Position, 1.0f));                //座標
-		CHECK(ImGui::DragInt3("Angle", ViewState.m_Angle, 1.0f));                        //放出角度
-		CHECK(ImGui::DragInt("AngleRange", &ViewState.m_AngleRange, 1, 1, 360));         //放出角度範囲
-		CHECK(ImGui::InputInt("ParticleNum", &ViewState.m_ParticleNum, 5, 1000));        //パーティクルの個数
-		CHECK(ImGui::InputFloat("Size", &ViewState.m_Size, 1.0f, 100.0f));               //粒子の大きさ
-		CHECK(ImGui::Checkbox("Looping", &ViewState.isLooping));                    //ループさせるかどうか
+		CHECK(ImGui::DragFloat3("Position", ViewState.m_Position, 1.0f));                   //座標
+		CHECK(ImGui::DragInt3("Angle", ViewState.m_Angle, 1.0f));                           //放出角度
+		CHECK(ImGui::DragInt("AngleRange", &ViewState.m_AngleRange, 1, 1, 360));            //放出角度範囲
+		CHECK(ImGui::InputInt("ParticleMaxNum", &ViewState.m_ParticleMax, 5, 1000));        //パーティクルの最大個数個数
+		CHECK(ImGui::DragFloat("SpawnSpeed", &ViewState.m_ParticleSpownSpeed, 0.01f));      //パーティクル発生速度
+		CHECK(ImGui::InputFloat("Size", &ViewState.m_Size, 1.0f, 100.0f));                  //粒子の大きさ
+		CHECK(ImGui::Checkbox("Looping", &ViewState.isLooping));                            //ループさせるかどうか
 	}
 
 	if (ImGui::CollapsingHeader("Time")) {

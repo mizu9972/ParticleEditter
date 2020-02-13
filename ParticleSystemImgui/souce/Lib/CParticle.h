@@ -7,7 +7,7 @@
 #include "Observer.h"
 #include <wrl.h>
 
-#define     FPS 60
+#define     FPS 60.0f
 
 using namespace DirectX;
 //template<typename ComPtrT>
@@ -40,7 +40,8 @@ typedef struct {
 	float m_MinSpeed        = 0;//最小速度
 	float m_MaxSpeed        = 100;//最大速度
 	int m_ParticleNum       = 256;//生成するパーティクル個数 //即時反映されない
-
+	int m_ParticleMax		= 256;//生成するパーティクル最大数
+	float m_ParticleSpownSpeed = m_ParticleMax / m_DuaringTime;//一秒間に発生するパーティクルの数
 	float m_Color[4]        = {1.0f,1.0f,1.0f,1.0f};//パーティクルの色
 	int m_RotateSpeed       = 1;//回転速度
 	bool isChaser           = false;//ターゲットへ向かっていくパーティクルモード
@@ -132,6 +133,11 @@ protected:
 	std::vector<m_Particles> m_ParticleVec;//生存パーティクル配列
 	std::vector<int> m_NextParticleNumberVector;
 
+	//パーティクル配列
+	std::vector<m_Particles> m_ParticleDetails;
+	int m_Iter = 0;//呼び出したパーティクル配列の添字保存
+	float m_SpownTimeCount = 0.0f;//パーティクル発生時間管理用
+
 	int m_ParticleNum;//パーティクル個数保存用
 	int m_MaxParticleNum;//パーティクル最大生成個数
 	int ParticlesDeathCount;//死亡パーティクルカウント
@@ -182,6 +188,7 @@ public:
 	ParticleSystem& Init(ID3D11Device* device, ID3D11DeviceContext* devicecontext,t_ParticleSystemState* ParticleState_ = nullptr, const char* filename = nullptr);
 	void ZeroInit();//コンストラクタで数値設定した場合、生成時の状態に初期化できる
 	void InitComputeShader();//コンピュートシェーダーの初期化
+	void ParticleDetalInit();
 
 	//更新処理
 	void Update();

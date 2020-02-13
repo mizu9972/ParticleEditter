@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="ソース ファイル\ParticleSystem">
+      <UniqueIdentifier>{efa974c3-26af-411d-980f-539260f52b38}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\ParticleSystem">
+      <UniqueIdentifier>{c9765e94-cea5-493b-99d2-dad7edcb9612}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -24,23 +30,23 @@
     <ClInclude Include="CBillBoard.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="CParticle.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="Observer.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="ParticleMathUtil.h">
-      <Filter>ヘッダー ファイル</Filter>
+    <ClInclude Include="CParticle.h">
+      <Filter>ヘッダー ファイル\ParticleSystem</Filter>
     </ClInclude>
     <ClInclude Include="ParticleSystemParent.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\ParticleSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleMathUtil.h">
+      <Filter>ヘッダー ファイル\ParticleSystem</Filter>
     </ClInclude>
     <ClInclude Include="ParticleSystemTransform.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\ParticleSystem</Filter>
     </ClInclude>
     <ClInclude Include="ParticleSystemUtility.h">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\ParticleSystem</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -50,26 +56,26 @@
     <ClCompile Include="CBillBoard.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="CParticle.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="DDSTextureLoader.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="Observer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="ParticleMathUtil.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleSystemParent.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="ParticleSystemUtility.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="WICTextureLoader.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="CParticle.cpp">
+      <Filter>ソース ファイル\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleMathUtil.cpp">
+      <Filter>ソース ファイル\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSystemParent.cpp">
+      <Filter>ソース ファイル\ParticleSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSystemUtility.cpp">
+      <Filter>ソース ファイル\ParticleSystem</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -12,21 +12,21 @@ private:
 	std::map<int, ParticleSystem*> m_ParticleSystemDictionary;//パーティクルシステム群
 
 	//コンピュートシェーダー
-	ID3D11ComputeShader* m_ComputeShader = nullptr;
-	ID3D11ComputeShader* m_InitComputeShader = nullptr;
+	ID3D11ComputeShader* m_ComputeShader          = nullptr;
+	ID3D11ComputeShader* m_InitComputeShader      = nullptr;
 
-	ID3D11Device* m_Device = nullptr;
-	ID3D11DeviceContext* m_Devicecontext = nullptr;
+	ID3D11Device* m_Device                        = nullptr;
+	ID3D11DeviceContext* m_Devicecontext          = nullptr;
 
-	ID3D11DepthStencilView* m_DepthstencilView = nullptr;
+	ID3D11DepthStencilView* m_DepthstencilView    = nullptr;
 	ID3D11DepthStencilView* m_DepthstencilViewRTV = nullptr;
-	ID3D11ShaderResourceView* m_DepthSRV = nullptr;
-	IDXGISwapChain* m_SwapChain = nullptr;
+	ID3D11ShaderResourceView* m_DepthSRV          = nullptr;
+	IDXGISwapChain* m_SwapChain                   = nullptr;
 	//レンダーターゲットビュー
-	ID3D11RenderTargetView* m_RenderTargetView = nullptr;
-	ID3D11RenderTargetView* m_BackRTV = nullptr;
+	ID3D11RenderTargetView* m_RenderTargetView    = nullptr;
+	ID3D11RenderTargetView* m_BackRTV             = nullptr;
 
-	int m_ParticleCounter = 0;//パーティクルシステムそれぞれに持たせる固有の番号
+	int m_ParticleCounter                         = 0;//パーティクルシステムそれぞれに持たせる固有の番号
 
 	//レンダーターゲットビューからシェーダーリソースビューを取得
 	ID3D11ShaderResourceView* getSRVfromRTV(ID3D11RenderTargetView* ResourceView);

@@ -136,6 +136,26 @@ void ParticleSystem::InitComputeShader() {
 	m_CpBuf.Attach(m_pbuf);
 }
 
+void ParticleSystem::ParticleDetalInit() {
+	//パーティクル群の初期化
+	m_Particles setState;
+
+	//初期値設定
+	setState.CountTime  = 0;
+	setState.isWaiting  = true;
+	setState.isAlive    = false;
+	setState.LifeTime   = m_ParticleState.m_MaxLifeTime;
+	setState.Matrix._41 = m_ParticleState.m_Position[0];
+	setState.Matrix._42 = m_ParticleState.m_Position[1];
+	setState.Matrix._43 = m_ParticleState.m_Position[2];
+	setState.ZAngle     = rand() % 360;
+
+	m_ParticleDetails.clear();
+	for (int ParticleNum = 0; ParticleNum < m_ParticleState.m_ParticleMax; ParticleNum++) {
+		m_ParticleDetails.emplace_back(setState);
+	}
+}
+
 //GPUパーティクルシステム更新
 void ParticleSystem::UpdateComputeShader() {
 
@@ -173,149 +193,161 @@ void ParticleSystem::UpdateComputeShader() {
 
 void ParticleSystem::UpdateNomal() {
 
-	m_Particles* p_PickParticle;//操作するパーティクルのポインタ保存用
-
-	//float lng;
 	XMFLOAT4 TargetQt;//ターゲット方向の姿勢
 	XMFLOAT3 TargetVector;
 
 	float Speed_ = m_ParticleState.m_Speed;
 
 	NowTime = 1.0f / FPS;
+	if (m_SystemLifeTime >= 0) {
+		m_SystemLifeTime -= NowTime;
+	}
+	m_SpownTimeCount += NowTime;
 
-	//パーティクル更新
-	for (int ParticleNum = 0; ParticleNum < m_ParticleVec.size(); ParticleNum++) {
-
-		if (m_ParticleState.isChaser) {
-
-			//座標保存
-			XMFLOAT3 ParticlePosition = XMFLOAT3(m_ParticleVec[ParticleNum].Matrix._41, m_ParticleVec[ParticleNum].Matrix._42, m_ParticleVec[ParticleNum].Matrix._43);
-			
-			//現在位置からターゲット方向へのベクトルを求める
-			TargetVector.x = m_TargetPos.x - m_ParticleVec[ParticleNum].Matrix._41;
-			TargetVector.y = m_TargetPos.y - m_ParticleVec[ParticleNum].Matrix._42;
-			TargetVector.z = m_TargetPos.z - m_ParticleVec[ParticleNum].Matrix._43;
-			
-			//ミサイルの方向ベクトル(Z方向)
-			XMFLOAT3 ZDir = XMFLOAT3(m_ParticleVec[ParticleNum].Matrix._31, m_ParticleVec[ParticleNum].Matrix._32, m_ParticleVec[ParticleNum].Matrix._33);
-			
-			//正規化
-			ParticleSystemMathUtil::DX11Vec3Normalize(TargetVector, TargetVector);
-			ParticleSystemMathUtil::DX11Vec3Normalize(ZDir, ZDir);
-			ParticleSystemMathUtil::DX11GetQtfromMatrix(m_ParticleVec[ParticleNum].Matrix, m_Quaternion);
-
-			float Dot;//２本のベクトルの内積値
-			TargetQt = RotationArc(ZDir, TargetVector, Dot);//２本のベクトルから為す角度とクォータニオンを求める
-			float AngleDiff = acosf(Dot);//ラジアン角度
-			float AngleMax = XM_PI * m_ParticleState.m_MaxChaseAngle / 180.0f;
-			float AngleMin = XM_PI * m_ParticleState.m_MinChaseAngle / 180.0f;
-			//パーティクルの姿勢を決定する
-			if (AngleMin > AngleDiff) {
-
-			}else if (AngleMax >= AngleDiff) {
-				//角度の差が更新できる角度より大きいか小さいか
-				ParticleSystemMathUtil::DX11QtMul(m_Quaternion, m_Quaternion, TargetQt);
+	//パーティクル更新処理
+	{
+		for (int ParticleNum = 0; ParticleNum < m_ParticleDetails.size();ParticleNum++) {
+			if (m_ParticleDetails[ParticleNum].isAlive == false) {
+				continue;
 			}
-			else {
-				float t = AngleMax / AngleDiff;
+			
+			//ホーミング処理
+			if (m_ParticleState.isChaser == true) {
 
-				XMFLOAT4 toqt;
-				ParticleSystemMathUtil::DX11QtMul(toqt, m_Quaternion, TargetQt);
-				ParticleSystemMathUtil::DX11QtSlerp(m_Quaternion, toqt, t, m_Quaternion);
+				//座標保存
+				XMFLOAT3 ParticlePosition = XMFLOAT3(m_ParticleDetails[ParticleNum].Matrix._41, m_ParticleDetails[ParticleNum].Matrix._42, m_ParticleDetails[ParticleNum].Matrix._43);
+				
+				//現在位置からターゲット方向へのベクトルを求める
+				TargetVector.x = m_TargetPos.x - m_ParticleDetails[ParticleNum].Matrix._41;
+				TargetVector.y = m_TargetPos.y - m_ParticleDetails[ParticleNum].Matrix._42;
+				TargetVector.z = m_TargetPos.z - m_ParticleDetails[ParticleNum].Matrix._43;
+
+				//Z方向ベクトル
+				XMFLOAT3 ZDir = XMFLOAT3(m_ParticleDetails[ParticleNum].Matrix._31, m_ParticleDetails[ParticleNum].Matrix._32, m_ParticleDetails[ParticleNum].Matrix._33);
+
+				//正規化
+				ParticleSystemMathUtil::DX11Vec3Normalize(TargetVector, TargetVector);
+				ParticleSystemMathUtil::DX11Vec3Normalize(ZDir, ZDir);
+				ParticleSystemMathUtil::DX11GetQtfromMatrix(m_ParticleDetails[ParticleNum].Matrix, m_Quaternion);
+
+				float Dot;//２本のベクトルの内積値
+				TargetQt = RotationArc(ZDir, TargetVector, Dot);//２本のベクトルから為す角度とクォータニオンを求める
+				float AngleDiff = acosf(Dot);//ラジアン角度
+				float AngleMax = XM_PI * m_ParticleState.m_MaxChaseAngle / 180.0f;
+				float AngleMin = XM_PI * m_ParticleState.m_MinChaseAngle / 180.0f;
+
+				//パーティクルの姿勢を決定する
+				if (AngleMin > AngleDiff) {
+					//何もしない
+				}
+				else if (AngleMax >= AngleDiff) {
+					//角度の差が更新できる角度より大きいか小さいか
+					ParticleSystemMathUtil::DX11QtMul(m_Quaternion, m_Quaternion, TargetQt);
+				}
+				else {
+					float t = AngleMax / AngleDiff;
+
+					XMFLOAT4 toqt;
+					ParticleSystemMathUtil::DX11QtMul(toqt, m_Quaternion, TargetQt);
+					ParticleSystemMathUtil::DX11QtSlerp(m_Quaternion, toqt, t, m_Quaternion);
+				}
+
+				//クォータニオンを行列にする
+				//現在の姿勢をクォータニオンにする
+				ParticleSystemMathUtil::DX11MtxFromQt(m_ParticleDetails[ParticleNum].Matrix, m_Quaternion);
+
+				m_ParticleDetails[ParticleNum].Matrix._41 = ParticlePosition.x;
+				m_ParticleDetails[ParticleNum].Matrix._42 = ParticlePosition.y;
+				m_ParticleDetails[ParticleNum].Matrix._43 = ParticlePosition.z;
+			}
+			
+			m_ParticleDetails[ParticleNum].CountTime += NowTime;
+
+			//加速度計算
+			Speed_ = m_ParticleState.m_Speed + m_ParticleState.m_Accel * m_ParticleDetails[ParticleNum].CountTime * m_ParticleDetails[ParticleNum].CountTime;
+			if (m_ParticleState.m_Accel != 0.0f) {
+				Speed_ = min(Speed_, m_ParticleState.m_MaxSpeed);
+				Speed_ = max(Speed_, m_ParticleState.m_MinSpeed);
 			}
 
-			//クォータニオンを行列にする
-			//現在の姿勢をクォータニオンにする
-			ParticleSystemMathUtil::DX11MtxFromQt(m_ParticleVec[ParticleNum].Matrix, m_Quaternion);
+			//速度分移動させる
+			m_ParticleDetails[ParticleNum].Matrix._41 += m_ParticleDetails[ParticleNum].Matrix._31 * Speed_ * NowTime;
+			m_ParticleDetails[ParticleNum].Matrix._42 += m_ParticleDetails[ParticleNum].Matrix._32 * Speed_ * NowTime;
+			m_ParticleDetails[ParticleNum].Matrix._43 += m_ParticleDetails[ParticleNum].Matrix._33 * Speed_ * NowTime;
 
-			m_ParticleVec[ParticleNum].Matrix._41 = ParticlePosition.x;
-			m_ParticleVec[ParticleNum].Matrix._42 = ParticlePosition.y;
-			m_ParticleVec[ParticleNum].Matrix._43 = ParticlePosition.z;
+			if (m_ParticleState.UseGravity) {
+				//重力
+				m_ParticleDetails[ParticleNum].Matrix._41 += m_ParticleState.m_Gravity[0] / 100.0f * m_ParticleDetails[ParticleNum].CountTime;
+				m_ParticleDetails[ParticleNum].Matrix._42 += m_ParticleState.m_Gravity[1] / 100.0f * m_ParticleDetails[ParticleNum].CountTime;
+				m_ParticleDetails[ParticleNum].Matrix._43 += m_ParticleState.m_Gravity[2] / 100.0f * m_ParticleDetails[ParticleNum].CountTime;
+			}
 
-		}
+			//生存時間減少
+			m_ParticleDetails[ParticleNum].LifeTime -= NowTime;
 
-		m_ParticleVec[ParticleNum].CountTime += NowTime;
+			//回転
+			m_ParticleDetails[ParticleNum].ZAngle += m_ParticleState.m_RotateSpeed;
+			m_ParticleDetails[ParticleNum].ZAngle = m_ParticleDetails[ParticleNum].ZAngle % 360;
 
-		//加速度計算
-		Speed_ = m_ParticleState.m_Speed + m_ParticleState.m_Accel * m_ParticleVec[ParticleNum].CountTime * m_ParticleVec[ParticleNum].CountTime;
-		if (m_ParticleState.m_Accel != 0.0f) {
-			Speed_ = min(Speed_, m_ParticleState.m_MaxSpeed);
-			Speed_ = max(Speed_, m_ParticleState.m_MinSpeed);
-		}
-		//速度分移動させる
-		m_ParticleVec[ParticleNum].Matrix._41 += m_ParticleVec[ParticleNum].Matrix._31 * Speed_ * NowTime;
-		m_ParticleVec[ParticleNum].Matrix._42 += m_ParticleVec[ParticleNum].Matrix._32 * Speed_ * NowTime;
-		m_ParticleVec[ParticleNum].Matrix._43 += m_ParticleVec[ParticleNum].Matrix._33 * Speed_ * NowTime;
-
-		if (m_ParticleState.UseGravity) {
-			//重力
-			m_ParticleVec[ParticleNum].Matrix._41 += m_ParticleState.m_Gravity[0] / 100.0f * m_ParticleVec[ParticleNum].CountTime;
-			m_ParticleVec[ParticleNum].Matrix._42 += m_ParticleState.m_Gravity[1] / 100.0f * m_ParticleVec[ParticleNum].CountTime;
-			m_ParticleVec[ParticleNum].Matrix._43 += m_ParticleState.m_Gravity[2] / 100.0f * m_ParticleVec[ParticleNum].CountTime;
-		}
-		//生存時間減少
-		m_ParticleVec[ParticleNum].LifeTime -= NowTime;
-
-		m_ParticleVec[ParticleNum].ZAngle += m_ParticleState.m_RotateSpeed;
-		m_ParticleVec[ParticleNum].ZAngle = m_ParticleVec[ParticleNum].ZAngle % 360;
-
-		//死亡判定
-		if (m_ParticleVec[ParticleNum].LifeTime <= 0) {
-			m_ParticleVec[ParticleNum].isAlive = false;
-			m_ParticleVec.erase(m_ParticleVec.begin() + ParticleNum);//配列から削除
-			m_ParticleVec.shrink_to_fit();//メモリ解放
-			ParticlesDeathCount += 1;
+			//死亡判定
+			if (m_ParticleDetails[ParticleNum].LifeTime <= 0) {
+				m_ParticleDetails[ParticleNum].isAlive = false;
+				m_ParticleDetails[ParticleNum].isWaiting = true;
+				ParticlesDeathCount += 1;
+			}
 		}
 	}
 
-	m_SystemLifeTime -= NowTime;
+	//パーティクル発生処理
+	{
+		float SpownTimePerParticle = 1.0f / m_ParticleState.m_ParticleSpownSpeed;
+		//一定時間経過で待機状態のパーティクルを発生させる
+		if (isSystemActive == true) {
+			if (m_SpownTimeCount > SpownTimePerParticle) {
+
+				if (m_ParticleDetails.size() > 0) {
+					//複数パーティクル同時発生させる可能性もあるので
+					//発生個数を計算しループさせる
+					for (int Num = 0; Num < m_SpownTimeCount / SpownTimePerParticle; Num++) {
+						//パーティクル発生処理
+						if (m_ParticleDetails[m_Iter].isWaiting == true) {
+							//生存パーティクル追加
+							AddParticle(&m_ParticleDetails[m_Iter]);
+						}
+						m_Iter += 1;
+
+						if (m_Iter >= m_ParticleDetails.size()) {
+							m_Iter = 0;
+						}
+					}
+				}
+
+				m_SpownTimeCount = 0;
+			}
+		}
+	}
 
 	//パーティクル終了判定
 	if (m_SystemLifeTime <= 0) {
 		if (isSystemActive != true) {
 			return;
 		}
-		isSystemActive = false;
-
 		if (m_NextParticleNumberVector.size() > 0) {
 			//次のパーティクル開始
 			Notify(this);
 		}
 
-		if (m_ParticleState.isLooping == true) {//ループ
+		if (m_ParticleState.isLooping == false) {
+			//ループしないならパーティクル発生停止
+			isSystemActive = false;
 
-			if (m_ParticleState.isActive == true) {
-				Start();
-			}
-
+		}
+		else {
+			//再スタート
+			m_SystemLifeTime = m_ParticleState.m_DuaringTime + m_ParticleState.m_StartDelayTime;
 		}
 
 	}
-	if (isSystemActive == false) {
-		return;
-	}
-
-
-	//待機中のパーティクル
-	for (int ParticlesNum = 0; ParticlesNum < m_MaxParticleNum; ParticlesNum++) {
-
-		p_PickParticle = &Particles[ParticlesNum];
-
-		//待機中なら待機時間減少
-		if (p_PickParticle->isWaiting == true) {
-			p_PickParticle->DelayTime -= NowTime;
-
-			//待機時間が0以下なら活性化
-			if (p_PickParticle->DelayTime <= 0) {
-				p_PickParticle->CountTime = 0;
-				p_PickParticle->isWaiting = false;
-				p_PickParticle->isAlive = true;
-
-				AddParticle(p_PickParticle);
-			}
-		}
-	}
-	
 }
 
 void ParticleSystem::UpdateSRV(){
@@ -383,40 +415,20 @@ XMFLOAT4 ParticleSystem::RotationArc(XMFLOAT3 v0, XMFLOAT3 v1, float& d) {
 }
 
 void ParticleSystem::StartNomalParticle() {
-	//パーティクル生成
-	if (Particles != NULL) {
-		delete[] Particles;
-	}
-	Particles = new m_Particles[m_ParticleState.m_ParticleNum];
 	isSystemActive = true;
 	ParticlesDeathCount = 0;
 
 	m_SystemLifeTime = m_ParticleState.m_DuaringTime + m_ParticleState.m_StartDelayTime;
 
 	//変更されたステータス反映
-	{
-		m_MaxParticleNum = m_ParticleState.m_ParticleNum;
-	}
-	//パーティクル設定-------------------------------------------------------------------------
+	//{
+	//	m_MaxParticleNum = m_ParticleState.m_ParticleNum;
+	//}
 	srand((int)NowTime);
 
-	m_Particles* p_PickParticle;//操作するパーティクルのポインタ保存用
+	//パーティクル設定
+	ParticleDetalInit();
 
-	//パーティクルの初期設定する
-	for (int ParticlesNum = 0; ParticlesNum < m_MaxParticleNum; ParticlesNum++) {
-
-		p_PickParticle = &Particles[ParticlesNum];
-
-		//発生までの待機時間設定
-		//パーティクルの発生時間をパーティクル数で等分し、それぞれ割り当てる
-		p_PickParticle->DelayTime = (m_ParticleState.m_DuaringTime / m_MaxParticleNum * ParticlesNum) + m_ParticleState.m_StartDelayTime;
-
-		p_PickParticle->CountTime = 0;
-		//待機中に
-		p_PickParticle->isAlive = false;
-		p_PickParticle->isWaiting = true;
-	}
-	//--------------------------------------------------------------------------------------
 }
 
 void ParticleSystem::StartGPUParticle(){
@@ -458,16 +470,18 @@ void ParticleSystem::StartGPUParticle(){
 void ParticleSystem::DrawNomal(const XMFLOAT4X4& CameraMatrix) {
 
 	m_BillBoard.SetDrawUtility();
-	for (int ParticleNum = 0; ParticleNum < m_ParticleVec.size(); ParticleNum++) {
-		if (m_ParticleVec[ParticleNum].isAlive == false) {
+	for (auto iParticleDetail : m_ParticleDetails) {
+		if (iParticleDetail.isAlive != true) {
 			continue;
 		}
 
 		//描画
-		m_BillBoard.SetPosition(m_ParticleVec[ParticleNum].Matrix._41, m_ParticleVec[ParticleNum].Matrix._42, m_ParticleVec[ParticleNum].Matrix._43);
-		m_BillBoard.SetSize(m_ParticleState.m_Size, m_ParticleState.m_Size);
-		m_BillBoard.SetColor(XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]));
-		m_BillBoard.DrawOnly(CameraMatrix, (float)m_ParticleVec[ParticleNum].ZAngle);
+		{
+			m_BillBoard.SetPosition(iParticleDetail.Matrix._41, iParticleDetail.Matrix._42, iParticleDetail.Matrix._43);
+			m_BillBoard.SetSize(m_ParticleState.m_Size, m_ParticleState.m_Size);
+			m_BillBoard.SetColor(XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]));
+			m_BillBoard.DrawOnly(CameraMatrix, (float)iParticleDetail.ZAngle);
+		}
 	}
 }
 
@@ -498,6 +512,11 @@ void ParticleSystem::UnInit() {
 	if (m_ParticleVec.empty() != true) {
 		m_ParticleVec.clear();
 		m_ParticleVec.shrink_to_fit();
+	}
+
+	if (m_ParticleDetails.empty() != true) {
+		m_ParticleDetails.clear();
+		m_ParticleDetails.shrink_to_fit();
 	}
 }
 
@@ -555,7 +574,6 @@ void ParticleSystem::AddParticle(m_Particles* AddParticle) {
 	newParticle.Matrix._43 = m_ParticleState.m_Position[2];
 
 	//発生までの待機時間設定
-	//パーティクルの発生時間をパーティクル数で等分し、それぞれ割り当てる
 	newParticle.DelayTime = 0;
 	//その他設定
 	newParticle.LifeTime = m_ParticleState.m_MaxLifeTime;
@@ -563,8 +581,13 @@ void ParticleSystem::AddParticle(m_Particles* AddParticle) {
 	newParticle.ZAngle = rand() % 360;
 	
 	newParticle.CountTime = 0;
+	newParticle.isWaiting = false;
+	newParticle.isAlive = true;
+
+	memcpy_s(AddParticle, sizeof(m_Particles), &newParticle, sizeof(m_Particles));
+
 	//パーティクルを追加
-	m_ParticleVec.push_back(newParticle);
+	//m_ParticleVec.push_back(newParticle);
 
 }
 bool ParticleSystem::FInState(const char* FileName_) {
