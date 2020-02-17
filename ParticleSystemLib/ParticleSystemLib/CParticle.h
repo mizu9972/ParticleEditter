@@ -51,6 +51,7 @@ typedef struct {
 	bool isEmitting            = false;//他パーティクルから発生させられるかどうか
 	bool isLooping             = true;//ループするかどうか
 	bool isGPUParticle         = false;//GPUパーティクルONOFF
+	bool isFeedbyLifetime      = false;//生存時間によってフェードさせる
 	bool UseGravity            = false;//重力有効
 	bool isSoftParticle		   = false;//ソフトパーティクルにするかどうか
 	ConstantBufferSoftParticle m_CBSoftParticleState;//コンスタントバッファに利用する構造体
@@ -144,6 +145,7 @@ protected:
 	int m_MaxParticleNum;//パーティクル最大生成個数
 	int ParticlesDeathCount;//死亡パーティクルカウント
 	float m_SystemLifeTime;//パーティクルシステム残り時間
+	float m_DelayCount;//発生を遅らせるカウント
 	bool isEmitting = true;
 	bool isSystemActive = false;
 	bool isUpdateActive = true;

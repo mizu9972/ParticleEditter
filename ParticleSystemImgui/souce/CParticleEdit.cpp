@@ -409,6 +409,7 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 			pParticleSystem_->SetActive(ViewState.isActive);
 			pParticleSystem_->Start();
 		}
+		CHECK(ImGui::Checkbox("FeedbyLifetime", &ViewState.isFeedbyLifetime));
 	}
 
 	if (ImGui::CollapsingHeader("SoftParticle")) {

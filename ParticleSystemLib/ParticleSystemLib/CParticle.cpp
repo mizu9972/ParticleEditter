@@ -202,7 +202,6 @@ void ParticleSystem::UpdateNomal() {
 	if (m_SystemLifeTime >= 0) {
 		m_SystemLifeTime -= NowTime;
 	}
-	m_SpownTimeCount += NowTime;
 
 	//パーティクル更新処理
 	{
@@ -299,7 +298,9 @@ void ParticleSystem::UpdateNomal() {
 	}
 
 	//パーティクル発生処理
-	{
+	m_DelayCount -= NowTime;
+	if (m_DelayCount <= 0) {
+		m_SpownTimeCount += NowTime;
 		float SpownTimePerParticle = 1.0f / m_ParticleState.m_ParticleSpownSpeed;
 		//一定時間経過で待機状態のパーティクルを発生させる
 		if (isSystemActive == true) {
@@ -346,6 +347,7 @@ void ParticleSystem::UpdateNomal() {
 		else {
 			//再スタート
 			m_SystemLifeTime = m_ParticleState.m_DuaringTime + m_ParticleState.m_StartDelayTime;
+			m_DelayCount = m_ParticleState.m_StartDelayTime;
 		}
 
 	}
@@ -420,7 +422,7 @@ void ParticleSystem::StartNomalParticle() {
 	ParticlesDeathCount = 0;
 
 	m_SystemLifeTime = m_ParticleState.m_DuaringTime + m_ParticleState.m_StartDelayTime;
-
+	m_DelayCount = m_ParticleState.m_StartDelayTime;
 	//変更されたステータス反映
 	//{
 	//	m_MaxParticleNum = m_ParticleState.m_ParticleNum;
@@ -470,6 +472,7 @@ void ParticleSystem::StartGPUParticle(){
 //描画メソッド
 void ParticleSystem::DrawNomal(const XMFLOAT4X4& CameraMatrix) {
 
+	float Alpha = 1.0f;
 	m_BillBoard.SetDrawUtility();
 	for (auto iParticleDetail : m_ParticleDetails) {
 		if (iParticleDetail.isAlive != true) {
@@ -487,7 +490,12 @@ void ParticleSystem::DrawNomal(const XMFLOAT4X4& CameraMatrix) {
 		{
 			m_BillBoard.SetPosition(iParticleDetail.Matrix._41, iParticleDetail.Matrix._42, iParticleDetail.Matrix._43);
 			m_BillBoard.SetSize(BillBoardSize, BillBoardSize);
-			m_BillBoard.SetColor(XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]));
+
+			if (m_ParticleState.isFeedbyLifetime == true) {
+				Alpha = iParticleDetail.LifeTime / m_ParticleState.m_MaxLifeTime;
+			}
+
+			m_BillBoard.SetColor(XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3] * Alpha));
 			m_BillBoard.DrawOnly(CameraMatrix, (float)iParticleDetail.ZAngle);
 		}
 	}
@@ -495,7 +503,7 @@ void ParticleSystem::DrawNomal(const XMFLOAT4X4& CameraMatrix) {
 
 //GPUパーティクル用の描画メソッド
 void ParticleSystem::GPUDraw(const XMFLOAT4X4& CameraMatrix) {
-
+	float Alpha = 1.0f;
 	m_BillBoard.SetDrawUtility();
 	for (int Count = 0; Count < m_ParticleNum; Count++) {
 		if (OutState[Count].isAlive == false || OutState[Count].isWaiting == 1) {
@@ -509,10 +517,15 @@ void ParticleSystem::GPUDraw(const XMFLOAT4X4& CameraMatrix) {
 		else if (m_ParticleState.m_SizeSpeed < 0) {
 			BillBoardSize = max(BillBoardSize, m_ParticleState.m_EndSize);
 		}
+
+		if (m_ParticleState.isFeedbyLifetime == true) {
+			Alpha = OutState[Count].LifeTime / m_ParticleState.m_MaxLifeTime;
+		}
+
 		//描画
 		m_BillBoard.SetPosition(OutState[Count].Matrix._41, OutState[Count].Matrix._42, OutState[Count].Matrix._43);
 		m_BillBoard.SetSize(BillBoardSize, BillBoardSize);
-		m_BillBoard.SetColor(XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3]));
+		m_BillBoard.SetColor(XMFLOAT4(m_ParticleState.m_Color[0], m_ParticleState.m_Color[1], m_ParticleState.m_Color[2], m_ParticleState.m_Color[3] * Alpha));
 		m_BillBoard.DrawOnly(CameraMatrix, (float)OutState[Count].ZAngle);
 	}
 }
