@@ -346,7 +346,9 @@ void ParticleEditor::ImGuiDrawofParticleSystem(ParticleSystem* pParticleSystem_)
 		CHECK(ImGui::DragFloat3("Position", ViewState.m_Position, 1.0f));                   //座標
 		CHECK(ImGui::DragInt3("Angle", ViewState.m_Angle, 1.0f));                           //放出角度
 		CHECK(ImGui::DragInt("AngleRange", &ViewState.m_AngleRange, 1, 1, 360));            //放出角度範囲
-		CHECK(ImGui::InputInt("ParticleMaxNum", &ViewState.m_ParticleMax, 5, 1000));        //パーティクルの最大個数個数
+		if (ImGui::InputInt("ParticleMaxNum", &ViewState.m_ParticleMax, 5, 1000)) {        //パーティクルの最大個数個数
+			pParticleSystem_->SetParticleNum(ViewState.m_ParticleMax);
+		}
 		CHECK(ImGui::DragFloat("SpawnSpeed", &ViewState.m_ParticleSpownSpeed, 0.01f));      //パーティクル発生速度
 		if (ImGui::TreeNode("Size")) {
 			CHECK(ImGui::DragFloat("StartSize", &ViewState.m_StartSize, 1.0f));                  //粒子の大きさ

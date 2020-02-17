@@ -231,6 +231,7 @@ public:
 	//アクセスメソッド
 	//setter
 	void SetName(const char*  setName);//名前
+	void SetParticleNum(unsigned int count);
 	ParticleSystem& SetActive(bool set);//有効無効
 	ParticleSystem& SetEmitte(bool set);
 	void SetTargetPos(float x, float y, float z);//ターゲット座標

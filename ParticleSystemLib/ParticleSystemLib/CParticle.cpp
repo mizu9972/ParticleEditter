@@ -310,15 +310,16 @@ void ParticleSystem::UpdateNomal() {
 					//発生個数を計算しループさせる
 					for (int Num = 0; Num < m_SpownTimeCount / SpownTimePerParticle; Num++) {
 						//パーティクル発生処理
+
+						if (m_Iter >= m_ParticleDetails.size()) {
+							m_Iter = 0;
+						}
 						if (m_ParticleDetails[m_Iter].isWaiting == true) {
 							//生存パーティクル追加
 							AddParticle(&m_ParticleDetails[m_Iter]);
 						}
 						m_Iter += 1;
 
-						if (m_Iter >= m_ParticleDetails.size()) {
-							m_Iter = 0;
-						}
 					}
 				}
 
@@ -720,6 +721,11 @@ void ParticleSystem::SetNextParticleSystem(int NextNumber) {
 	//ソートして連続した重複要素を削除
 	std::sort(m_NextParticleNumberVector.begin(), m_NextParticleNumberVector.end());
 	m_NextParticleNumberVector.erase(std::unique(m_NextParticleNumberVector.begin(), m_NextParticleNumberVector.end()), m_NextParticleNumberVector.end());
+}
+
+void ParticleSystem::SetParticleNum(unsigned int count) {
+	m_ParticleState.m_ParticleMax = count;
+	ParticleDetalInit();
 }
 
 //メソッドでの処理そのものの有効化無効化
